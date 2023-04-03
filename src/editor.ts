@@ -52,9 +52,9 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				},
 			},
 			{
-				name: "max_duration",
-				label: "Animation Max Duration",
-				selector: { number: { mode: "box", unit_of_measurement: 's' } },
+				name: "power_margin",
+				label: "Power margin",
+				selector: { number: { mode: "box", unit_of_measurement: 'w' } },
 			},
 		]
 		return html`
