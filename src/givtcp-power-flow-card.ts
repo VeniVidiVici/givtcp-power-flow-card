@@ -49,31 +49,37 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	private get _gridToHouse(): number | undefined {
 		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_grid_to_house`];
-		return entity ? parseFloat(entity?.state) : undefined;
+		return entity ? this.cleanSensorData(parseFloat(entity?.state)) : undefined;
 	}
 	private get _gridToBattery(): number | undefined {
 		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_grid_to_battery`];
-		return entity ? parseFloat(entity?.state) : undefined;
+		return entity ? this.cleanSensorData(parseFloat(entity?.state)) : undefined;
 	}
 	private get _solarToGrid(): number | undefined {
 		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_solar_to_grid`];
-		return entity ? parseFloat(entity?.state) : undefined;
+		return entity ? this.cleanSensorData(parseFloat(entity?.state)) : undefined;
 	}
 	private get _solarToBattery(): number | undefined {
 		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_solar_to_battery`];
-		return entity ? parseFloat(entity?.state) : undefined;
+		return entity ? this.cleanSensorData(parseFloat(entity?.state)) : undefined;
 	}
 	private get _solarToHouse(): number | undefined {
 		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_solar_to_house`];
-		return entity ? parseFloat(entity?.state) : undefined;
+		return entity ? this.cleanSensorData(parseFloat(entity?.state)) : undefined;
 	}
 	private get _batteryToHouse(): number | undefined {
 		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_battery_to_house`];
-		return entity ? parseFloat(entity?.state) : undefined;
+		return entity ? this.cleanSensorData(parseFloat(entity?.state)) : undefined;
 	}
 	private get _batteryToGrid(): number | undefined {
 		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_battery_to_grid`];
-		return entity ? parseFloat(entity?.state) : undefined;
+		return entity ? this.cleanSensorData(parseFloat(entity?.state)) : undefined;
+	}
+	private get _powerMargin(): number {
+		return this._config?.power_margin || 10;
+	}
+	private cleanSensorData(amount: number): number {
+		return amount < this._powerMargin ? 0 : amount;
 	}
 	private getTotalFor(type: string, direction: FlowDirection): FlowTotal | undefined {
 		return this._entityNames.reduce((acc: FlowTotal | undefined, key) => {
@@ -134,7 +140,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	disconnectedCallback() {
 		super.disconnectedCallback();
-		this.resizeObserver?.unobserve(this);
+		this._resizeObserver?.unobserve(this);
 		this._animate = false;
 	}
 	private advanceFlowDot(elapsed: number, from: string, to: string, direction: FlowDirection): void {
@@ -145,11 +151,10 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 
 		let power = this[`_${from}To${to.charAt(0).toUpperCase() + to.slice(1)}` as keyof GivTCPPowerFlowCard] as number;
 		if (power === undefined) {
-			// line.setAttribute('visibility', 'hidden');
 			return;
 		};
 		let pos = parseFloat(g.getAttribute('data-pos') || '0');
-		line.setAttribute('visibility', 'visible');
+		line.setAttribute('visibility', power?'visible':'hidden');
 		const lineLength = path.getTotalLength();
 		const point = path.getPointAtLength(lineLength * pos);
 		line.setAttributeNS(null, 'x1', point.x.toString());
