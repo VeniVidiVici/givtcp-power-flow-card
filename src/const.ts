@@ -10,6 +10,8 @@ export const POWER_MARGIN_DEFAULT = 20;
 export const LINE_GAP_DEFAULT = 0;
 export const CIRCLE_SIZE_DEFAULT = 35;
 export const LINE_WIDTH_DEFAULT = 2;
+export const HIDE_INACTIVE_FLOWS_DEFAULT = false;
+export const HIDE_INACTIVE_TOTALS_DEFAULT = false;
 
 export enum UnitOfPower {
 	WATT = "W",

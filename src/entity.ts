@@ -34,8 +34,8 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 		)}
 		</svg>`}
 		<div class='gtpc-entity'>
-			${this.data.in!==undefined?html`<span class="gtpc-entity-in"><ha-icon icon="mdi:arrow-right"></ha-icon> ${this.formatPower(this.data.in.total)}</span>`:html``}
-			${this.data.out!==undefined?html`<span class="gtpc-entity-out"><ha-icon icon="mdi:arrow-left"></ha-icon> ${this.formatPower(this.data.out.total)}</span>`:html``}
+			${this.data.in!==undefined?html`<span data-power="${this.data.in.total}" class="gtpc-entity-in"><ha-icon icon="mdi:arrow-right"></ha-icon> ${this.formatPower(this.data.in.total)}</span>`:html``}
+			${this.data.out!==undefined?html`<span data-power="${this.data.out.total}" class="gtpc-entity-out"><ha-icon icon="mdi:arrow-left"></ha-icon> ${this.formatPower(this.data.out.total)}</span>`:html``}
 			<ha-icon class="gtpc-entity-icon" .icon="${this.data.icon}"></ha-icon>
 		</div>
 		`;
@@ -62,6 +62,9 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 		fill:none;
 		stroke-width: var(--gtpc-line-size);
 		vector-effect: non-scaling-stroke;
+	}
+	.gtpc-entity>span[data-power="0"]{
+		display: var(--gtpc-inactive-totals-display, block);
 	}
 	.gtpc-entity-in,
 	.gtpc-entity-out,

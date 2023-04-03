@@ -5,7 +5,7 @@ import './editor';
 import './entity';
 import { SVGUtils } from './svg-utils';
 import { CentreEntity, EntityData, EntityLayout, FlowDirection, FlowTotal } from './types';
-import { CENTRE_ENTITY_DEFAULT, CIRCLE_SIZE_DEFAULT, ENTITY_LAYOUT_DEFAULT, ICON_BATTERY_DEFAULT, ICON_GRID_DEFAULT, ICON_HOUSE_DEFAULT, ICON_SIZE_DEFAULT, ICON_SOLAR_DEFAULT, LINE_GAP_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT } from './const';
+import { CENTRE_ENTITY_DEFAULT, CIRCLE_SIZE_DEFAULT, ENTITY_LAYOUT_DEFAULT, HIDE_INACTIVE_TOTALS_DEFAULT, HIDE_INACTIVE_FLOWS_DEFAULT, ICON_BATTERY_DEFAULT, ICON_GRID_DEFAULT, ICON_HOUSE_DEFAULT, ICON_SIZE_DEFAULT, ICON_SOLAR_DEFAULT, LINE_GAP_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT } from './const';
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
@@ -60,6 +60,12 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	private get _lineWidth(): number {
 		return this._config?.line_width || LINE_WIDTH_DEFAULT;
+	}
+	private get _hideInactiveFlows(): boolean {
+		return this._config?.hide_inactive_flows == undefined ? HIDE_INACTIVE_FLOWS_DEFAULT : this._config?.hide_inactive_flows;
+	}
+	private get _hideInactiveTotals(): boolean {
+		return this._config?.hide_inactive_totals == undefined ? HIDE_INACTIVE_TOTALS_DEFAULT : this._config?.hide_inactive_totals;
 	}
 	private getIconFor(type: string): string {
 		switch (type) {
@@ -295,6 +301,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 		this._config = config;
 		this.style.setProperty('--gtpc-line-size', `${this._lineWidth}px`);
+		this.style.setProperty('--gtpc-inactive-flow-display', this._hideInactiveFlows ? 'none' : 'block');
+		this.style.setProperty('--gtpc-inactive-totals-display', this._hideInactiveTotals ? 'none' : 'block');
 	}
 	getCardSize(): number {
 		return 3;
@@ -317,6 +325,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		fill:none;
 		stroke-width: var(--gtpc-line-size);
 		vector-effect: non-scaling-stroke;
+	}
+	.gtpc-flow[data-pos="0"]{
+		display: var(--gtpc-inactive-flow-display);
 	}
 	.gtpc-flow[data-pos="0"]>line{
 		display: none;
