@@ -1,6 +1,8 @@
 import { fireEvent, HomeAssistant, LovelaceCardConfig, LovelaceCardEditor, LovelaceConfig } from "custom-card-helpers";
 import { html, LitElement, TemplateResult } from "lit";
 import { customElement, state } from 'lit/decorators.js'
+import { ENTITY_SCHEMA, ICON_SCHEMA, LAYOUT_SCHEMA, LAYOUT_TYPE_SCHEMA } from "./schemas";
+import { LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT, UnitOfPower } from "./const";
 
 @customElement('givtcp-power-flow-card-editor')
 export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCardEditor {
@@ -18,44 +20,21 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 		const invertors = Object.keys(this.hass.states).filter(eid => /^sensor\.givtcp_[a-zA-Z]{2}\d{4}[a-zA-Z]\d{3}_invertor_serial_number$/g.test(eid));
 		const batteries = Object.keys(this.hass.states).filter(eid => /^sensor\.givtcp_[a-zA-Z]{2}\d{4}[a-zA-Z]\d{3}_battery_serial_number$/g.test(eid));
 		const schema = [
-			{ title: "Name", name: "name", selector: { text: {} } },
-			{ title: "Invertor", name: "invertor", selector: { entity: { include_entities: invertors } } },
-			{ title: "Battery", name: "battery", selector: { entity: { include_entities: batteries } } },
-			{
-				name: "entity_layout",
-				label: "Layout",
-				selector: {
-					select: {
-						mode: "dropdown",
-						options: [
-							{ value: "cross", label: "Cross" },
-							{ value: "square", label: "Square" },
-							{ value: "circle", label: "Circle" }
-						],
-					},
-				},
-			},
-			{
-				name: "centre_entity",
-				label: "Centre entity",
-				selector: {
-					select: {
-						mode: "dropdown",
-						options: [
-							{ value: 'none', label: 'None' },
-							{ value: 'house', label: 'House' },
-							{ value: 'inverter', label: 'Inverter' },
-							{ value: 'solar', label: 'Solar' },
-							{ value: 'battery', label: 'Battery' },
-						],
-					},
-				},
-			},
+			{ name: "name", selector: { text: {} } },
+			...ENTITY_SCHEMA(invertors, batteries),
+			...ICON_SCHEMA,
 			{
 				name: "power_margin",
-				label: "Power margin",
-				selector: { number: { mode: "box", unit_of_measurement: 'w' } },
+				default: POWER_MARGIN_DEFAULT,
+				selector: { number: {mode: "box", unit_of_measurement: UnitOfPower.WATT } },
 			},
+			{
+				name: "line_width",
+				default: LINE_WIDTH_DEFAULT,
+				selector: { number: {mode: "slider", min: 1, max: 10, unit_of_measurement: 'px' } },
+			},
+			...LAYOUT_SCHEMA,
+			...LAYOUT_TYPE_SCHEMA(this._config?.entity_layout),
 		]
 		return html`
 		<ha-form

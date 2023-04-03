@@ -5,6 +5,7 @@ import './editor';
 import './entity';
 import { SVGUtils } from './svg-utils';
 import { CentreEntity, EntityData, EntityLayout, FlowDirection, FlowTotal } from './types';
+import { CENTRE_ENTITY_DEFAULT, CIRCLE_SIZE_DEFAULT, ENTITY_LAYOUT_DEFAULT, ICON_BATTERY_DEFAULT, ICON_GRID_DEFAULT, ICON_HOUSE_DEFAULT, ICON_SIZE_DEFAULT, ICON_SOLAR_DEFAULT, LINE_GAP_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT } from './const';
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
@@ -37,10 +38,10 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		return document.createElement('givtcp-power-flow-card-editor') as LovelaceCardEditor;
 	}
 	private get _entityLayout(): EntityLayout {
-		return this._config?.entity_layout || EntityLayout.Circle;
+		return this._config?.entity_layout || ENTITY_LAYOUT_DEFAULT;
 	}
 	private get _centreEntity(): CentreEntity {
-		return this._config?.centre_entity || CentreEntity.None;
+		return this._config?.centre_entity || CENTRE_ENTITY_DEFAULT;
 	}
 	private get _invertorSerial(): string {
 		return this._config?.invertor ? this.hass.states[this._config?.invertor].state.toLowerCase() || '' : '';
@@ -49,7 +50,30 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		return this._config?.battery ? this.hass.states[this._config?.battery].state.toLowerCase() || '' : '';
 	}
 	private get _powerMargin(): number {
-		return this._config?.power_margin || 20;
+		return this._config?.power_margin || POWER_MARGIN_DEFAULT;
+	}
+	private get _lineGap(): number {
+		return this._config?.line_gap || LINE_GAP_DEFAULT;
+	}
+	private get _circleSize(): number {
+		return this._config?.circle_size || CIRCLE_SIZE_DEFAULT;
+	}
+	private get _lineWidth(): number {
+		return this._config?.line_width || LINE_WIDTH_DEFAULT;
+	}
+	private getIconFor(type: string): string {
+		switch (type) {
+			case 'solar':
+				return this._config?.icon_solar || ICON_SOLAR_DEFAULT;
+			case 'battery':
+				return this._config?.icon_battery || ICON_BATTERY_DEFAULT;
+			case 'grid':
+				return this._config?.icon_grid || ICON_GRID_DEFAULT;
+			case 'house':
+				return this._config?.icon_house || ICON_HOUSE_DEFAULT;
+			default:
+				return '';
+		}
 	}
 	private getCleanPowerForFlow(from: string, to: string): number | undefined {
 		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_${from}_to_${to}`];
@@ -74,7 +98,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	connectedCallback(): void {
 		super.connectedCallback();
-		this.style.setProperty('--gtpc-line-size', '2px');
 		this._resizeObserver = new ResizeObserver(changes => {
 			for (const change of changes) {
 				const t = change.target as GivTCPPowerFlowCard;
@@ -151,21 +174,21 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			{
 				size: '100px',
 				type: 'solar',
-				icon: 'mdi:solar-panel-large',
+				icon: this.getIconFor('solar'),
 				name: 'Solar',
 				out: this.getTotalFor('solar', FlowDirection.Out)
 			},
 			{
 				size: '100px',
 				type: 'house',
-				icon: 'mdi:home',
+				icon: this.getIconFor('house'),
 				name: 'House',
 				in: this.getTotalFor('house', FlowDirection.In)
 			},
 			{
 				size: '100px',
 				type: 'grid',
-				icon: 'mdi:transmission-tower',
+				icon: this.getIconFor('grid'),
 				name: 'Grid',
 				out: this.getTotalFor('grid', FlowDirection.In),
 				in: this.getTotalFor('grid', FlowDirection.Out)
@@ -173,7 +196,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			{
 				size: '100px',
 				type: 'battery',
-				icon: 'mdi:battery-medium',
+				icon: this.getIconFor('battery'),
 				name: 'Battery',
 				out: this.getTotalFor('battery', FlowDirection.In),
 				in: this.getTotalFor('battery', FlowDirection.Out)
@@ -204,47 +227,47 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			case 'solar-to-house':
 				switch (this._entityLayout) {
 					case 'cross':
-						return SVGUtils.getCurvePath(50, 25, 75, 50, -90);
+						return SVGUtils.getCurvePath(50+this._lineGap, 25, 75, 50-this._lineGap, -90);
 					case 'square':
 					case 'circle':
 					default:
-						return SVGUtils.getCirclePath(15, 5, 35);
+						return SVGUtils.getCirclePath(15, 5, this._circleSize);
 				}
 			case 'battery-to-house':
 				switch (this._entityLayout) {
 					case 'cross':
-						return SVGUtils.getCurvePath(75, 50, 50, 75, -90);
+						return SVGUtils.getCurvePath(75, 50+this._lineGap, 50+this._lineGap, 75, -90);
 					case 'square':
 					case 'circle':
 					default:
-						return SVGUtils.getCirclePath(15, 30, 35);
+						return SVGUtils.getCirclePath(15, 30, this._circleSize);
 				}
 			case 'battery-to-grid':
 				switch (this._entityLayout) {
 					case 'cross':
-						return SVGUtils.getCurvePath(50, 75, 25, 50, -90);
+						return SVGUtils.getCurvePath(50-this._lineGap, 75, 25, 50+this._lineGap, -90);
 					case 'square':
 					case 'circle':
 					default:
-						return SVGUtils.getCirclePath(15, 55, 35);
+						return SVGUtils.getCirclePath(15, 55, this._circleSize);
 				}
 			case 'grid-to-battery':
 				switch (this._entityLayout) {
 					case 'cross':
-						return SVGUtils.getCurvePath(50, 75, 25, 50, -90);
+						return SVGUtils.getCurvePath(50-this._lineGap, 75, 25, 50+this._lineGap, -90);
 					case 'square':
 					case 'circle':
 					default:
-						return SVGUtils.getCirclePath(15, 55, 35);
+						return SVGUtils.getCirclePath(15, 55, this._circleSize);
 				}
 			case 'solar-to-grid':
 				switch (this._entityLayout) {
 					case 'cross':
-						return SVGUtils.getCurvePath(25, 50, 50, 25, -90);
+						return SVGUtils.getCurvePath(25, 50-this._lineGap, 50-this._lineGap, 25, -90);
 					case 'square':
 					case 'circle':
 					default:
-						return SVGUtils.getCirclePath(15, 80, 35);
+						return SVGUtils.getCirclePath(15, 80, this._circleSize);
 				}
 			case 'solar-to-battery':
 				switch (this._entityLayout) {
@@ -271,7 +294,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			throw new Error("You need to define battery and invertor entities");
 		}
 		this._config = config;
-		// if(!this._config.power_margin) this._config.power_margin = 20;
+		this.style.setProperty('--gtpc-line-size', `${this._lineWidth}px`);
 	}
 	getCardSize(): number {
 		return 3;
