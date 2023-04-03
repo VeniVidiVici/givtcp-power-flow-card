@@ -1,3 +1,4 @@
+*.d.ts
 # Logs
 logs
 *.log

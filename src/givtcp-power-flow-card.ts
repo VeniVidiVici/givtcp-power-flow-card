@@ -1,11 +1,11 @@
 import { LovelaceCardConfig, HomeAssistant, LovelaceCard, LovelaceCardEditor } from 'custom-card-helpers';
-import { LitElement, css, html, TemplateResult, svg } from 'lit';
+import { LitElement, css, html, TemplateResult, svg } from 'lit-element';
 import { customElement, property, state } from 'lit/decorators.js';
 import './editor';
 import './entity';
 import { SVGUtils } from './svg-utils';
 import { CentreEntity, EntityData, EntityLayout, FlowDirection, FlowTotal } from './types';
-import { CENTRE_ENTITY_DEFAULT, CIRCLE_SIZE_DEFAULT, ENTITY_LAYOUT_DEFAULT, HIDE_INACTIVE_TOTALS_DEFAULT, HIDE_INACTIVE_FLOWS_DEFAULT, ICON_BATTERY_DEFAULT, ICON_GRID_DEFAULT, ICON_HOUSE_DEFAULT, ICON_SIZE_DEFAULT, ICON_SOLAR_DEFAULT, LINE_GAP_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT } from './const';
+import { CENTRE_ENTITY_DEFAULT, CIRCLE_SIZE_DEFAULT, ENTITY_LAYOUT_DEFAULT, HIDE_INACTIVE_TOTALS_DEFAULT, HIDE_INACTIVE_FLOWS_DEFAULT, ICON_BATTERY_DEFAULT, ICON_GRID_DEFAULT, ICON_HOUSE_DEFAULT, ICON_SOLAR_DEFAULT, LINE_GAP_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT } from './const';
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
@@ -46,9 +46,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private get _invertorSerial(): string {
 		return this._config?.invertor ? this.hass.states[this._config?.invertor].state.toLowerCase() || '' : '';
 	}
-	private get _batterySerial(): string {
-		return this._config?.battery ? this.hass.states[this._config?.battery].state.toLowerCase() || '' : '';
-	}
+	// private get _batterySerial(): string {
+	// 	return this._config?.battery ? this.hass.states[this._config?.battery].state.toLowerCase() || '' : '';
+	// }
 	private get _powerMargin(): number {
 		return this._config?.power_margin || POWER_MARGIN_DEFAULT;
 	}

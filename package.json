@@ -17,7 +17,7 @@
     "build": "tsc && vite build"
   },
   "dependencies": {
-    "lit": "^2.6.1"
+    "lit-element": "^3.3.1"
   },
   "devDependencies": {
     "custom-card-helpers": "^1.9.0",
