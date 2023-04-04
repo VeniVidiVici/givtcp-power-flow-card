@@ -18,8 +18,8 @@ jobs:
     - name: Build
       run: npm run build
 
-    - name: Upload dist folder to release
+    - name: Upload givtcp-power-flow-card.js to release
       uses: actions/upload-artifact@v3
       with:
-        name: dist
-        path: ./
+        name: givtcp-power-flow-card.js
+        path: dist/givtcp-power-flow-card.js
