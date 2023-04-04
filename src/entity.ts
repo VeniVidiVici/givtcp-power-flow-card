@@ -1,7 +1,7 @@
 import { css, html, LitElement, svg, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { SVGUtils } from "./svg-utils";
-import { EntityData } from './types';
+import { EntityData, UnitOfPower } from './types';
 
 @customElement('givtcp-power-flow-card-entity')
 export class GivTCPPowerFlowCardEntity extends LitElement {
@@ -37,13 +37,14 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 			${this.data.in!==undefined?html`<span data-power="${this.data.in.total}" class="gtpc-entity-in"><ha-icon icon="mdi:arrow-right"></ha-icon> ${this.formatPower(this.data.in.total)}</span>`:html``}
 			${this.data.out!==undefined?html`<span data-power="${this.data.out.total}" class="gtpc-entity-out"><ha-icon icon="mdi:arrow-left"></ha-icon> ${this.formatPower(this.data.out.total)}</span>`:html``}
 			<ha-icon class="gtpc-entity-icon" .icon="${this.data.icon}"></ha-icon>
+			${this.data.extra!==undefined?html`<span class="gtpc-entity-extra">${this.data.extra}</span>`:html``}
 		</div>
 		`;
 	}
 	private formatPower(power: number): string {
-		if (power < 1000) return `${power}W`;
-		if (power < 1000000) return `${(power / 1000).toFixed(1)}kW`;
-		return `${(power / 1000000).toFixed(1)}MW`;
+		if (power < 1000) return `${power}${UnitOfPower.WATT}`;
+		if (power < 1000000) return `${(power / 1000).toFixed(1)}${UnitOfPower.KILO_WATT}`;
+		return `${(power / 1000000).toFixed(1)}${UnitOfPower.MEGA_WATT}`;
 	}
 
 
