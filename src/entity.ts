@@ -2,6 +2,7 @@ import { css, html, LitElement, svg, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { SVGUtils } from "./svg-utils";
 import { EntityData } from './types';
+import { UnitOfPower } from "./const";
 
 @customElement('givtcp-power-flow-card-entity')
 export class GivTCPPowerFlowCardEntity extends LitElement {
@@ -41,9 +42,9 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 		`;
 	}
 	private formatPower(power: number): string {
-		if (power < 1000) return `${power}W`;
-		if (power < 1000000) return `${(power / 1000).toFixed(1)}kW`;
-		return `${(power / 1000000).toFixed(1)}MW`;
+		if (power < 1000) return `${power}${UnitOfPower.WATT}`;
+		if (power < 1000000) return `${(power / 1000).toFixed(1)}${UnitOfPower.KILO_WATT}`;
+		return `${(power / 1000000).toFixed(1)}${UnitOfPower.MEGA_WATT}`;
 	}
 
 

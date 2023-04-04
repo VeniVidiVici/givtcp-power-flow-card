@@ -17,6 +17,7 @@ export enum EntityLayout {
 	Cross = 'cross',
 	Square = 'square',
 	Circle = 'circle',
+	List = 'list',
 }
 export enum CentreEntity {
 	None = 'none',

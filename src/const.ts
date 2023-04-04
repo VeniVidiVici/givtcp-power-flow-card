@@ -16,4 +16,5 @@ export const HIDE_INACTIVE_TOTALS_DEFAULT = false;
 export enum UnitOfPower {
 	WATT = "W",
 	KILO_WATT = "kW",
+	MEGA_WATT = "MW",
   }

@@ -133,6 +133,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			return acc;
 		}, undefined);
 	}
+	constructor() {
+		super();
+	}
 	connectedCallback(): void {
 		super.connectedCallback();
 		this._resizeObserver = new ResizeObserver(changes => {
@@ -142,6 +145,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					setTimeout(() => {
 						t._width = change.contentRect.width;
 						t.style.setProperty('--gtpc-size', (t._width / 4) + 'px');
+						t.requestUpdate();
 					}, 0);
 				}
 			}
@@ -265,9 +269,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		</g>`;
 	}
 	private getPathForFlow(flow: string): string {
-		const hasSolar = this._hasSolar;
-		const hasBattery = this._hasBattery;
-
 		let midY = 50;
 		if(!this._hasSolar){
 			midY = 12.5;
@@ -278,6 +279,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					case 'cross':
 						return SVGUtils.getCurvePath(50 + this._lineGap, 25, 75, 50 - this._lineGap, -90);
 					case 'square':
+					case 'list':
 					case 'circle':
 					default:
 						return SVGUtils.getCirclePath(15, 5, this._circleSize, {x: 50, y: midY});
@@ -287,6 +289,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					case 'cross':
 						return SVGUtils.getCurvePath(75, midY + this._lineGap, 50 + this._lineGap, midY + 25, -90);
 					case 'square':
+					case 'list':
 					case 'circle':
 					default:
 						return SVGUtils.getCirclePath(15, 30, this._circleSize, {x: 50, y: midY});
@@ -296,6 +299,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					case 'cross':
 						return SVGUtils.getCurvePath(50 - this._lineGap, midY + 25, 25, midY + this._lineGap, -90);
 					case 'square':
+					case 'list':
 					case 'circle':
 					default:
 						return SVGUtils.getCirclePath(15, 55, this._circleSize, {x: 50, y: midY});
@@ -305,6 +309,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					case 'cross':
 						return SVGUtils.getCurvePath(50 - this._lineGap, midY + 25, 25, midY + this._lineGap, -90);
 					case 'square':
+					case 'list':
 					case 'circle':
 					default:
 						return SVGUtils.getCirclePath(15, 55, this._circleSize, {x: 50, y: midY});
@@ -314,6 +319,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					case 'cross':
 						return SVGUtils.getCurvePath(25, 50 - this._lineGap, 50 - this._lineGap, 25, -90);
 					case 'square':
+					case 'list':
 					case 'circle':
 					default:
 						return SVGUtils.getCirclePath(15, 80, this._circleSize, {x: 50, y: midY});
@@ -322,6 +328,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				switch (this._entityLayout) {
 					case 'cross':
 					case 'square':
+					case 'list':
 					case 'circle':
 					default:
 						return SVGUtils.getCurvePath(50, 25, 50, 75, 0);
@@ -330,6 +337,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				switch (this._entityLayout) {
 					case 'cross':
 					case 'square':
+					case 'list':
 					case 'circle':
 					default:
 						return SVGUtils.getCurvePath(25, midY, 75, midY, 0);
