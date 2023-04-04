@@ -1,25 +1,30 @@
-name: Build and Release
+name: Release
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
-  build:
+  release:
+    name: Prepare release
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v1
 
-    - name: Install dependencies
-      run: npm install
+      # Build
+      - name: Build the file
+        run: |
+          cd /home/runner/work/givtcp-power-flow-card/givtcp-power-flow-card
+          npm install
+          npm run build
 
-    - name: Build
-      run: npm run build
+      # Upload build file to the releas as an asset.
+      - name: Upload zip to release
+        uses: svenstaro/upload-release-action@v1-release
 
-    - name: Upload givtcp-power-flow-card.js to release
-      uses: actions/upload-artifact@v3
-      with:
-        name: givtcp-power-flow-card.js
-        path: dist/givtcp-power-flow-card.js
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: /home/runner/work/givtcp-power-flow-card/givtcp-power-flow-card/dist/givtcp-power-flow-card.js
+          asset_name: givtcp-power-flow-card.js
+          tag: ${{ github.ref }}
+          overwrite: true
