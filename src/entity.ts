@@ -1,4 +1,4 @@
-import { css, html, LitElement, svg, TemplateResult } from "lit-element";
+import { css, html, LitElement, svg, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { SVGUtils } from "./svg-utils";
 import { EntityData } from './types';

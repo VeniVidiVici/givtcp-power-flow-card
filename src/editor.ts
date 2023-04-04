@@ -1,5 +1,5 @@
 import { fireEvent, HomeAssistant, LovelaceCardConfig, LovelaceCardEditor, LovelaceConfig } from "custom-card-helpers";
-import { html, LitElement, TemplateResult } from "lit-element";
+import { html, LitElement, TemplateResult } from "lit";
 import { customElement, state } from 'lit/decorators.js'
 import { ENTITY_SCHEMA, ICON_SCHEMA, LAYOUT_SCHEMA, LAYOUT_TYPE_SCHEMA } from "./schemas";
 import { HIDE_INACTIVE_TOTALS_DEFAULT, HIDE_INACTIVE_FLOWS_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT, UnitOfPower } from "./const";

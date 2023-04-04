@@ -1,5 +1,5 @@
 import { LovelaceCardConfig, HomeAssistant, LovelaceCard, LovelaceCardEditor } from 'custom-card-helpers';
-import { LitElement, css, html, TemplateResult, svg } from 'lit-element';
+import { LitElement, css, html, TemplateResult, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import './editor';
 import './entity';
@@ -16,6 +16,8 @@ import { CENTRE_ENTITY_DEFAULT, CIRCLE_SIZE_DEFAULT, ENTITY_LAYOUT_DEFAULT, HIDE
 
 @customElement('givtcp-power-flow-card')
 export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
+	isPanel?: boolean | undefined;
+	editMode?: boolean | undefined;
 	@state() private _config!: LovelaceCardConfig;
 	@property() hass!: HomeAssistant;
 
