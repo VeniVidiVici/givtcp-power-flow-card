@@ -18,11 +18,8 @@ jobs:
     - name: Build
       run: npm run build
 
-    - name: Archive dist folder
-      run: zip -r dist.zip dist
-
-    - name: Upload artifact
+    - name: Upload dist folder to release
       uses: actions/upload-artifact@v2
       with:
         name: dist
-        path: dist.zip
+        path: dist/
