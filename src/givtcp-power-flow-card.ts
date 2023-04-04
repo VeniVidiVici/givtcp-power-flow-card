@@ -21,14 +21,14 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	@state() private _config!: LovelaceCardConfig;
 	@property() hass!: HomeAssistant;
 
-	private flows: {from:string, to:string, direction:FlowDirection}[] = [
-		{from: 'solar', to: 'grid', direction: FlowDirection.Out},
-		{from: 'solar', to: 'battery', direction: FlowDirection.In},
-		{from: 'solar', to: 'house', direction: FlowDirection.In},
-		{from: 'battery', to: 'house', direction: FlowDirection.Out},
-		{from: 'battery', to: 'grid', direction: FlowDirection.In},
-		{from: 'grid', to: 'house', direction: FlowDirection.In},
-		{from: 'grid', to: 'battery', direction: FlowDirection.Out},
+	private flows: { from: string, to: string, direction: FlowDirection }[] = [
+		{ from: 'solar', to: 'grid', direction: FlowDirection.Out },
+		{ from: 'solar', to: 'battery', direction: FlowDirection.In },
+		{ from: 'solar', to: 'house', direction: FlowDirection.In },
+		{ from: 'battery', to: 'house', direction: FlowDirection.Out },
+		{ from: 'battery', to: 'griddd', direction: FlowDirection.In },
+		{ from: 'grid', to: 'house', direction: FlowDirection.In },
+		{ from: 'grid', to: 'battery', direction: FlowDirection.Out },
 	];
 
 	private _width!: number;
@@ -83,7 +83,30 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				return '';
 		}
 	}
+	private getDemoPowerForFlow(from: string, to: string): number | undefined {
+		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_${from}_to_${to}`];
+		if (entity !== undefined) {
+			if (from === 'grid' && to === 'house') {
+				return 668;
+			} else if (from === 'solar' && to === 'house') {
+				return 724;
+			} else if (from === 'solar' && to === 'battery') {
+				return 764;
+			} else if (from === 'battery' && to === 'house') {
+				return 1347;
+			} else if (from === 'battery' && to === 'grid') {
+				return 0;
+			} else if (from === 'grid' && to === 'battery') {
+				return 845;
+			} else if (from === 'solar' && to === 'grid') {
+				return 3502;
+			}
+			return 0;
+		}
+		return undefined;
+	}
 	private getCleanPowerForFlow(from: string, to: string): number | undefined {
+		if(this._config?.demo_mode) return this.getDemoPowerForFlow(from, to);
 		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_${from}_to_${to}`];
 		return entity !== undefined ? this.cleanSensorData(parseFloat(entity?.state)) : undefined;
 	}
@@ -156,7 +179,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			return;
 		};
 		let pos = parseFloat(g.getAttribute('data-pos') || '0');
-		line.setAttribute('visibility', power?'visible':'hidden');
+		line.setAttribute('visibility', power ? 'visible' : 'hidden');
 		const lineLength = path.getTotalLength();
 		const point = path.getPointAtLength(lineLength * pos);
 		line.setAttributeNS(null, 'x1', point.x.toString());
@@ -235,7 +258,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			case 'solar-to-house':
 				switch (this._entityLayout) {
 					case 'cross':
-						return SVGUtils.getCurvePath(50+this._lineGap, 25, 75, 50-this._lineGap, -90);
+						return SVGUtils.getCurvePath(50 + this._lineGap, 25, 75, 50 - this._lineGap, -90);
 					case 'square':
 					case 'circle':
 					default:
@@ -244,7 +267,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			case 'battery-to-house':
 				switch (this._entityLayout) {
 					case 'cross':
-						return SVGUtils.getCurvePath(75, 50+this._lineGap, 50+this._lineGap, 75, -90);
+						return SVGUtils.getCurvePath(75, 50 + this._lineGap, 50 + this._lineGap, 75, -90);
 					case 'square':
 					case 'circle':
 					default:
@@ -253,7 +276,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			case 'battery-to-grid':
 				switch (this._entityLayout) {
 					case 'cross':
-						return SVGUtils.getCurvePath(50-this._lineGap, 75, 25, 50+this._lineGap, -90);
+						return SVGUtils.getCurvePath(50 - this._lineGap, 75, 25, 50 + this._lineGap, -90);
 					case 'square':
 					case 'circle':
 					default:
@@ -262,7 +285,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			case 'grid-to-battery':
 				switch (this._entityLayout) {
 					case 'cross':
-						return SVGUtils.getCurvePath(50-this._lineGap, 75, 25, 50+this._lineGap, -90);
+						return SVGUtils.getCurvePath(50 - this._lineGap, 75, 25, 50 + this._lineGap, -90);
 					case 'square':
 					case 'circle':
 					default:
@@ -271,7 +294,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			case 'solar-to-grid':
 				switch (this._entityLayout) {
 					case 'cross':
-						return SVGUtils.getCurvePath(25, 50-this._lineGap, 50-this._lineGap, 25, -90);
+						return SVGUtils.getCurvePath(25, 50 - this._lineGap, 50 - this._lineGap, 25, -90);
 					case 'square':
 					case 'circle':
 					default:
