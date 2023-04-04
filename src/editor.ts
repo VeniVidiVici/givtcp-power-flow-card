@@ -2,7 +2,8 @@ import { fireEvent, HomeAssistant, LovelaceCardConfig, LovelaceCardEditor, Lovel
 import { html, LitElement, TemplateResult } from "lit";
 import { customElement, state } from 'lit/decorators.js'
 import { ENTITY_SCHEMA, ICON_SCHEMA, LAYOUT_SCHEMA, LAYOUT_TYPE_SCHEMA } from "./schemas";
-import { HIDE_INACTIVE_TOTALS_DEFAULT, HIDE_INACTIVE_FLOWS_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT, UnitOfPower } from "./const";
+import { HIDE_INACTIVE_TOTALS_DEFAULT, HIDE_INACTIVE_FLOWS_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT } from "./const";
+import { UnitOfPower } from "./types";
 
 @customElement('givtcp-power-flow-card-editor')
 export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCardEditor {

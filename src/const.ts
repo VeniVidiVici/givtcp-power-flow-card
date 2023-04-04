@@ -12,9 +12,4 @@ export const CIRCLE_SIZE_DEFAULT = 35;
 export const LINE_WIDTH_DEFAULT = 2;
 export const HIDE_INACTIVE_FLOWS_DEFAULT = false;
 export const HIDE_INACTIVE_TOTALS_DEFAULT = false;
-
-export enum UnitOfPower {
-	WATT = "W",
-	KILO_WATT = "kW",
-	MEGA_WATT = "MW",
-  }
+export const PERCENTAGE = "%";

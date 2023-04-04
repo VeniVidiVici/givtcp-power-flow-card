@@ -2,6 +2,7 @@ export interface EntityData {
 	name: string;
 	type: string;
 	icon: string;
+	extra?: string;
 	in?: FlowTotal;
 	out?: FlowTotal;
 }
@@ -25,4 +26,9 @@ export enum CentreEntity {
 	Inverter = 'inverter',
 	Solar = 'solar',
 	Battery = 'battery',
+}
+export enum UnitOfPower {
+	WATT = "W",
+	KILO_WATT = "kW",
+	MEGA_WATT = "MW",
 }
