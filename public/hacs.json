@@ -1,0 +1,7 @@
+{
+    "name": "GivTCP Power Flow Card",
+    "content_in_root": true,
+    "filename": "givtcp-power-flow-card.js",
+    "render_readme": true,
+	"zip_release": true
+}
