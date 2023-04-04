@@ -1,7 +1,6 @@
 export interface EntityData {
 	name: string;
 	type: string;
-	size: string;
 	icon: string;
 	in?: FlowTotal;
 	out?: FlowTotal;

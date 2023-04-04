@@ -36,8 +36,7 @@ export class SVGUtils {
 
   return path;
 	}
-	public static getCirclePath(percentage: number, offsetPercentage = 0, radius = 50): string {
-		const center = { x: 50, y: 50 }; // the center of the circle
+	public static getCirclePath(percentage: number, offsetPercentage = 0, radius = 50, center = { x: 50, y: 50 }): string {
 		const offset = (offsetPercentage / 100) * 360; // the offset in degrees based on the offset percentage
 		const startAngle = -90 + offset; // the starting angle of the circle (12 o'clock position) with offset
 		const endAngle = percentage === 100 ? startAngle + 360 : startAngle + (percentage / 100) * 360; // the ending angle based on the percentage, or a full circle if percentage is 100
