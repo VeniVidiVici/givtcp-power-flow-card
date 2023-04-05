@@ -26,7 +26,7 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 		this.style.setProperty('--gtpc-color', `var(--gtpc-${this.data.type}-color)`);
 		return html`
 		${svg`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-		${fullTotal <= 0?svg`<path d="${SVGUtils.getCirclePath(100, 0, 49)}" style="stroke: var(--gtpc-${this.data.type}-color)" />`:Object.keys(partTotals).map((key, idx) => {
+		${fullTotal <= 0?svg`<path d="${SVGUtils.getCirclePath(100, 0, 49)}" style="stroke: var(--gtpc-${this.data.type}-color)" />`:Object.keys(partTotals).map(key => {
 			const percentage = partTotals[key] / fullTotal * 100;
 			offset += fullTotal > 0 ? (fullTotal - partTotals[key]) / fullTotal * 100 : 0;
 			return percentage>0?svg`<path d="${SVGUtils.getCirclePath(percentage, offset, 49)}" style="stroke: var(--gtpc-${key}-color)" />`:html``;

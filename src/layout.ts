@@ -1,4 +1,4 @@
-import { LitElement, TemplateResult, svg } from "lit";
+import { LitElement } from "lit";
 import { property } from "lit/decorators.js";
 import { FlowData, FlowDirection } from "./types";
 
