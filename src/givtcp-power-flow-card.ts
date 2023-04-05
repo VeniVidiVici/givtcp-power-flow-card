@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias */
 import { LovelaceCardConfig, HomeAssistant, LovelaceCard, LovelaceCardEditor } from 'custom-card-helpers';
 import { LitElement, css, html, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -197,9 +197,10 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		});
 		this._resizeObserver.observe(this);
 		this.style.display = 'block';
+		const self = this;
 		window.requestAnimationFrame((timestamp) => {
-			this._animate = true;
-			this.animateFlows(timestamp);
+			self._animate = true;
+			self.animateFlows(timestamp);
 		});
 	}
 	private animateFlows(timestamp: number): void {
@@ -211,8 +212,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		//TODO: reorder flows so that the ones with the most power are on top
 		//parent.insertBefore(parent.removeChild(gRobot), gDoorway)
 		if (this._animate) {
+			const self = this;
 			window.requestAnimationFrame((timestamp) => {
-				this.animateFlows(timestamp);
+				self.animateFlows(timestamp);
 			});
 		}
 	}
@@ -223,6 +225,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	private advanceFlowDot(elapsed: number, from: string, to: string, direction: FlowDirection): void {
 		const g = <SVGGElement>this.shadowRoot?.querySelector(`.gtpc-${from}-to-${to}-flow`);
+		console.log(g);
 		if (!g) return;
 		const path = <SVGPathElement>g.querySelector('path');
 		const line = <SVGLineElement>g.querySelector('line');
@@ -333,6 +336,71 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			--gtpc-solar-color: var(--warning-color);
 			--gtpc-house-color: var(--info-color);
 			--gtpc-battery-color: var(--success-color);
+		}
+
+
+		givtcp-power-flow-card-entity {
+			position: absolute;
+			width: var(--gtpc-size);
+			aspect-ratio: 1 / 1;
+		}
+		.gtpc-flow > line {
+			stroke: var(--gtpc-border);
+			stroke-linecap: round;
+			stroke-width: calc(var(--gtpc-line-size) * 8);
+			vector-effect: non-scaling-stroke;
+		}
+		.gtpc-flow > path {
+			stroke: var(--gtpc-border);
+			fill: none;
+			stroke-width: var(--gtpc-line-size);
+			vector-effect: non-scaling-stroke;
+		}
+		.gtpc-flow[data-pos='0'] {
+			display: var(--gtpc-inactive-flow-display);
+		}
+		.gtpc-flow[data-pos='0'] > line {
+			display: none;
+		}
+
+		.gtpc-layout {
+			position: relative;
+			width: 100%;
+			height: 100%;
+			box-sizing: border-box;
+		}
+		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
+		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='grid'] {
+			left: 0;
+			top: calc(50% - var(--gtpc-size) / 2);
+		}
+		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='solar'],
+		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='solar'] {
+			top: 0;
+			left: calc(50% - var(--gtpc-size) / 2);
+		}
+		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'],
+		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='house'] {
+			right: 0;
+			top: calc(50% - var(--gtpc-size) / 2);
+		}
+		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='battery'],
+		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='battery'] {
+			bottom: 0;
+			left: calc(50% - var(--gtpc-size) / 2);
+		}
+		.gtpc-no-solar.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
+		.gtpc-no-solar.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'].
+		.gtpc-no-solar.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='grid'],
+		.gtpc-no-solar.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='house'] {
+			top: 0;
+		}
+		.gtpc-no-battery.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
+		.gtpc-no-battery.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'],
+		.gtpc-no-battery.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='grid'],
+		.gtpc-no-battery.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='house'] {
+			bottom: 0;
+			top: initial;
 		}
 	`;
 }

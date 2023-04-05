@@ -1,4 +1,4 @@
-import { TemplateResult, css, html, svg } from 'lit';
+import { TemplateResult, html, svg } from 'lit';
 import { GivTCPPowerFlowCardLayout } from './layout';
 import { customElement, property } from 'lit/decorators.js';
 import { SVGUtils } from './svg-utils';
@@ -21,9 +21,9 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		return html`
 			<div class="gtpc-layout gtpc-${showClass} gtpc-layout-circle gtpc-centre-${this.centreEntity}">
 				${this.flowData.map(
-					(flow) =>
-						html`<givtcp-power-flow-card-entity data-type="${flow.type}" .data=${flow}></givtcp-power-flow-card-entity>`
-				)}
+			(flow) =>
+				html`<givtcp-power-flow-card-entity data-type="${flow.type}" .data=${flow}></givtcp-power-flow-card-entity>`
+		)}
 				<svg viewBox="0 0 100 ${height}" xmlns="http://www.w3.org/2000/svg">
 					${this.flows.map((flow) => this.getGroupForFlow(flow.from, flow.to))}
 				</svg>
@@ -62,63 +62,6 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 				return '';
 		}
 	}
-	static styles = css`
-		givtcp-power-flow-card-entity {
-			position: absolute;
-			width: var(--gtpc-size);
-			aspect-ratio: 1 / 1;
-		}
-		.gtpc-flow > line {
-			stroke: var(--gtpc-border);
-			stroke-linecap: round;
-			stroke-width: calc(var(--gtpc-line-size) * 1);
-			vector-effect: non-scaling-stroke;
-		}
-		.gtpc-flow > path {
-			stroke: var(--gtpc-border);
-			fill: none;
-			stroke-width: var(--gtpc-line-size);
-			vector-effect: non-scaling-stroke;
-		}
-		.gtpc-flow[data-pos='0'] {
-			display: var(--gtpc-inactive-flow-display);
-		}
-		.gtpc-flow[data-pos='0'] > line {
-			display: none;
-		}
-		.gtpc-layout {
-			position: relative;
-			width: 100%;
-			height: 100%;
-			box-sizing: border-box;
-		}
-		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'] {
-			left: 0;
-			top: calc(50% - var(--gtpc-size) / 2);
-		}
-		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='solar'] {
-			top: 0;
-			left: calc(50% - var(--gtpc-size) / 2);
-		}
-		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'] {
-			right: 0;
-			top: calc(50% - var(--gtpc-size) / 2);
-		}
-		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='battery'] {
-			bottom: 0;
-			left: calc(50% - var(--gtpc-size) / 2);
-		}
-
-		.gtpc-no-solar.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
-		.gtpc-no-solar.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'] {
-			top: 0;
-		}
-		.gtpc-no-battery.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
-		.gtpc-no-battery.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'] {
-			bottom: 0;
-			top: initial;
-		}
-	`;
 }
 declare global {
 	interface HTMLElementTagNameMap {
