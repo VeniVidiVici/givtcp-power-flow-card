@@ -1,4 +1,4 @@
-import { TemplateResult, css, html, svg } from 'lit';
+import { TemplateResult, html, svg } from 'lit';
 import { GivTCPPowerFlowCardLayout } from './layout';
 import { customElement, property } from 'lit/decorators.js';
 import { SVGUtils } from './svg-utils';
