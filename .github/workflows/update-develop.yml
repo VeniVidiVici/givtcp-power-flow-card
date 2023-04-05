@@ -1,0 +1,22 @@
+name: Update develop branch
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: pull-request
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: 'main'
+          destination_branch: 'develop'
+          pr_title: '🤖 Merge ${{ github.ref_name }} into develop'
+          pr_body: '*An automated PR*'
+          pr_reviewer: 'VeniVidiVici'
+          pr_label: 'PR-automation'
+          pr_allow_empty: true
+          github_token: ${{ secrets.GH_TOKEN }}
