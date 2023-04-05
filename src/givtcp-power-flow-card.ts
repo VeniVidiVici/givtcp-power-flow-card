@@ -225,7 +225,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	private advanceFlowDot(elapsed: number, from: string, to: string, direction: FlowDirection): void {
 		const g = <SVGGElement>this.shadowRoot?.querySelector(`.gtpc-${from}-to-${to}-flow`);
-		console.log(g);
 		if (!g) return;
 		const path = <SVGPathElement>g.querySelector('path');
 		const line = <SVGLineElement>g.querySelector('line');
