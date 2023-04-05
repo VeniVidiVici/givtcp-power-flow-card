@@ -65,12 +65,13 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 		vector-effect: non-scaling-stroke;
 	}
 	.gtpc-entity>span[data-power="0"]{
-		display: var(--gtpc-inactive-totals-display, block);
+		display: none;
 	}
+	.gtpc-entity-extra,
 	.gtpc-entity-in,
 	.gtpc-entity-out,
 	.gtpc-entity-name{
-		color: var(--gtpc-color);
+		color: var(--gtpc-icons-and-text-colour, var(--gtpc-color));
 		box-sizing: border-box;
 		font-size: calc(var(--gtpc-size) * 0.1);
 		--mdc-icon-size: calc(var(--gtpc-size) * 0.1);
@@ -78,7 +79,7 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 	}
 	.gtpc-entity-icon{
 		--mdc-icon-size: calc(var(--gtpc-size) * 0.5);
-		color: var(--gtpc-color);
+		color: var(--gtpc-icons-and-text-colour, var(--gtpc-color));
 	}
 	.gtpc-entity-name{
 		text-align: center;
@@ -106,6 +107,7 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 		align-self: auto;
 		order: 0;
 	}
+
   `
 }
 declare global {

@@ -2,8 +2,8 @@ import { fireEvent, HomeAssistant, LovelaceCardConfig, LovelaceCardEditor, Lovel
 import { html, LitElement, TemplateResult } from "lit";
 import { customElement, state } from 'lit/decorators.js'
 import { ENTITY_SCHEMA, ICON_SCHEMA, LAYOUT_SCHEMA, LAYOUT_TYPE_SCHEMA } from "./schemas";
-import { HIDE_INACTIVE_TOTALS_DEFAULT, HIDE_INACTIVE_FLOWS_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT } from "./const";
-import { UnitOfPower } from "./types";
+import { HIDE_INACTIVE_FLOWS_DEFAULT, COLOUR_ICONS_AND_TEXT_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT, LINE_GAP_DEFAULT } from "./const";
+import { EntityLayout, UnitOfPower } from "./types";
 
 @customElement('givtcp-power-flow-card-editor')
 export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCardEditor {
@@ -19,7 +19,10 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 		}
 		const data = {
 			hide_inactive_flows: HIDE_INACTIVE_FLOWS_DEFAULT,
-			hide_inactive_totals: HIDE_INACTIVE_TOTALS_DEFAULT,
+			colour_icons_and_text: COLOUR_ICONS_AND_TEXT_DEFAULT,
+			line_gap: LINE_GAP_DEFAULT,
+			line_width: LINE_WIDTH_DEFAULT,
+			entity_layout: EntityLayout.Cross,
 			...this._config,
 		  };
 		// const regex = /^sensor\.givtcp_[a-zA-Z]{2}\d{4}[a-zA-Z]\d{3}_(invertor|battery)_serial_number$/g;
@@ -46,7 +49,7 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				name: "",
 				schema: [
 					{ name: "hide_inactive_flows",  selector: { boolean: {} } },
-					{ name: "hide_inactive_totals",  selector: { boolean: {} } },
+					{ name: "colour_icons_and_text",  selector: { boolean: {} } },
 				],
 			  },
 		]
@@ -78,8 +81,8 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				return "Layout";
 			case "hide_inactive_flows":
 				return "Hide Inactive Flows";
-			case "hide_inactive_totals":
-				return "Hide Inactive Totals";
+			case "colour_icons_and_text":
+				return "Colour Icons and Text";
 			case "power_margin":
 				return "Power Margin";
 			case "line_width":

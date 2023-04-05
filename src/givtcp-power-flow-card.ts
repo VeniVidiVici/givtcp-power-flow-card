@@ -5,7 +5,7 @@ import './editor';
 import './entity';
 import { SVGUtils } from './svg-utils';
 import { CentreEntity, EntityData, EntityLayout, FlowDirection, FlowTotal } from './types';
-import { CENTRE_ENTITY_DEFAULT, CIRCLE_SIZE_DEFAULT, ENTITY_LAYOUT_DEFAULT, HIDE_INACTIVE_TOTALS_DEFAULT, HIDE_INACTIVE_FLOWS_DEFAULT, ICON_BATTERY_DEFAULT, ICON_GRID_DEFAULT, ICON_HOUSE_DEFAULT, ICON_SOLAR_DEFAULT, LINE_GAP_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT, PERCENTAGE } from './const';
+import { CENTRE_ENTITY_DEFAULT, CIRCLE_SIZE_DEFAULT, ENTITY_LAYOUT_DEFAULT, HIDE_INACTIVE_FLOWS_DEFAULT, COLOUR_ICONS_AND_TEXT_DEFAULT, ICON_BATTERY_DEFAULT, ICON_GRID_DEFAULT, ICON_HOUSE_DEFAULT, ICON_SOLAR_DEFAULT, LINE_GAP_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT, PERCENTAGE } from './const';
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
@@ -70,8 +70,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private get _hideInactiveFlows(): boolean {
 		return this._config?.hide_inactive_flows == undefined ? HIDE_INACTIVE_FLOWS_DEFAULT : this._config?.hide_inactive_flows;
 	}
-	private get _hideInactiveTotals(): boolean {
-		return this._config?.hide_inactive_totals == undefined ? HIDE_INACTIVE_TOTALS_DEFAULT : this._config?.hide_inactive_totals;
+	private get _colourIconsAndText(): boolean {
+		return this._config?.colour_icons_and_text == undefined ? COLOUR_ICONS_AND_TEXT_DEFAULT : this._config?.colour_icons_and_text;
 	}
 	private get _hasBattery(): boolean {
 		return this.flows.some(f => f.from === 'battery' && this.hass.states[`sensor.givtcp_${this._invertorSerial}_${f.from}_to_${f.to}`] !== undefined);
@@ -114,13 +114,13 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			} else if (from === 'solar' && to === 'battery') {
 				return 764;
 			} else if (from === 'battery' && to === 'house') {
-				return 1347;
+				return 0;
 			} else if (from === 'battery' && to === 'grid') {
 				return 0;
 			} else if (from === 'grid' && to === 'battery') {
 				return 445;
 			} else if (from === 'solar' && to === 'grid') {
-				return 3502;
+				return 0;
 			}
 			return 0;
 		}
@@ -251,8 +251,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				icon: this.getIconFor('battery', this._batterySoc),
 				name: 'Battery',
 				extra: this._batterySoc !== undefined ? `${this._batterySoc}${PERCENTAGE}` : undefined,
-				out: this.getTotalFor('battery', FlowDirection.In),
-				in: this.getTotalFor('battery', FlowDirection.Out)
+				out: this.getTotalFor('battery', FlowDirection.Out),
+				in: this.getTotalFor('battery', FlowDirection.In)
 			},
 		].filter((v) => v.in !== undefined || v.out !== undefined);
 		let height = 100;
@@ -369,7 +369,11 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		this._config = config;
 		this.style.setProperty('--gtpc-line-size', `${this._lineWidth}px`);
 		this.style.setProperty('--gtpc-inactive-flow-display', this._hideInactiveFlows ? 'none' : 'block');
-		this.style.setProperty('--gtpc-inactive-totals-display', this._hideInactiveTotals ? 'none' : 'block');
+		if(this._colourIconsAndText){
+			this.style.removeProperty('--gtpc-icons-and-text-colour');
+		}else{
+			this.style.setProperty('--gtpc-icons-and-text-colour', 'var(--primary-text-color)');
+		}
 	}
 	getCardSize(): number {
 		return 3;
