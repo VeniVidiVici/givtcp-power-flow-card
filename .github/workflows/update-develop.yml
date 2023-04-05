@@ -19,4 +19,4 @@ jobs:
           pr_reviewer: 'VeniVidiVici'
           pr_label: 'PR-automation'
           pr_allow_empty: true
-          github_token: ${{ secrets.GH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
