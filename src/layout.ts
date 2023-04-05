@@ -7,4 +7,7 @@ export abstract class GivTCPPowerFlowCardLayout extends LitElement {
 	@property() flows!: { from: string; to: string; direction: FlowDirection }[];
 	@property() hasBattery!: boolean;
 	@property() hasSolar!: boolean;
+	protected createRenderRoot() {
+		return this;
+	}
 }
