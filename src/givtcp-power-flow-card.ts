@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-this-alias */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { LovelaceCardConfig, HomeAssistant, LovelaceCard, LovelaceCardEditor } from 'custom-card-helpers';
 import { LitElement, css, html, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -22,6 +22,7 @@ import {
 	LINE_WIDTH_DEFAULT,
 	POWER_MARGIN_DEFAULT,
 	PERCENTAGE,
+	DOT_SIZE_DEFAULT,
 } from './const';
 
 (window as any).customCards = (window as any).customCards || [];
@@ -56,6 +57,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	public static async getConfigElement(): Promise<LovelaceCardEditor> {
 		return document.createElement('givtcp-power-flow-card-editor') as LovelaceCardEditor;
 	}
+	private get _dotSize(): number {
+		return this._config?.dot_size || DOT_SIZE_DEFAULT;
+	}
 	private get _batterySoc(): number | undefined {
 		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_soc`];
 		return entity ? parseInt(entity.state, 10) : undefined;
@@ -67,7 +71,14 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		return this._config?.centre_entity || CENTRE_ENTITY_DEFAULT;
 	}
 	private get _invertorSerial(): string {
-		return this._config?.invertor ? this.hass.states[this._config?.invertor].state.toLowerCase() || '' : '';
+		try {
+			return this._config?.invertor && this.hass.states[this._config?.invertor]
+				? this.hass.states[this._config?.invertor].state.toLowerCase() || ''
+				: '';
+		} catch (e) {
+			console.error(e);
+			return '';
+		}
 	}
 	// private get _batterySerial(): string {
 	// 	return this._config?.battery ? this.hass.states[this._config?.battery].state.toLowerCase() || '' : '';
@@ -197,10 +208,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		});
 		this._resizeObserver.observe(this);
 		this.style.display = 'block';
-		const self = this;
 		window.requestAnimationFrame((timestamp) => {
-			self._animate = true;
-			self.animateFlows(timestamp);
+			this._animate = true;
+			this.animateFlows(timestamp);
 		});
 	}
 	private animateFlows(timestamp: number): void {
@@ -212,9 +222,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		//TODO: reorder flows so that the ones with the most power are on top
 		//parent.insertBefore(parent.removeChild(gRobot), gDoorway)
 		if (this._animate) {
-			const self = this;
 			window.requestAnimationFrame((timestamp) => {
-				self.animateFlows(timestamp);
+				this.animateFlows(timestamp);
 			});
 		}
 	}
@@ -227,20 +236,19 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		const g = <SVGGElement>this.shadowRoot?.querySelector(`.gtpc-${from}-to-${to}-flow`);
 		if (!g) return;
 		const path = <SVGPathElement>g.querySelector('path');
-		const line = <SVGLineElement>g.querySelector('line');
+		const circle = <SVGCircleElement>g.querySelector('circle');
 
 		const power = this.getCleanPowerForFlow(from, to);
 		if (power === undefined) {
 			return;
 		}
 		let pos = parseFloat(g.getAttribute('data-pos') || '0');
-		line.setAttribute('visibility', power ? 'visible' : 'hidden');
+		circle.setAttribute('visibility', power ? 'visible' : 'hidden');
 		const lineLength = path.getTotalLength();
 		const point = path.getPointAtLength(lineLength * pos);
-		line.setAttributeNS(null, 'x1', point.x.toString());
-		line.setAttributeNS(null, 'y1', point.y.toString());
-		line.setAttributeNS(null, 'x2', point.x.toString());
-		line.setAttributeNS(null, 'y2', point.y.toString());
+		circle.setAttributeNS(null, 'cx', point.x.toString());
+		circle.setAttributeNS(null, 'cy', point.y.toString());
+		circle.setAttributeNS(null, 'r', (this._dotSize / 4).toString());
 
 		const moveBy = (elapsed * power) / 10000 / 1000;
 		if (direction === FlowDirection.In) {
@@ -337,20 +345,16 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			--gtpc-battery-color: var(--success-color);
 		}
 
-
 		givtcp-power-flow-card-entity {
 			position: absolute;
 			width: var(--gtpc-size);
 			aspect-ratio: 1 / 1;
 		}
-		.gtpc-flow > line {
-			stroke: var(--gtpc-border);
-			stroke-linecap: round;
-			stroke-width: calc(var(--gtpc-line-size) * 8);
-			vector-effect: non-scaling-stroke;
+		.gtpc-flow > circle {
+			stroke-width: 0;
+			stroke: none;
 		}
 		.gtpc-flow > path {
-			stroke: var(--gtpc-border);
 			fill: none;
 			stroke-width: var(--gtpc-line-size);
 			vector-effect: non-scaling-stroke;
@@ -358,7 +362,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		.gtpc-flow[data-pos='0'] {
 			display: var(--gtpc-inactive-flow-display);
 		}
-		.gtpc-flow[data-pos='0'] > line {
+		.gtpc-flow[data-pos='0'] > circle {
 			display: none;
 		}
 
@@ -389,8 +393,10 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			left: calc(50% - var(--gtpc-size) / 2);
 		}
 		.gtpc-no-solar.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
-		.gtpc-no-solar.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'].
-		.gtpc-no-solar.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='grid'],
+		.gtpc-no-solar.gtpc-layout-circle
+			> givtcp-power-flow-card-entity[data-type='house'].
+			.gtpc-no-solar.gtpc-layout-cross
+			> givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-no-solar.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='house'] {
 			top: 0;
 		}

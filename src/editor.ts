@@ -8,6 +8,7 @@ import {
 	LINE_WIDTH_DEFAULT,
 	POWER_MARGIN_DEFAULT,
 	LINE_GAP_DEFAULT,
+	DOT_SIZE_DEFAULT,
 } from './const';
 import { EntityLayout, UnitOfPower } from './types';
 
@@ -28,6 +29,7 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 			colour_icons_and_text: COLOUR_ICONS_AND_TEXT_DEFAULT,
 			line_gap: LINE_GAP_DEFAULT,
 			line_width: LINE_WIDTH_DEFAULT,
+			dot_size: DOT_SIZE_DEFAULT,
 			entity_layout: EntityLayout.Cross,
 			power_margin: POWER_MARGIN_DEFAULT,
 			...this._config,
@@ -49,9 +51,20 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				selector: { number: { mode: 'box', unit_of_measurement: UnitOfPower.WATT } },
 			},
 			{
-				name: 'line_width',
-				default: LINE_WIDTH_DEFAULT,
-				selector: { number: { mode: 'slider', min: 1, max: 10, unit_of_measurement: 'px' } },
+				type: 'grid',
+				name: '',
+				schema: [
+					{
+						name: 'dot_size',
+						default: DOT_SIZE_DEFAULT,
+						selector: { number: { mode: 'slider', min: 1, max: 10 } },
+					},
+					{
+						name: 'line_width',
+						default: LINE_WIDTH_DEFAULT,
+						selector: { number: { mode: 'slider', min: 1, max: 10 } },
+					},
+				],
 			},
 			...LAYOUT_SCHEMA,
 			...LAYOUT_TYPE_SCHEMA(this._config?.entity_layout),
@@ -80,6 +93,8 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				return 'Invertor';
 			case 'battery':
 				return 'Battery';
+			case 'dot_size':
+				return 'Dot Size';
 			case 'icon_battery':
 				return 'Battery Icon';
 			case 'icon_grid':

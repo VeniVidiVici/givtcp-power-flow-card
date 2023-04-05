@@ -21,9 +21,9 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		return html`
 			<div class="gtpc-layout gtpc-${showClass} gtpc-layout-circle gtpc-centre-${this.centreEntity}">
 				${this.flowData.map(
-			(flow) =>
-				html`<givtcp-power-flow-card-entity data-type="${flow.type}" .data=${flow}></givtcp-power-flow-card-entity>`
-		)}
+					(flow) =>
+						html`<givtcp-power-flow-card-entity data-type="${flow.type}" .data=${flow}></givtcp-power-flow-card-entity>`
+				)}
 				<svg viewBox="0 0 100 ${height}" xmlns="http://www.w3.org/2000/svg">
 					${this.flows.map((flow) => this.getGroupForFlow(flow.from, flow.to))}
 				</svg>
@@ -33,8 +33,8 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 
 	private getGroupForFlow(from: string, to: string): TemplateResult {
 		return svg`<g data-pos="0" class="gtpc-flow gtpc-${from}-to-${to}-flow" style="stroke: var(--gtpc-${from}-color)">
-			<line x1="0" y1="0" x2="0" y2="0"/>
 			<path d="${this.getPathForFlow(`${from}-to-${to}`)}" />
+			<circle cx="0" cy="0" r="0.5" style="fill: var(--gtpc-${from}-color)"/>
 		</g>`;
 	}
 

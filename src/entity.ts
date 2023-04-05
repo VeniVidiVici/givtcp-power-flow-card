@@ -72,7 +72,6 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 			z-index: 1;
 		}
 		svg > path {
-			stroke: var(--gtpc-border);
 			fill: none;
 			stroke-width: var(--gtpc-line-size);
 			vector-effect: non-scaling-stroke;
