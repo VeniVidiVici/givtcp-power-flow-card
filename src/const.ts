@@ -1,4 +1,4 @@
-import { CentreEntity, EntityLayout } from "./types";
+import { CentreEntity, EntityLayout } from './types';
 
 export const ICON_SOLAR_DEFAULT = 'mdi:solar-panel-large';
 export const ICON_BATTERY_DEFAULT = 'mdi:battery';
@@ -12,4 +12,4 @@ export const CIRCLE_SIZE_DEFAULT = 35;
 export const LINE_WIDTH_DEFAULT = 2;
 export const HIDE_INACTIVE_FLOWS_DEFAULT = false;
 export const COLOUR_ICONS_AND_TEXT_DEFAULT = true;
-export const PERCENTAGE = "%";
+export const PERCENTAGE = '%';
