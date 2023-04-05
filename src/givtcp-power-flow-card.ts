@@ -1,11 +1,13 @@
 import { LovelaceCardConfig, HomeAssistant, LovelaceCard, LovelaceCardEditor } from 'custom-card-helpers';
-import { LitElement, css, html, TemplateResult, svg } from 'lit';
+import { LitElement, css, html, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import './editor';
 import './entity';
-import { SVGUtils } from './svg-utils';
-import { CentreEntity, EntityData, EntityLayout, FlowDirection, FlowTotal } from './types';
-import { CENTRE_ENTITY_DEFAULT, CIRCLE_SIZE_DEFAULT, ENTITY_LAYOUT_DEFAULT, HIDE_INACTIVE_TOTALS_DEFAULT, HIDE_INACTIVE_FLOWS_DEFAULT, ICON_BATTERY_DEFAULT, ICON_GRID_DEFAULT, ICON_HOUSE_DEFAULT, ICON_SOLAR_DEFAULT, LINE_GAP_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT, PERCENTAGE } from './const';
+import './layout-cross';
+import './layout-circle';
+
+import { CentreEntity, FlowData, EntityLayout, FlowDirection, FlowTotal } from './types';
+import { CENTRE_ENTITY_DEFAULT, CIRCLE_SIZE_DEFAULT, ENTITY_LAYOUT_DEFAULT, HIDE_INACTIVE_FLOWS_DEFAULT, COLOUR_ICONS_AND_TEXT_DEFAULT, ICON_BATTERY_DEFAULT, ICON_GRID_DEFAULT, ICON_HOUSE_DEFAULT, ICON_SOLAR_DEFAULT, LINE_GAP_DEFAULT, LINE_WIDTH_DEFAULT, POWER_MARGIN_DEFAULT, PERCENTAGE } from './const';
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({
@@ -70,8 +72,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private get _hideInactiveFlows(): boolean {
 		return this._config?.hide_inactive_flows == undefined ? HIDE_INACTIVE_FLOWS_DEFAULT : this._config?.hide_inactive_flows;
 	}
-	private get _hideInactiveTotals(): boolean {
-		return this._config?.hide_inactive_totals == undefined ? HIDE_INACTIVE_TOTALS_DEFAULT : this._config?.hide_inactive_totals;
+	private get _colourIconsAndText(): boolean {
+		return this._config?.colour_icons_and_text == undefined ? COLOUR_ICONS_AND_TEXT_DEFAULT : this._config?.colour_icons_and_text;
 	}
 	private get _hasBattery(): boolean {
 		return this.flows.some(f => f.from === 'battery' && this.hass.states[`sensor.givtcp_${this._invertorSerial}_${f.from}_to_${f.to}`] !== undefined);
@@ -85,10 +87,10 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				return this._config?.icon_solar || ICON_SOLAR_DEFAULT;
 			case 'battery':
 				let icon = this._config?.icon_battery || ICON_BATTERY_DEFAULT;
-				if( icon === ICON_BATTERY_DEFAULT && level !== undefined ) {
+				if (icon === ICON_BATTERY_DEFAULT && level !== undefined) {
 					const bIn = this.getTotalFor('battery', FlowDirection.In);
 					const bOut = this.getTotalFor('battery', FlowDirection.Out);
-					if(bIn && bOut && bIn.total > bOut.total) {
+					if (bIn && bOut && bIn.total > bOut.total) {
 						icon = icon + '-charging';
 					}
 
@@ -114,13 +116,13 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			} else if (from === 'solar' && to === 'battery') {
 				return 764;
 			} else if (from === 'battery' && to === 'house') {
-				return 1347;
+				return 0;
 			} else if (from === 'battery' && to === 'grid') {
 				return 0;
 			} else if (from === 'grid' && to === 'battery') {
 				return 445;
 			} else if (from === 'solar' && to === 'grid') {
-				return 3502;
+				return 0;
 			}
 			return 0;
 		}
@@ -226,7 +228,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	updated(): void {
 	}
 	render(): TemplateResult {
-		const entities: EntityData[] = [
+		const flowData: FlowData[] = [
 			{
 				type: 'solar',
 				icon: this.getIconFor('solar'),
@@ -251,116 +253,41 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				icon: this.getIconFor('battery', this._batterySoc),
 				name: 'Battery',
 				extra: this._batterySoc !== undefined ? `${this._batterySoc}${PERCENTAGE}` : undefined,
-				out: this.getTotalFor('battery', FlowDirection.In),
-				in: this.getTotalFor('battery', FlowDirection.Out)
+				out: this.getTotalFor('battery', FlowDirection.Out),
+				in: this.getTotalFor('battery', FlowDirection.In)
 			},
 		].filter((v) => v.in !== undefined || v.out !== undefined);
-		let height = 100;
-		let showClass = 'full';
-		if (!this._hasSolar) {
-			showClass = 'no-solar';
-			height = height * .625;
-		} else if (!this._hasBattery) {
-			showClass = 'no-battery';
-			height = height * .625;
-		}
-		return html`
-			<ha-card header="${this._config?.name}">
-				${this._width > 0 ? html`
-				<div class="card-content">
-					<div class="gtpc-layout gtpc-${showClass} gtpc-layout-${this._entityLayout} gtpc-centre-${this._centreEntity}">
-						${entities.map(entity => html`<givtcp-power-flow-card-entity data-type="${entity.type}"  .data=${entity}></givtcp-power-flow-card-entity>`)}
-						<svg viewBox="0 0 100 ${height}" xmlns="http://www.w3.org/2000/svg">
-							${this.flows.map(flow => this.getGroupForFlow(flow.from, flow.to))}
-						</svg>
-					</div>
-				</div>
-				`: html``}
-			</ha-card>`;
-	}
-	private getGroupForFlow(from: string, to: string): TemplateResult {
-		return svg`<g data-pos="0" class="gtpc-flow gtpc-${from}-to-${to}-flow" style="stroke: var(--gtpc-${from}-color)">
-			<line x1="0" y1="0" x2="0" y2="0"/>
-			<path d="${this.getPathForFlow(`${from}-to-${to}`)}" />
-		</g>`;
-	}
-	private getPathForFlow(flow: string): string {
-		let midY = 50;
-		if (!this._hasSolar) {
-			midY = 12.5;
-		}
-		switch (flow) {
-			case 'solar-to-house':
-				switch (this._entityLayout) {
-					case 'cross':
-						return SVGUtils.getCurvePath(50 + this._lineGap, 25, 75, 50 - this._lineGap, -90);
-					case 'square':
-					case 'list':
-					case 'circle':
-					default:
-						return SVGUtils.getCirclePath(15, 5, this._circleSize, { x: 50, y: midY });
-				}
-			case 'battery-to-house':
-				switch (this._entityLayout) {
-					case 'cross':
-						return SVGUtils.getCurvePath(75, midY + this._lineGap, 50 + this._lineGap, midY + 25, -90);
-					case 'square':
-					case 'list':
-					case 'circle':
-					default:
-						return SVGUtils.getCirclePath(15, 30, this._circleSize, { x: 50, y: midY });
-				}
-			case 'battery-to-grid':
-				switch (this._entityLayout) {
-					case 'cross':
-						return SVGUtils.getCurvePath(50 - this._lineGap, midY + 25, 25, midY + this._lineGap, -90);
-					case 'square':
-					case 'list':
-					case 'circle':
-					default:
-						return SVGUtils.getCirclePath(15, 55, this._circleSize, { x: 50, y: midY });
-				}
-			case 'grid-to-battery':
-				switch (this._entityLayout) {
-					case 'cross':
-						return SVGUtils.getCurvePath(50 - this._lineGap, midY + 25, 25, midY + this._lineGap, -90);
-					case 'square':
-					case 'list':
-					case 'circle':
-					default:
-						return SVGUtils.getCirclePath(15, 55, this._circleSize, { x: 50, y: midY });
-				}
-			case 'solar-to-grid':
-				switch (this._entityLayout) {
-					case 'cross':
-						return SVGUtils.getCurvePath(25, 50 - this._lineGap, 50 - this._lineGap, 25, -90);
-					case 'square':
-					case 'list':
-					case 'circle':
-					default:
-						return SVGUtils.getCirclePath(15, 80, this._circleSize, { x: 50, y: midY });
-				}
-			case 'solar-to-battery':
-				switch (this._entityLayout) {
-					case 'cross':
-					case 'square':
-					case 'list':
-					case 'circle':
-					default:
-						return SVGUtils.getCurvePath(50, 25, 50, 75, 0);
-				}
-			case 'grid-to-house':
-				switch (this._entityLayout) {
-					case 'cross':
-					case 'square':
-					case 'list':
-					case 'circle':
-					default:
-						return SVGUtils.getCurvePath(25, midY, 75, midY, 0);
-				}
+		let layout = html``;
+		switch (this._entityLayout) {
+			case EntityLayout.Cross:
+				layout = html`
+						<givtcp-power-flow-card-layout-cross
+						.flowData=${flowData}
+						.flows=${this.flows}
+						.hasBattery=${this._hasBattery}
+						.hasSolar=${this._hasSolar}
+						.lineGap=${this._lineGap}
+						>
+						</givtcp-power-flow-card-layout-cross>`;
+				break;
+			case EntityLayout.Circle:
+				layout = html`
+						<givtcp-power-flow-card-layout-circle
+						.flowData=${flowData}
+						.flows=${this.flows}
+						.hasBattery=${this._hasBattery}
+						.hasSolar=${this._hasSolar}
+						.centreEntity=${this._centreEntity}
+						.circleSize=${this._circleSize}
+						>
+						</givtcp-power-flow-card-layout-circle>`;
+				break;
 			default:
-				return '';
+				return html``;
 		}
+		return html`<ha-card header="${this._config?.name}">
+		${this._width > 0 ? html`<div class="card-content">${layout}</div>` : html``}
+		</ha-card>`;
 	}
 	setConfig(config: LovelaceCardConfig): void {
 		if (!config.invertor || !config.battery) {
@@ -369,7 +296,11 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		this._config = config;
 		this.style.setProperty('--gtpc-line-size', `${this._lineWidth}px`);
 		this.style.setProperty('--gtpc-inactive-flow-display', this._hideInactiveFlows ? 'none' : 'block');
-		this.style.setProperty('--gtpc-inactive-totals-display', this._hideInactiveTotals ? 'none' : 'block');
+		if (this._colourIconsAndText) {
+			this.style.removeProperty('--gtpc-icons-and-text-colour');
+		} else {
+			this.style.setProperty('--gtpc-icons-and-text-colour', 'var(--primary-text-color)');
+		}
 	}
 	getCardSize(): number {
 		return 3;
@@ -381,69 +312,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		--gtpc-house-color: var(--info-color);
 		--gtpc-battery-color: var(--success-color);
     }
-	.gtpc-flow>line{
-		stroke: var(--gtpc-border);
-		stroke-linecap: round;
-		stroke-width: calc(var(--gtpc-line-size) * 1);
-		vector-effect: non-scaling-stroke;
-	}
-	.gtpc-flow>path{
-		stroke: var(--gtpc-border);
-		fill:none;
-		stroke-width: var(--gtpc-line-size);
-		vector-effect: non-scaling-stroke;
-	}
-	.gtpc-flow[data-pos="0"]{
-		display: var(--gtpc-inactive-flow-display);
-	}
-	.gtpc-flow[data-pos="0"]>line{
-		display: none;
-	}
-	givtcp-power-flow-card-entity {
-		position: absolute;
-		width: var(--gtpc-size);
-		aspect-ratio: 1 / 1;
-	}
-	.gtpc-layout {
-		position: relative;
-		width: 100%;
-		height: 100%;
-		box-sizing: border-box;
-	}
-	.gtpc-layout-circle>givtcp-power-flow-card-entity[data-type="grid"],
-	.gtpc-layout-cross>givtcp-power-flow-card-entity[data-type="grid"] {
-		left: 0;
-		top: calc(50% - var(--gtpc-size) / 2);
-	}
-	.gtpc-layout-circle>givtcp-power-flow-card-entity[data-type="solar"],
-	.gtpc-layout-cross>givtcp-power-flow-card-entity[data-type="solar"] {
-		top: 0;
-		left: calc(50% - var(--gtpc-size) / 2);
-	}
-	.gtpc-layout-circle>givtcp-power-flow-card-entity[data-type="house"],
-	.gtpc-layout-cross>givtcp-power-flow-card-entity[data-type="house"] {
-		right: 0;
-		top: calc(50% - var(--gtpc-size) / 2);
-	}
-	.gtpc-layout-circle>givtcp-power-flow-card-entity[data-type="battery"],
-	.gtpc-layout-cross>givtcp-power-flow-card-entity[data-type="battery"] {
-		bottom: 0;
-		left: calc(50% - var(--gtpc-size) / 2);
-	}
-
-	.gtpc-no-solar.gtpc-layout-circle>givtcp-power-flow-card-entity[data-type="grid"],
-	.gtpc-no-solar.gtpc-layout-circle>givtcp-power-flow-card-entity[data-type="house"],
-	.gtpc-no-solar.gtpc-layout-cross>givtcp-power-flow-card-entity[data-type="grid"],
-	.gtpc-no-solar.gtpc-layout-cross>givtcp-power-flow-card-entity[data-type="house"] {
-		top: 0;
-	}
-	.gtpc-no-battery.gtpc-layout-cross>givtcp-power-flow-card-entity[data-type="grid"],
-	.gtpc-no-battery.gtpc-layout-cross>givtcp-power-flow-card-entity[data-type="house"],
-	.gtpc-no-battery.gtpc-layout-circle>givtcp-power-flow-card-entity[data-type="grid"],
-	.gtpc-no-battery.gtpc-layout-circle>givtcp-power-flow-card-entity[data-type="house"] {
-		bottom: 0;
-		top: initial;
-	}
 	`;
 }
 declare global {

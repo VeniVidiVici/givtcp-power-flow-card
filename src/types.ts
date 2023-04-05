@@ -1,4 +1,4 @@
-export interface EntityData {
+export interface FlowData {
 	name: string;
 	type: string;
 	icon: string;
