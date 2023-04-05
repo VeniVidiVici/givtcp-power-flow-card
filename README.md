@@ -1,7 +1,7 @@
 # givtcp-power-flow-card
 
 > **⚠ WARNING: VERY MUCH IN ALPHA STAGE**
-While bassic functionality is working this is still very much alpha, there are settings in the config UI that are not yet implimented and some basic settings are still missing. 
+While basic functionality is working this is still very much alpha, there are settings in the config UI that are not yet implimented and some basic settings are still missing.
 
 
 [home-assistant](home-assistant.io) power flow card for [GivTCP](https://github.com/britkat1980/giv_tcp) users.
@@ -10,7 +10,7 @@ While bassic functionality is working this is still very much alpha, there are s
 
 
 # Requirements
-You need to have [GivTCP](https://github.com/britkat1980/giv_tcp) intergrated into your [home-assistant](home-assistant.io) (either be as an addon or a standalone docker container).
+You need to have [GivTCP](https://github.com/britkat1980/giv_tcp) intergrated into your [home-assistant](home-assistant.io) (either as an addon or a standalone docker container).
 You must have both the HA_AUTO_D (Home Assistant Auto Discovery) and MQTT_OUTPUT options enabled.
 
 # HACS-Installation
