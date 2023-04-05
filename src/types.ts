@@ -28,7 +28,7 @@ export enum CentreEntity {
 	Battery = 'battery',
 }
 export enum UnitOfPower {
-	WATT = "W",
-	KILO_WATT = "kW",
-	MEGA_WATT = "MW",
+	WATT = 'W',
+	KILO_WATT = 'kW',
+	MEGA_WATT = 'MW',
 }

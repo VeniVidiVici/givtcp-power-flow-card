@@ -1,5 +1,5 @@
 {
-    "name": "GivTCP Power Flow Card",
-    "render_readme": true,
-    "filename": "givtcp-power-flow-card.js"
+	"name": "GivTCP Power Flow Card",
+	"render_readme": true,
+	"filename": "givtcp-power-flow-card.js"
 }
