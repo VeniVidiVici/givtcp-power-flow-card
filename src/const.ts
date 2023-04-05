@@ -12,4 +12,5 @@ export const CIRCLE_SIZE_DEFAULT = 35;
 export const LINE_WIDTH_DEFAULT = 2;
 export const HIDE_INACTIVE_FLOWS_DEFAULT = false;
 export const COLOUR_ICONS_AND_TEXT_DEFAULT = true;
+export const DOT_SIZE_DEFAULT = 2;
 export const PERCENTAGE = '%';
