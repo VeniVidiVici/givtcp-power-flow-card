@@ -1,11 +1,11 @@
 import { css, html, LitElement, svg, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { SVGUtils } from "./svg-utils";
-import { EntityData, UnitOfPower } from './types';
+import { FlowData, UnitOfPower } from './types';
 
 @customElement('givtcp-power-flow-card-entity')
 export class GivTCPPowerFlowCardEntity extends LitElement {
-	@property() data!: EntityData;
+	@property() data!: FlowData;
 	// protected createRenderRoot() {
 	// 	return this;
 	//   }

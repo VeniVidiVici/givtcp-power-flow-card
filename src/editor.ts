@@ -23,6 +23,7 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 			line_gap: LINE_GAP_DEFAULT,
 			line_width: LINE_WIDTH_DEFAULT,
 			entity_layout: EntityLayout.Cross,
+			power_margin: POWER_MARGIN_DEFAULT,
 			...this._config,
 		  };
 		// const regex = /^sensor\.givtcp_[a-zA-Z]{2}\d{4}[a-zA-Z]\d{3}_(invertor|battery)_serial_number$/g;
