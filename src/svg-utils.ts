@@ -36,6 +36,85 @@ export class SVGUtils {
 
 		return path;
 	}
+	public static getRoundedCornerPath(
+		startX: number,
+		startY: number,
+		endX: number,
+		endY: number,
+		cornerRadius: number,
+		direction: number
+	): string {
+		let path = `M ${startX} ${startY} `; // Start the path at the starting coordinates
+		// [Log] 52 – 12.5 – 87.5 – 16.75 – 5 (svg-utils.ts, line 23)
+		// [Log] 12.5 – 16.75 – 48 – 12.5 – 5 (svg-utils.ts, line 23)
+		if (direction == 1) {
+			path += `H ${endX - cornerRadius} `;
+			path += `q ${cornerRadius} 0 ${cornerRadius} -${cornerRadius} `;
+			path += `V ${endY} `;
+		} else if (direction == 2) {
+			path += `H ${endX + cornerRadius} `;
+			path += `q -${cornerRadius} 0 -${cornerRadius} ${cornerRadius} `;
+			path += `V ${endY} `;
+		} else if (direction == 3) {
+			path += `V ${endY + cornerRadius} `;
+			path += `q 0 -${cornerRadius} -${cornerRadius} -${cornerRadius} `;
+			path += `H ${endX} `;
+		} else {
+			path += `V ${endY - cornerRadius} `;
+			path += `q 0 ${cornerRadius} ${cornerRadius} ${cornerRadius} `;
+			path += `H ${endX} `;
+		}
+
+		return path;
+	}
+	public static getLShape(startX: number, startY: number, endX: number, endY: number): string {
+		let path = `M ${startX} ${startY} `; // Start the path at the starting coordinates
+
+		if (startX !== endX) {
+			// Draw horizontal lines if necessary
+			path += `H ${endX} `;
+		}
+
+		if (startY !== endY) {
+			// Draw vertical lines if necessary
+			path += `V ${endY} `;
+		}
+
+		return path;
+	}
+	public static getShoulderSVGPath(
+		startX: number,
+		startY: number,
+		endX: number,
+		endY: number,
+		cornerRadius: number
+	): string {
+		let path = `M ${startX} ${startY} `; // Start the path at the starting coordinates
+
+		if (startX !== endX) {
+			// Draw horizontal lines if necessary
+			const xMidPoint = (startX + endX) / 2;
+			path += `H ${xMidPoint - cornerRadius} `;
+			path += `Q ${xMidPoint} ${startY} ${xMidPoint} ${startY + cornerRadius} `;
+			path += `V ${endY - cornerRadius} `;
+			path += `Q ${xMidPoint} ${endY} ${xMidPoint + cornerRadius} ${endY} `;
+			path += `H ${endX} `;
+		}
+
+		if (startY !== endY) {
+			// Draw vertical lines if necessary
+			const yMidPoint = (startY + endY) / 2;
+			if (startX === endX) {
+				path += `V ${yMidPoint - cornerRadius} `;
+				path += `Q ${startX} ${yMidPoint} ${startX + cornerRadius} ${yMidPoint} `;
+			} else {
+				path += `V ${yMidPoint} `;
+			}
+			path += `H ${endX} `;
+		}
+
+		return path;
+	}
 	public static getCirclePath(
 		percentage: number,
 		offsetPercentage = 0,

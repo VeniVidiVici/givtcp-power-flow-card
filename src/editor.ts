@@ -10,6 +10,7 @@ import {
 	LINE_GAP_DEFAULT,
 	DOT_SIZE_DEFAULT,
 	DOT_SPEED_DEFAULT,
+	ENTITY_SIZE_DEFAULT,
 } from './const';
 import { EntityLayout, UnitOfPower } from './types';
 
@@ -34,6 +35,7 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 			entity_layout: EntityLayout.Cross,
 			power_margin: POWER_MARGIN_DEFAULT,
 			dot_speed: DOT_SPEED_DEFAULT,
+			entity_size: ENTITY_SIZE_DEFAULT,
 			...this._config,
 		};
 		// const regex = /^sensor\.givtcp_[a-zA-Z]{2}\d{4}[a-zA-Z]\d{3}_(invertor|battery)_serial_number$/g;
@@ -70,6 +72,11 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 						name: 'dot_speed',
 						default: DOT_SPEED_DEFAULT,
 						selector: { number: { mode: 'slider', min: 1, max: 10 } },
+					},
+					{
+						name: 'entity_size',
+						default: ENTITY_SIZE_DEFAULT,
+						selector: { number: { mode: 'slider', min: 3, max: 7 } },
 					},
 				],
 			},
@@ -114,6 +121,8 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				return 'Solar Icon';
 			case 'entity_layout':
 				return 'Layout';
+			case 'entity_size':
+				return 'Entity Size';
 			case 'hide_inactive_flows':
 				return 'Hide Inactive Flows';
 			case 'colour_icons_and_text':

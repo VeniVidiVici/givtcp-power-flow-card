@@ -14,4 +14,5 @@ export const HIDE_INACTIVE_FLOWS_DEFAULT = false;
 export const COLOUR_ICONS_AND_TEXT_DEFAULT = true;
 export const DOT_SIZE_DEFAULT = 2;
 export const DOT_SPEED_DEFAULT = 1;
+export const ENTITY_SIZE_DEFAULT = 4;
 export const PERCENTAGE = '%';

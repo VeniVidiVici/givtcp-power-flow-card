@@ -85,12 +85,12 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 		.gtpc-entity-name {
 			color: var(--gtpc-icons-and-text-colour, var(--gtpc-color));
 			box-sizing: border-box;
-			font-size: calc(var(--gtpc-size) * 0.1);
-			--mdc-icon-size: calc(var(--gtpc-size) * 0.1);
+			font-size: calc(var(--gtpc-size) * 0.15);
+			--mdc-icon-size: calc(var(--gtpc-size) * 0.15);
 			line-height: 1;
 		}
 		.gtpc-entity-icon {
-			--mdc-icon-size: calc(var(--gtpc-size) * 0.5);
+			--mdc-icon-size: calc(var(--gtpc-size) * 0.4);
 			color: var(--gtpc-icons-and-text-colour, var(--gtpc-color));
 		}
 		.gtpc-entity-name {

@@ -3,10 +3,9 @@ import { GivTCPPowerFlowCardLayout } from './layout';
 import { customElement, property } from 'lit/decorators.js';
 import { SVGUtils } from './svg-utils';
 
-@customElement('givtcp-power-flow-card-layout-circle')
-export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
-	@property() centreEntity!: string;
-	@property() circleSize!: number;
+@customElement('givtcp-power-flow-card-layout-square')
+export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
+	@property() lineGap!: number;
 
 	private width = 100;
 	private midX = 50;
@@ -29,7 +28,7 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 			showClass = 'no-battery';
 		}
 		return html`
-			<div class="gtpc-layout gtpc-${showClass} gtpc-layout-circle gtpc-centre-${this.centreEntity}">
+			<div class="gtpc-layout gtpc-${showClass} gtpc-layout-cross">
 				${this.flowData.map(
 					(flow) =>
 						html`<givtcp-power-flow-card-entity data-type="${flow.type}" .data=${flow}></givtcp-power-flow-card-entity>`
@@ -57,21 +56,41 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		} else if (!this.hasBattery) {
 			midY = this.height - this.entityWidth / 2;
 		}
-
-		const circumference = Math.ceil(2 * Math.PI * this.circleSize);
-		const offset = Math.ceil(((this.entityWidth - 0) / circumference) * 100);
-		const segment = 25 - offset;
 		switch (flow) {
 			case 'solar-to-house':
-				return SVGUtils.getCirclePath(segment, offset / 2, this.circleSize, { x: 50, y: midY });
+				return SVGUtils.getCurvePath(
+					this.midX + this.lineGap,
+					entityPos,
+					this.width - entityPos,
+					midY - this.lineGap,
+					-90
+				);
 			case 'battery-to-house':
-				return SVGUtils.getCirclePath(segment, 25 + offset / 2, this.circleSize, { x: 50, y: midY });
+				return SVGUtils.getCurvePath(
+					this.width - entityPos,
+					midY + this.lineGap,
+					this.midX + this.lineGap,
+					this.height - entityPos,
+					-90
+				);
 			case 'battery-to-grid':
-				return SVGUtils.getCirclePath(segment, 50 + offset / 2, this.circleSize, { x: 50, y: midY });
+				return SVGUtils.getCurvePath(
+					this.midX - this.lineGap,
+					this.height - entityPos,
+					entityPos,
+					midY + this.lineGap,
+					-90
+				);
 			case 'grid-to-battery':
-				return SVGUtils.getCirclePath(segment, 50 + offset / 2, this.circleSize, { x: 50, y: midY });
+				return SVGUtils.getCurvePath(
+					this.midX - this.lineGap,
+					this.height - entityPos,
+					entityPos,
+					midY + this.lineGap,
+					-90
+				);
 			case 'solar-to-grid':
-				return SVGUtils.getCirclePath(segment, 75 + offset / 2, this.circleSize, { x: 50, y: midY });
+				return SVGUtils.getCurvePath(entityPos, midY - this.lineGap, this.midX - this.lineGap, entityPos, -90);
 			case 'solar-to-battery':
 				return SVGUtils.getCurvePath(this.midX, entityPos, this.midX, this.height - entityPos, 0);
 			case 'grid-to-house':
@@ -83,6 +102,6 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 }
 declare global {
 	interface HTMLElementTagNameMap {
-		'givtcp-power-flow-card-layout-circle': GivTCPPowerFlowCardLayoutCircle;
+		'givtcp-power-flow-card-layout-square': GivTCPPowerFlowCardLayoutSquare;
 	}
 }
