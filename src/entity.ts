@@ -42,7 +42,11 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 				  })
 		}
 		</svg>`}
-			<div class="gtpc-entity">
+			<div
+				class="gtpc-entity ${this.data.in === undefined || this.data.out === undefined
+					? 'gtpc-entity-single'
+					: 'gtpc-entity-both'}"
+			>
 				${this.data.in !== undefined
 					? html`<span data-power="${this.data.in.total}" class="gtpc-entity-in"
 							><ha-icon icon="mdi:arrow-right"></ha-icon> ${this.formatPower(this.data.in.total)}</span
@@ -77,6 +81,9 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 			vector-effect: non-scaling-stroke;
 		}
 		.gtpc-entity > span[data-power='0'] {
+			display: none;
+		}
+		.gtpc-entity.gtpc-entity-single > span > ha-icon {
 			display: none;
 		}
 		.gtpc-entity-extra,
