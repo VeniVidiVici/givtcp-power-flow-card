@@ -7,15 +7,28 @@ import { SVGUtils } from './svg-utils';
 export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 	@property() lineGap!: number;
 
+	private width = 100;
+	private midX = 50;
+
+	private get entityWidth(): number {
+		return 100 / this.entitySize;
+	}
+	private get curve(): number {
+		return 5;
+	}
+	private get height(): number {
+		if (!this.hasSolar || !this.hasBattery) {
+			return (this.entityWidth * 4) / 2;
+		} else {
+			return this.entityWidth * 4;
+		}
+	}
 	render(): TemplateResult {
-		let height = 100;
 		let showClass = 'full';
 		if (!this.hasSolar) {
 			showClass = 'no-solar';
-			height = height * 0.625;
 		} else if (!this.hasBattery) {
 			showClass = 'no-battery';
-			height = height * 0.625;
 		}
 		return html`
 			<div class="gtpc-layout gtpc-${showClass} gtpc-layout-cross">
@@ -23,7 +36,7 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 					(flow) =>
 						html`<givtcp-power-flow-card-entity data-type="${flow.type}" .data=${flow}></givtcp-power-flow-card-entity>`
 				)}
-				<svg viewBox="0 0 100 ${height}" xmlns="http://www.w3.org/2000/svg">
+				<svg viewBox="0 0 100 ${this.height}" xmlns="http://www.w3.org/2000/svg">
 					${this.flows.map((flow) => this.getGroupForFlow(flow.from, flow.to))}
 				</svg>
 			</div>
@@ -38,25 +51,63 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 	}
 
 	private getPathForFlow(flow: string): string {
-		let midY = 50;
+		let midY = this.height / 2;
 		if (!this.hasSolar) {
-			midY = 12.5;
+			midY = this.height / this.entitySize;
+		} else if (!this.hasBattery) {
+			midY = this.height - this.entityWidth / 2;
 		}
+		const entityPos = 100 / this.entitySize;
 		switch (flow) {
 			case 'solar-to-house':
-				return SVGUtils.getCurvePath(50 + this.lineGap, 25, 75, 50 - this.lineGap, -90);
+				return SVGUtils.getRoundedCornerPath(
+					this.midX + this.lineGap,
+					entityPos,
+					this.width - entityPos,
+					midY - this.lineGap,
+					this.curve,
+					0
+				);
 			case 'battery-to-house':
-				return SVGUtils.getCurvePath(75, midY + this.lineGap, 50 + this.lineGap, midY + 25, -90);
+				return SVGUtils.getRoundedCornerPath(
+					this.width - entityPos,
+					midY + this.lineGap,
+					this.midX + this.lineGap,
+					this.height - entityPos,
+					this.curve,
+					2
+				);
 			case 'battery-to-grid':
-				return SVGUtils.getCurvePath(50 - this.lineGap, midY + 25, 25, midY + this.lineGap, -90);
+				return SVGUtils.getRoundedCornerPath(
+					this.midX - this.lineGap,
+					this.height - entityPos,
+					entityPos,
+					midY + this.lineGap,
+					this.curve,
+					3
+				);
 			case 'grid-to-battery':
-				return SVGUtils.getCurvePath(50 - this.lineGap, midY + 25, 25, midY + this.lineGap, -90);
+				return SVGUtils.getRoundedCornerPath(
+					this.midX - this.lineGap,
+					this.height - entityPos,
+					entityPos,
+					midY + this.lineGap,
+					this.curve,
+					3
+				);
 			case 'solar-to-grid':
-				return SVGUtils.getCurvePath(25, 50 - this.lineGap, 50 - this.lineGap, 25, -90);
+				return SVGUtils.getRoundedCornerPath(
+					entityPos,
+					midY - this.lineGap,
+					this.midX - this.lineGap,
+					entityPos,
+					this.curve,
+					1
+				);
 			case 'solar-to-battery':
-				return SVGUtils.getCurvePath(50, 25, 50, 75, 0);
+				return SVGUtils.getCurvePath(this.midX, entityPos, this.midX, this.height - entityPos, 0);
 			case 'grid-to-house':
-				return SVGUtils.getCurvePath(25, midY, 75, midY, 0);
+				return SVGUtils.getCurvePath(entityPos, midY, this.width - entityPos, midY, 0);
 			default:
 				return '';
 		}

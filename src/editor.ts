@@ -9,6 +9,8 @@ import {
 	POWER_MARGIN_DEFAULT,
 	LINE_GAP_DEFAULT,
 	DOT_SIZE_DEFAULT,
+	DOT_SPEED_DEFAULT,
+	ENTITY_SIZE_DEFAULT,
 } from './const';
 import { EntityLayout, UnitOfPower } from './types';
 
@@ -32,6 +34,8 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 			dot_size: DOT_SIZE_DEFAULT,
 			entity_layout: EntityLayout.Cross,
 			power_margin: POWER_MARGIN_DEFAULT,
+			dot_speed: DOT_SPEED_DEFAULT,
+			entity_size: ENTITY_SIZE_DEFAULT,
 			...this._config,
 		};
 		// const regex = /^sensor\.givtcp_[a-zA-Z]{2}\d{4}[a-zA-Z]\d{3}_(invertor|battery)_serial_number$/g;
@@ -64,6 +68,16 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 						default: LINE_WIDTH_DEFAULT,
 						selector: { number: { mode: 'slider', min: 1, max: 10 } },
 					},
+					{
+						name: 'dot_speed',
+						default: DOT_SPEED_DEFAULT,
+						selector: { number: { mode: 'slider', min: 1, max: 10 } },
+					},
+					{
+						name: 'entity_size',
+						default: ENTITY_SIZE_DEFAULT,
+						selector: { number: { mode: 'slider', min: 3, max: 7 } },
+					},
 				],
 			},
 			...LAYOUT_SCHEMA,
@@ -95,6 +109,8 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				return 'Battery';
 			case 'dot_size':
 				return 'Dot Size';
+			case 'dot_speed':
+				return 'Dot Speed';
 			case 'icon_battery':
 				return 'Battery Icon';
 			case 'icon_grid':
@@ -105,6 +121,8 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				return 'Solar Icon';
 			case 'entity_layout':
 				return 'Layout';
+			case 'entity_size':
+				return 'Entity Size';
 			case 'hide_inactive_flows':
 				return 'Hide Inactive Flows';
 			case 'colour_icons_and_text':

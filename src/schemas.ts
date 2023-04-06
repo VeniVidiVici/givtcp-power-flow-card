@@ -42,8 +42,8 @@ export const LAYOUT_SCHEMA = [
 				options: [
 					{ value: EntityLayout.Cross, label: 'Cross' },
 					{ value: EntityLayout.Circle, label: 'Circle' },
-					{ value: EntityLayout.List, label: 'List' },
 					{ value: EntityLayout.Square, label: 'Square' },
+					{ value: EntityLayout.List, label: 'List' },
 				],
 			},
 		},

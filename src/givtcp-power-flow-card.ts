@@ -6,6 +6,7 @@ import './editor';
 import './entity';
 import './layout-cross';
 import './layout-circle';
+import './layout-square';
 
 import { CentreEntity, FlowData, EntityLayout, FlowDirection, FlowTotal } from './types';
 import {
@@ -23,6 +24,8 @@ import {
 	POWER_MARGIN_DEFAULT,
 	PERCENTAGE,
 	DOT_SIZE_DEFAULT,
+	DOT_SPEED_DEFAULT,
+	ENTITY_SIZE_DEFAULT,
 } from './const';
 
 (window as any).customCards = (window as any).customCards || [];
@@ -56,6 +59,12 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 
 	public static async getConfigElement(): Promise<LovelaceCardEditor> {
 		return document.createElement('givtcp-power-flow-card-editor') as LovelaceCardEditor;
+	}
+	private get _entitySize(): number {
+		return 10 - (this._config?.entity_size || ENTITY_SIZE_DEFAULT);
+	}
+	private get _dotSpeed(): number {
+		return this._config?.dot_speed || DOT_SPEED_DEFAULT;
 	}
 	private get _dotSize(): number {
 		return this._config?.dot_size || DOT_SIZE_DEFAULT;
@@ -192,17 +201,19 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	constructor() {
 		super();
 	}
+	private setEntitySize(width: number): void {
+		setTimeout(() => {
+			this._width = width;
+			this.style.setProperty('--gtpc-size', width / this._entitySize + 'px');
+			this.requestUpdate();
+		}, 0);
+	}
 	connectedCallback(): void {
 		super.connectedCallback();
 		this._resizeObserver = new ResizeObserver((changes) => {
 			for (const change of changes) {
-				const t = change.target as GivTCPPowerFlowCard;
-				if (change.contentRect.width !== t._width) {
-					setTimeout(() => {
-						t._width = change.contentRect.width;
-						t.style.setProperty('--gtpc-size', t._width / 4 + 'px');
-						t.requestUpdate();
-					}, 0);
+				if (change.contentRect.width !== this._width) {
+					this.setEntitySize(change.contentRect.width);
 				}
 			}
 		});
@@ -249,8 +260,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		circle.setAttributeNS(null, 'cx', point.x.toString());
 		circle.setAttributeNS(null, 'cy', point.y.toString());
 		circle.setAttributeNS(null, 'r', (this._dotSize / 4).toString());
-
-		const moveBy = (elapsed * power) / 10000 / 1000;
+		const moveBy = (elapsed * power * this._dotSpeed) / 10000 / 1000;
 		if (direction === FlowDirection.In) {
 			pos += moveBy;
 			if (pos > 1) pos = 0;
@@ -294,25 +304,35 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		let layout = html``;
 		switch (this._entityLayout) {
 			case EntityLayout.Cross:
-				layout = html` <givtcp-power-flow-card-layout-cross
+				layout = html`<givtcp-power-flow-card-layout-cross
 					.flowData=${flowData}
 					.flows=${this.flows}
 					.hasBattery=${this._hasBattery}
 					.hasSolar=${this._hasSolar}
 					.lineGap=${this._lineGap}
-				>
-				</givtcp-power-flow-card-layout-cross>`;
+					.entitySize=${this._entitySize}
+				/>`;
+				break;
+			case EntityLayout.Square:
+				layout = html`<givtcp-power-flow-card-layout-square
+					.flowData=${flowData}
+					.flows=${this.flows}
+					.hasBattery=${this._hasBattery}
+					.hasSolar=${this._hasSolar}
+					.lineGap=${this._lineGap}
+					.entitySize=${this._entitySize}
+				/>`;
 				break;
 			case EntityLayout.Circle:
-				layout = html` <givtcp-power-flow-card-layout-circle
+				layout = html`<givtcp-power-flow-card-layout-circle
 					.flowData=${flowData}
 					.flows=${this.flows}
 					.hasBattery=${this._hasBattery}
 					.hasSolar=${this._hasSolar}
 					.centreEntity=${this._centreEntity}
 					.circleSize=${this._circleSize}
-				>
-				</givtcp-power-flow-card-layout-circle>`;
+					.entitySize=${this._entitySize}
+				/>`;
 				break;
 			default:
 				return html``;
@@ -326,6 +346,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			throw new Error('You need to define battery and invertor entities');
 		}
 		this._config = config;
+		if (this.clientWidth > 0) this.setEntitySize(this.clientWidth);
 		this.style.setProperty('--gtpc-line-size', `${this._lineWidth}px`);
 		this.style.setProperty('--gtpc-inactive-flow-display', this._hideInactiveFlows ? 'none' : 'block');
 		if (this._colourIconsAndText) {
@@ -393,10 +414,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			left: calc(50% - var(--gtpc-size) / 2);
 		}
 		.gtpc-no-solar.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
-		.gtpc-no-solar.gtpc-layout-circle
-			> givtcp-power-flow-card-entity[data-type='house'].
-			.gtpc-no-solar.gtpc-layout-cross
-			> givtcp-power-flow-card-entity[data-type='grid'],
+		.gtpc-no-solar.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'],
+		.gtpc-no-solar.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-no-solar.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='house'] {
 			top: 0;
 		}
