@@ -23,6 +23,7 @@ import {
 	POWER_MARGIN_DEFAULT,
 	PERCENTAGE,
 	DOT_SIZE_DEFAULT,
+	DOT_SPEED_DEFAULT,
 } from './const';
 
 (window as any).customCards = (window as any).customCards || [];
@@ -56,6 +57,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 
 	public static async getConfigElement(): Promise<LovelaceCardEditor> {
 		return document.createElement('givtcp-power-flow-card-editor') as LovelaceCardEditor;
+	}
+	private get _dotSpeed(): number {
+		return this._config?.dot_speed || DOT_SPEED_DEFAULT;
 	}
 	private get _dotSize(): number {
 		return this._config?.dot_size || DOT_SIZE_DEFAULT;
@@ -249,8 +253,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		circle.setAttributeNS(null, 'cx', point.x.toString());
 		circle.setAttributeNS(null, 'cy', point.y.toString());
 		circle.setAttributeNS(null, 'r', (this._dotSize / 4).toString());
-
-		const moveBy = (elapsed * power) / 10000 / 1000;
+		const moveBy = (elapsed * power * this._dotSpeed) / 10000 / 1000;
 		if (direction === FlowDirection.In) {
 			pos += moveBy;
 			if (pos > 1) pos = 0;
