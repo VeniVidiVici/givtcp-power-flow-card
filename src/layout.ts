@@ -8,6 +8,7 @@ export abstract class GivTCPPowerFlowCardLayout extends LitElement {
 	@property() hasBattery!: boolean;
 	@property() hasSolar!: boolean;
 	@property() entitySize!: number;
+	@property() lineWidth!: number;
 	protected createRenderRoot() {
 		return this;
 	}

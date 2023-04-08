@@ -6,6 +6,7 @@ import { FlowData, UnitOfPower } from './types';
 @customElement('givtcp-power-flow-card-entity')
 export class GivTCPPowerFlowCardEntity extends LitElement {
 	@property() data!: FlowData;
+	@property() lineWidth!: number;
 	// protected createRenderRoot() {
 	// 	return this;
 	//   }
@@ -28,7 +29,9 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 			${svg`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 		${
 			fullTotal <= 0
-				? svg`<path d="${SVGUtils.getCirclePath(100, 0, 49)}" style="stroke: var(--gtpc-${this.data.type}-color)" />`
+				? svg`<path d="${SVGUtils.getCirclePath(100, 0, 50 - this.lineWidth / 2)}" style="stroke: var(--gtpc-${
+						this.data.type
+				  }-color)" />`
 				: Object.keys(partTotals).map((key) => {
 						const percentage = (partTotals[key] / fullTotal) * 100;
 						offset += fullTotal > 0 ? ((fullTotal - partTotals[key]) / fullTotal) * 100 : 0;
@@ -36,7 +39,7 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 							? svg`<path d="${SVGUtils.getCirclePath(
 									percentage,
 									offset,
-									49
+									50 - this.lineWidth / 2
 							  )}" style="stroke: var(--gtpc-${key}-color)" />`
 							: html``;
 				  })
@@ -73,10 +76,10 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 		}
 		svg {
 			position: absolute;
-			z-index: 1;
+			z-index: 0;
 		}
 		svg > path {
-			fill: none;
+			fill: var(--ha-card-background, var(--card-background-color, white));
 			stroke-width: var(--gtpc-line-size);
 			vector-effect: non-scaling-stroke;
 		}
@@ -115,16 +118,15 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 			aspect-ratio: 1 / 1;
 			box-sizing: border-box;
 			overflow: hidden;
-			background: var(--ha-card-background, var(--card-background-color, white));
-			border-radius: 50%;
 		}
-		.gtpc-entity > div {
+		.gtpc-entity > * {
 			display: block;
 			flex-grow: 0;
 			flex-shrink: 1;
 			flex-basis: auto;
 			align-self: auto;
 			order: 0;
+			z-index: 2;
 		}
 	`;
 }

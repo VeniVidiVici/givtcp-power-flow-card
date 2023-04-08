@@ -49,18 +49,23 @@ export const LAYOUT_SCHEMA = [
 		},
 	},
 ];
+const LINE_GAP_SCHEMA = [
+	{
+		name: 'line_gap',
+		default: LINE_GAP_DEFAULT,
+		selector: { number: { mode: 'slider', min: 0, max: 5, unit_of_measurement: '%' } },
+	},
+];
 export const LAYOUT_TYPE_SCHEMA = (layout: string): object[] => {
 	if (layout === 'cross') {
 		return [
-			{
-				name: 'line_gap',
-				default: LINE_GAP_DEFAULT,
-				selector: { number: { mode: 'slider', min: 0, max: 5, unit_of_measurement: '%' } },
-			},
+			...LINE_GAP_SCHEMA,
 		];
 	}
 	if (layout === 'square') {
-		return [];
+		return [
+			...LINE_GAP_SCHEMA,
+		];
 	}
 	if (layout === 'circle') {
 		return [

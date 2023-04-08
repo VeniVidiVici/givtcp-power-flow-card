@@ -204,7 +204,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private setEntitySize(width: number): void {
 		setTimeout(() => {
 			this._width = width;
-			this.style.setProperty('--gtpc-size', width / this._entitySize + 'px');
+			this.style.setProperty('--gtpc-size', Math.round(width / this._entitySize) + 'px');
 			this.requestUpdate();
 		}, 0);
 	}
@@ -307,6 +307,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				layout = html`<givtcp-power-flow-card-layout-cross
 					.flowData=${flowData}
 					.flows=${this.flows}
+					.lineWidth=${this._lineWidth}
 					.hasBattery=${this._hasBattery}
 					.hasSolar=${this._hasSolar}
 					.lineGap=${this._lineGap}
@@ -317,6 +318,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				layout = html`<givtcp-power-flow-card-layout-square
 					.flowData=${flowData}
 					.flows=${this.flows}
+					.lineWidth=${this._lineWidth}
 					.hasBattery=${this._hasBattery}
 					.hasSolar=${this._hasSolar}
 					.lineGap=${this._lineGap}
@@ -327,6 +329,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				layout = html`<givtcp-power-flow-card-layout-circle
 					.flowData=${flowData}
 					.flows=${this.flows}
+					.lineWidth=${this._lineWidth}
 					.hasBattery=${this._hasBattery}
 					.hasSolar=${this._hasSolar}
 					.centreEntity=${this._centreEntity}

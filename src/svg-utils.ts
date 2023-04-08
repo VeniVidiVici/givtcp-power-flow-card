@@ -36,6 +36,23 @@ export class SVGUtils {
 
 		return path;
 	}
+	public static getRoundedBox(
+		width: number,
+		height: number,
+		cornerRadius: number,
+		offset?: { x: number; y: number }
+	): string {
+		const d = Math.min(width, height);
+		const r = Math.min(cornerRadius, d / 2);
+		if (!offset) offset = { x: 0, y: 0 };
+		const topLeft = `M${offset.x},${r + offset.y}` + `a${r},${r} 0 0 1 ${r},${-r}` + `h${width - 2 * r}`;
+		const topRight = `a${r},${r} 0 0 1 ${r},${r}` + `v${height - 2 * r}`;
+		const bottomRight = `a${r},${r} 0 0 1 ${-r},${r}` + `h${-width + 2 * r}`;
+		const bottomLeft = `a${r},${r} 0 0 1 ${-r},${-r}` + `v${-height + 2 * r}`;
+		const path = `${topLeft}${topRight}${bottomRight}${bottomLeft}z`;
+
+		return path;
+	}
 	public static getRoundedCornerPath(
 		startX: number,
 		startY: number,
@@ -45,8 +62,6 @@ export class SVGUtils {
 		direction: number
 	): string {
 		let path = `M ${startX} ${startY} `; // Start the path at the starting coordinates
-		// [Log] 52 – 12.5 – 87.5 – 16.75 – 5 (svg-utils.ts, line 23)
-		// [Log] 12.5 – 16.75 – 48 – 12.5 – 5 (svg-utils.ts, line 23)
 		if (direction == 1) {
 			path += `H ${endX - cornerRadius} `;
 			path += `q ${cornerRadius} 0 ${cornerRadius} -${cornerRadius} `;
