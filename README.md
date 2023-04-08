@@ -5,7 +5,7 @@
 
 [home-assistant](home-assistant.io) power flow card for [GivTCP](https://github.com/britkat1980/giv_tcp) users.
 
-![demo](https://user-images.githubusercontent.com/19427540/229890939-59a5e358-dcbc-4ce8-a756-159b4ceb3b63.gif)
+![demo](https://user-images.githubusercontent.com/19427540/230230715-c5ba80dd-722b-4255-a05e-26407fff3d5f.gif)
 
 # Requirements
 
