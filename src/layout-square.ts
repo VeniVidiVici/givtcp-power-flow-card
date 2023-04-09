@@ -2,11 +2,12 @@ import { TemplateResult, html, svg } from 'lit';
 import { GivTCPPowerFlowCardLayout } from './layout';
 import { customElement, property } from 'lit/decorators.js';
 import { SVGUtils } from './svg-utils';
+import { LineStyle } from './types';
 
 @customElement('givtcp-power-flow-card-layout-square')
 export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 	@property() lineGap!: number;
-
+	@property() lineStyle!: string;
 	private width = 100;
 	private midX = 50;
 
@@ -52,8 +53,7 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 	}
 
 	private getPathForFlow(flow: string): string {
-		const entityPos = 100 / this.entitySize;
-
+		const halfEntity = this.entityWidth / 2;
 		let midY = this.height / 2;
 		if (!this.hasSolar) {
 			midY = this.height / this.entitySize;
@@ -62,43 +62,143 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 		}
 		switch (flow) {
 			case 'solar-to-house':
-				return SVGUtils.getCurvePath(
-					this.midX + this.lineGap,
-					entityPos,
-					this.width - entityPos,
-					midY - this.lineGap,
-					-90
-				);
+				switch (this.lineStyle) {
+					case LineStyle.Curved:
+						return SVGUtils.getCurvePath(
+							this.midX + this.lineGap,
+							this.entityWidth,
+							this.width - this.entityWidth,
+							midY - this.lineGap,
+							-90
+						);
+					case LineStyle.Angled:
+						return SVGUtils.getLShape(
+							this.midX + halfEntity,
+							halfEntity,
+							this.width - halfEntity,
+							midY - this.entityWidth / 2,
+							0
+						);
+					case LineStyle.Straight:
+						return SVGUtils.getStraightPath(
+							this.midX + halfEntity,
+							halfEntity,
+							this.width - halfEntity,
+							midY - this.entityWidth / 2
+						);
+					default:
+						return '';
+				}
 			case 'battery-to-house':
-				return SVGUtils.getCurvePath(
-					this.width - entityPos,
-					midY + this.lineGap,
-					this.midX + this.lineGap,
-					this.height - entityPos,
-					-90
-				);
+				switch (this.lineStyle) {
+					case LineStyle.Curved:
+						return SVGUtils.getCurvePath(
+							this.width - this.entityWidth,
+							midY + this.lineGap,
+							this.midX + this.lineGap,
+							this.height - this.entityWidth,
+							-90
+						);
+					case LineStyle.Angled:
+						return SVGUtils.getLShape(
+							this.width - halfEntity,
+							midY + this.entityWidth / 2,
+							this.midX + halfEntity,
+							this.height - halfEntity,
+							1
+						);
+					case LineStyle.Straight:
+						return SVGUtils.getStraightPath(
+							this.width - halfEntity,
+							midY + this.entityWidth / 2,
+							this.midX + halfEntity,
+							this.height - halfEntity
+						);
+					default:
+						return '';
+				}
 			case 'battery-to-grid':
-				return SVGUtils.getCurvePath(
-					this.midX - this.lineGap,
-					this.height - entityPos,
-					entityPos,
-					midY + this.lineGap,
-					-90
-				);
+				switch (this.lineStyle) {
+					case LineStyle.Curved:
+						return SVGUtils.getCurvePath(
+							this.midX - this.lineGap,
+							this.height - this.entityWidth,
+							this.entityWidth,
+							midY + this.lineGap,
+							-90
+						);
+					case LineStyle.Angled:
+						return SVGUtils.getLShape(
+							this.midX - halfEntity,
+							this.height - halfEntity,
+							halfEntity,
+							midY + this.entityWidth / 2,
+							0
+						);
+					case LineStyle.Straight:
+						return SVGUtils.getStraightPath(
+							this.midX - halfEntity,
+							this.height - halfEntity,
+							halfEntity,
+							midY + this.entityWidth / 2
+						);
+					default:
+						return '';
+				}
 			case 'grid-to-battery':
-				return SVGUtils.getCurvePath(
-					this.midX - this.lineGap,
-					this.height - entityPos,
-					entityPos,
-					midY + this.lineGap,
-					-90
-				);
+				switch (this.lineStyle) {
+					case LineStyle.Curved:
+						return SVGUtils.getCurvePath(
+							this.midX - this.lineGap,
+							this.height - this.entityWidth,
+							this.entityWidth,
+							midY + this.lineGap,
+							-90
+						);
+					case LineStyle.Angled:
+						return SVGUtils.getLShape(
+							this.midX - halfEntity,
+							this.height - halfEntity,
+							halfEntity,
+							midY + this.entityWidth / 2,
+							0
+						);
+					case LineStyle.Straight:
+						return SVGUtils.getStraightPath(
+							this.midX - halfEntity,
+							this.height - halfEntity,
+							halfEntity,
+							midY + this.entityWidth / 2
+						);
+					default:
+						return '';
+				}
 			case 'solar-to-grid':
-				return SVGUtils.getCurvePath(entityPos, midY - this.lineGap, this.midX - this.lineGap, entityPos, -90);
+				switch (this.lineStyle) {
+					case LineStyle.Curved:
+						return SVGUtils.getCurvePath(
+							this.entityWidth,
+							midY - this.lineGap,
+							this.midX - this.lineGap,
+							this.entityWidth,
+							-90
+						);
+					case LineStyle.Angled:
+						return SVGUtils.getLShape(halfEntity, midY - this.entityWidth / 2, this.midX - halfEntity, halfEntity, 1);
+					case LineStyle.Straight:
+						return SVGUtils.getStraightPath(
+							halfEntity,
+							midY - this.entityWidth / 2,
+							this.midX - halfEntity,
+							halfEntity
+						);
+					default:
+						return '';
+				}
 			case 'solar-to-battery':
-				return SVGUtils.getCurvePath(this.midX, entityPos, this.midX, this.height - entityPos, 0);
+				return SVGUtils.getCurvePath(this.midX, this.entityWidth, this.midX, this.height - this.entityWidth, 0);
 			case 'grid-to-house':
-				return SVGUtils.getCurvePath(entityPos, midY, this.width - entityPos, midY, 0);
+				return SVGUtils.getCurvePath(this.entityWidth, midY, this.width - this.entityWidth, midY, 0);
 			default:
 				return '';
 		}

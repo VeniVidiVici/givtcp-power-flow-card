@@ -28,6 +28,8 @@ import {
 	ENTITY_SIZE_DEFAULT,
 	ENTITIES,
 	SOLAR_ENABLED_DEFAULT,
+	CORNER_RADIUS_DEFAULT,
+	LINE_STYLE_DEFAULT,
 } from './const';
 import { ConfigUtils } from './config-utils';
 
@@ -70,6 +72,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	public static async getConfigElement(): Promise<LovelaceCardEditor> {
 		return document.createElement('givtcp-power-flow-card-editor') as LovelaceCardEditor;
 	}
+	private get _lineStyle(): string {
+		return this._config?.line_style || LINE_STYLE_DEFAULT;
+	}
 	private get _entitySize(): number {
 		return 10 - (this._config?.entity_size || ENTITY_SIZE_DEFAULT);
 	}
@@ -88,6 +93,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	private get _centreEntity(): CentreEntity {
 		return this._config?.centre_entity || CENTRE_ENTITY_DEFAULT;
+	}
+	private get _cornerRadius(): number {
+		return this._config?.corner_radius || CORNER_RADIUS_DEFAULT;
 	}
 	private get _invertorSerial(): string {
 		try {
@@ -316,6 +324,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					.hasBattery=${this._batteryEnabled}
 					.hasSolar=${this._solarEnabled}
 					.lineGap=${this._lineGap}
+					.cornerRadius=${this._cornerRadius}
 					.entitySize=${this._entitySize}
 				/>`;
 				break;
@@ -328,6 +337,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					.hasBattery=${this._batteryEnabled}
 					.hasSolar=${this._solarEnabled}
 					.lineGap=${this._lineGap}
+					.lineStyle=${this._lineStyle}
 					.entitySize=${this._entitySize}
 				/>`;
 				break;

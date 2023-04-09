@@ -6,15 +6,13 @@ import { SVGUtils } from './svg-utils';
 @customElement('givtcp-power-flow-card-layout-cross')
 export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 	@property() lineGap!: number;
+	@property() cornerRadius!: number;
 
 	private width = 100;
 	private midX = 50;
 
 	private get entityWidth(): number {
 		return 100 / this.entitySize;
-	}
-	private get curve(): number {
-		return 5;
 	}
 	private get height(): number {
 		if (!this.hasSolar || !this.hasBattery) {
@@ -69,7 +67,7 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 					entityPos,
 					this.width - entityPos,
 					midY - this.lineGap,
-					this.curve,
+					this.cornerRadius,
 					0
 				);
 			case 'battery-to-house':
@@ -78,7 +76,7 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 					midY + this.lineGap,
 					this.midX + this.lineGap,
 					this.height - entityPos,
-					this.curve,
+					this.cornerRadius,
 					2
 				);
 			case 'battery-to-grid':
@@ -87,7 +85,7 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 					this.height - entityPos,
 					entityPos,
 					midY + this.lineGap,
-					this.curve,
+					this.cornerRadius,
 					3
 				);
 			case 'grid-to-battery':
@@ -96,7 +94,7 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 					this.height - entityPos,
 					entityPos,
 					midY + this.lineGap,
-					this.curve,
+					this.cornerRadius,
 					3
 				);
 			case 'solar-to-grid':
@@ -105,7 +103,7 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 					midY - this.lineGap,
 					this.midX - this.lineGap,
 					entityPos,
-					this.curve,
+					this.cornerRadius,
 					1
 				);
 			case 'solar-to-battery':

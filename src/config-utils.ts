@@ -20,6 +20,8 @@ import {
 	HOUSE_COLOUR_RGB_DEFAULT,
 	BATTERY_ENABLED_DEFAULT,
 	SOLAR_ENABLED_DEFAULT,
+	CORNER_RADIUS_DEFAULT,
+	LINE_STYLE_DEFAULT,
 } from './const';
 import { EntityLayout } from './types';
 
@@ -43,6 +45,8 @@ export class ConfigUtils {
 			house_colour_type: COLOUR_TYPE_DEFAULT,
 			battery_enabled: BATTERY_ENABLED_DEFAULT,
 			solar_enabled: SOLAR_ENABLED_DEFAULT,
+			corner_radius: CORNER_RADIUS_DEFAULT,
+			line_style: LINE_STYLE_DEFAULT,
 			grid_colour: config.grid_colour_type === 'rgb' ? GRID_COLOUR_RGB_DEFAULT : GRID_COLOUR_UI_DEFAULT,
 			solar_colour: config.solar_colour_type === 'rgb' ? SOLAR_COLOUR_RGB_DEFAULT : SOLAR_COLOUR_UI_DEFAULT,
 			battery_colour: config.battery_colour_type === 'rgb' ? BATTERY_COLOUR_RGB_DEFAULT : BATTERY_COLOUR_UI_DEFAULT,

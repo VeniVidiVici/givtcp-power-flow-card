@@ -1,4 +1,4 @@
-import { CentreEntity, EntityLayout } from './types';
+import { CentreEntity, EntityLayout, LineStyle } from './types';
 
 export const SOLAR_ICON_DEFAULT = 'mdi:solar-panel-large';
 export const BATTERY_ICON_DEFAULT = 'mdi:battery';
@@ -7,14 +7,16 @@ export const HOUSE_ICON_DEFAULT = 'mdi:home';
 export const ENTITY_LAYOUT_DEFAULT = EntityLayout.Cross;
 export const CENTRE_ENTITY_DEFAULT = CentreEntity.None;
 export const POWER_MARGIN_DEFAULT = 20;
-export const LINE_GAP_DEFAULT = 0;
+export const LINE_GAP_DEFAULT = 2;
 export const CIRCLE_SIZE_DEFAULT = 35;
 export const LINE_WIDTH_DEFAULT = 2;
 export const HIDE_INACTIVE_FLOWS_DEFAULT = false;
 export const COLOUR_ICONS_AND_TEXT_DEFAULT = true;
-export const DOT_SIZE_DEFAULT = 2;
+export const DOT_SIZE_DEFAULT = 4;
 export const DOT_SPEED_DEFAULT = 1;
 export const ENTITY_SIZE_DEFAULT = 4;
+export const CORNER_RADIUS_DEFAULT = 2;
+export const LINE_STYLE_DEFAULT = LineStyle.Curved;
 export const PERCENTAGE = '%';
 export const COLOUR_TYPE_DEFAULT = 'ui';
 export const GRID_COLOUR_UI_DEFAULT = 'purple';
