@@ -82,20 +82,24 @@ export class SVGUtils {
 
 		return path;
 	}
-	public static getLShape(startX: number, startY: number, endX: number, endY: number): string {
-		let path = `M ${startX} ${startY} `; // Start the path at the starting coordinates
+	public static getStraightPath(startX: number, startY: number, endX: number, endY: number): string {
+		return `M ${startX} ${startY} L ${endX} ${endY}`;
+	}
+	public static getLShape(startX: number, startY: number, endX: number, endY: number, direction: number): string {
+		const path = `M ${startX} ${startY} `; // Start the path at the starting coordinates
 
+		let h;
+		let v;
 		if (startX !== endX) {
 			// Draw horizontal lines if necessary
-			path += `H ${endX} `;
+			h = `H ${endX} `;
 		}
 
 		if (startY !== endY) {
 			// Draw vertical lines if necessary
-			path += `V ${endY} `;
+			v = `V ${endY} `;
 		}
-
-		return path;
+		return direction === 0 ? `${path}${h}${v}` : `${path}${v}${h}`;
 	}
 	public static getShoulderSVGPath(
 		startX: number,

@@ -6,6 +6,11 @@ export interface FlowData {
 	in?: FlowTotal;
 	out?: FlowTotal;
 }
+export enum LineStyle {
+	Straight = 'straight',
+	Curved = 'curved',
+	Angled = 'angled',
+}
 export interface FlowTotal {
 	total: number;
 	parts: { type: string; value: number }[];

@@ -7,8 +7,9 @@ import {
 	HOUSE_ICON_DEFAULT,
 	SOLAR_ICON_DEFAULT,
 	LINE_GAP_DEFAULT,
+	CORNER_RADIUS_DEFAULT,
 } from './const';
-import { CentreEntity, EntityLayout } from './types';
+import { CentreEntity, EntityLayout, LineStyle } from './types';
 import { any, assign, boolean, integer, object, optional, refine, string, array, union, tuple } from 'superstruct';
 const isEntityId = (value: string): boolean => value.includes('.');
 const entityId = () => refine(string(), 'entity ID (domain.entity)', isEntityId);
@@ -31,6 +32,7 @@ export const cardConfigStruct = assign(
 		dot_size: optional(integer()),
 		power_margin: optional(integer()),
 		dot_speed: optional(integer()),
+		corner_radius: optional(integer()),
 		invertor: union([entityId(), array(entityId())]),
 		battery: union([entityId(), array(entityId())]),
 		battery_enabled: optional(boolean()),
@@ -42,6 +44,7 @@ export const cardConfigStruct = assign(
 		house_icon: optional(string()),
 		battery_icon: optional(string()),
 		solar_icon: optional(string()),
+		line_style: optional(string()),
 		grid_colour_type: optional(string()),
 		grid_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
 		house_colour_type: optional(string()),
@@ -180,10 +183,35 @@ const LINE_GAP_SCHEMA = [
 ];
 export const LAYOUT_TYPE_SCHEMA = (layout: string): object[] => {
 	if (layout === 'cross') {
-		return [...LINE_GAP_SCHEMA];
+		return [
+			...LINE_GAP_SCHEMA,
+			{
+				name: 'corner_radius',
+				default: CORNER_RADIUS_DEFAULT,
+				label: 'Corner Radius',
+				selector: { number: { mode: 'slider', min: 1, max: 10 } },
+			},
+		];
 	}
 	if (layout === 'square') {
-		return [...LINE_GAP_SCHEMA];
+		return [
+			...LINE_GAP_SCHEMA,
+			{
+				name: 'line_style',
+				default: CENTRE_ENTITY_DEFAULT,
+				label: 'Line Style',
+				selector: {
+					select: {
+						mode: 'dropdown',
+						options: [
+							{ value: LineStyle.Curved, label: 'Curved' },
+							{ value: LineStyle.Angled, label: 'Angled' },
+							{ value: LineStyle.Straight, label: 'Straight' },
+						],
+					},
+				},
+			},
+		];
 	}
 	if (layout === 'circle') {
 		return [
