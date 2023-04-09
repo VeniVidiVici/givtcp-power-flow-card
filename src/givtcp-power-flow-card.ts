@@ -4,9 +4,9 @@ import { LitElement, css, html, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import './editor';
 import './entity';
-import './layout-cross';
-import './layout-circle';
-import './layout-square';
+import './layout/layout-cross';
+import './layout/layout-circle';
+import './layout/layout-square';
 
 import { CentreEntity, FlowData, EntityLayout, FlowDirection, FlowTotal } from './types';
 import {
@@ -31,7 +31,7 @@ import {
 	CORNER_RADIUS_DEFAULT,
 	LINE_STYLE_DEFAULT,
 } from './const';
-import { ConfigUtils } from './config-utils';
+import { ConfigUtils } from './utils/config-utils';
 
 (window as any).customCards = (window as any).customCards || [];
 (window as any).customCards.push({

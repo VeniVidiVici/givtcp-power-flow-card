@@ -1,6 +1,6 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { FlowData, FlowDirection } from './types';
+import { FlowData, FlowDirection } from '../types';
 
 export abstract class GivTCPPowerFlowCardLayout extends LitElement {
 	@property() flowData!: FlowData[];

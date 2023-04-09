@@ -22,8 +22,8 @@ import {
 	SOLAR_ENABLED_DEFAULT,
 	CORNER_RADIUS_DEFAULT,
 	LINE_STYLE_DEFAULT,
-} from './const';
-import { EntityLayout } from './types';
+} from '../const';
+import { EntityLayout } from '../types';
 
 export class ConfigUtils {
 	public static getDefaults(config: LovelaceCardConfig): LovelaceCardConfig {

@@ -1,8 +1,8 @@
 import { TemplateResult, html, svg } from 'lit';
 import { GivTCPPowerFlowCardLayout } from './layout';
 import { customElement, property } from 'lit/decorators.js';
-import { SVGUtils } from './svg-utils';
-import { LineStyle } from './types';
+import { SVGUtils } from '../utils/svg-utils';
+import { LineStyle } from '../types';
 
 @customElement('givtcp-power-flow-card-layout-square')
 export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {

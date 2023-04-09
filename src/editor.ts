@@ -21,7 +21,7 @@ import {
 	ENTITIES,
 } from './const';
 import { UnitOfPower } from './types';
-import { ConfigUtils } from './config-utils';
+import { ConfigUtils } from './utils/config-utils';
 
 @customElement('givtcp-power-flow-card-editor')
 export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCardEditor {
