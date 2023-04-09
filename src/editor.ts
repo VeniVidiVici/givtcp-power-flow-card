@@ -161,6 +161,7 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 		`;
 	}
 	private _handleTabChanged(ev: CustomEvent): void {
+		ev.preventDefault();
 		const tab = ev.detail.selected as number;
 		this._curView = tab;
 	}

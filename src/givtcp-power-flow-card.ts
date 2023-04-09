@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { LovelaceCardConfig, HomeAssistant, LovelaceCard, LovelaceCardEditor } from 'custom-card-helpers';
+import { LovelaceCardConfig, HomeAssistant, LovelaceCard, LovelaceCardEditor, fireEvent } from 'custom-card-helpers';
 import { LitElement, css, html, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import './editor';
@@ -311,6 +311,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				layout = html`<givtcp-power-flow-card-layout-cross
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
+					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
 					.lineWidth=${this._lineWidth}
 					.hasBattery=${this._batteryEnabled}
 					.hasSolar=${this._solarEnabled}
@@ -322,6 +323,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				layout = html`<givtcp-power-flow-card-layout-square
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
+					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
 					.lineWidth=${this._lineWidth}
 					.hasBattery=${this._batteryEnabled}
 					.hasSolar=${this._solarEnabled}
@@ -333,6 +335,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				layout = html`<givtcp-power-flow-card-layout-circle
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
+					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
 					.lineWidth=${this._lineWidth}
 					.hasBattery=${this._batteryEnabled}
 					.hasSolar=${this._solarEnabled}
@@ -347,6 +350,24 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		return html`<ha-card header="${this._config?.name}">
 			${this._width > 0 ? html`<div class="card-content">${layout}</div>` : html``}
 		</ha-card>`;
+	}
+	private entityDetails(evt: CustomEvent): void {
+		evt.stopPropagation();
+		console.log(evt.detail.type);
+		switch (evt.detail.type) {
+			case 'grid':
+				fireEvent(this, 'hass-more-info', { entityId: `sensor.givtcp_${this._invertorSerial}_grid_power` });
+				break;
+			case 'solar':
+				fireEvent(this, 'hass-more-info', { entityId: `sensor.givtcp_${this._invertorSerial}_pv_power` });
+				break;
+			case 'battery':
+				fireEvent(this, 'hass-more-info', { entityId: `sensor.givtcp_${this._invertorSerial}_battery_power` });
+				break;
+			case 'house':
+				break;
+			default:
+		}
 	}
 	setConfig(config: LovelaceCardConfig): void {
 		if (!config.invertor || !config.battery) {
@@ -381,6 +402,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	static styles = css`
 		:host {
+			--gtpc-click-cursor: pointer;
 			--gtpc-grid-color: var(--primary-text-color);
 			--gtpc-solar-color: var(--warning-color);
 			--gtpc-house-color: var(--info-color);
@@ -413,6 +435,11 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			width: 100%;
 			height: 100%;
 			box-sizing: border-box;
+		}
+		givtcp-power-flow-card-entity[data-type='grid'],
+		givtcp-power-flow-card-entity[data-type='solar'],
+		givtcp-power-flow-card-entity[data-type='battery'] {
+			cursor: var(--gtpc-click-cursor);
 		}
 		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='grid'] {

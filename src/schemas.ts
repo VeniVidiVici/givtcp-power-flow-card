@@ -50,6 +50,14 @@ export const cardConfigStruct = assign(
 		battery_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
 		solar_colour_type: optional(string()),
 		solar_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
+		grid_tap_action: optional(any()),
+		grid_hold_action: optional(any()),
+		house_tap_action: optional(any()),
+		house_hold_action: optional(any()),
+		battery_tap_action: optional(any()),
+		battery_hold_action: optional(any()),
+		solar_tap_action: optional(any()),
+		solar_hold_action: optional(any()),
 	})
 );
 
@@ -69,30 +77,43 @@ const ICON_SCHEMA = (name: string, label: string, placeholder: string) => ({
 	label,
 	selector: { icon: { placeholder } },
 });
+// const ENTITY_ACTION_SCHEMA = (name: string, label: string) => [
+// 	{
+// 		type: 'grid',
+// 		name: '',
+// 		schema: [
+// 			{ name: `${name}_tap_action`, label: `${label} Tap Action`, selector: { 'ui-action': {} } },
+// 			{ name: `${name}_hold_action`, label: `${label} Hold Action`, selector: { 'ui-action': {} } },
+// 		],
+// 	},
+// ];
 
-const ENTITY_COLOUR_SCHEMA = (type: string, name: string, label: string) => {
-	return {
+const ENTITY_COLOUR_SCHEMA = (type: string, name: string, label: string) => [
+	{
 		name,
 		label,
 		selector: type == 'ui' ? { 'ui-color': {} } : { color_rgb: {} },
-	};
-};
+	},
+];
 
-const ENTITY_COLOUR_TYPE_SCHEMA = (name: string, label: string) => ({
-	name: `${name}_type`,
-	label,
-	selector: { select: { mode: 'dropdown', options: ['ui', 'rgb'] } },
-});
+const ENTITY_COLOUR_TYPE_SCHEMA = (name: string, label: string) => [
+	{
+		name: `${name}_type`,
+		label,
+		selector: { select: { mode: 'dropdown', options: ['ui', 'rgb'] } },
+	},
+];
 export const GRID_SCHEMA = (type: string) => [
 	ICON_SCHEMA('grid_icon', 'Grid Icon', GRID_ICON_DEFAULT),
 	{
 		type: 'grid',
 		name: '',
 		schema: [
-			ENTITY_COLOUR_TYPE_SCHEMA('grid_colour', 'Colour Type'),
-			ENTITY_COLOUR_SCHEMA(type, 'grid_colour', 'Grid Colour'),
+			...ENTITY_COLOUR_TYPE_SCHEMA('grid_colour', 'Colour Type'),
+			...ENTITY_COLOUR_SCHEMA(type, 'grid_colour', 'Grid Colour'),
 		],
 	},
+	//	...ENTITY_ACTION_SCHEMA('grid', 'Grid')
 ];
 export const HOUSE_SCHEMA = (type: string) => [
 	ICON_SCHEMA('house_icon', 'House Icon', HOUSE_ICON_DEFAULT),
@@ -100,10 +121,11 @@ export const HOUSE_SCHEMA = (type: string) => [
 		type: 'grid',
 		name: '',
 		schema: [
-			ENTITY_COLOUR_TYPE_SCHEMA('house_colour', 'Colour Type'),
-			ENTITY_COLOUR_SCHEMA(type, 'house_colour', 'House Colour'),
+			...ENTITY_COLOUR_TYPE_SCHEMA('house_colour', 'Colour Type'),
+			...ENTITY_COLOUR_SCHEMA(type, 'house_colour', 'House Colour'),
 		],
 	},
+	//	...ENTITY_ACTION_SCHEMA('house', 'House')
 ];
 export const BATTERY_SCHEMA = (type: string) => [
 	{ name: 'battery_enabled', label: 'Battery enabled', selector: { boolean: {} } },
@@ -112,10 +134,11 @@ export const BATTERY_SCHEMA = (type: string) => [
 		type: 'grid',
 		name: '',
 		schema: [
-			ENTITY_COLOUR_TYPE_SCHEMA('battery_colour', 'Colour Type'),
-			ENTITY_COLOUR_SCHEMA(type, 'battery_colour', 'Battery Colour'),
+			...ENTITY_COLOUR_TYPE_SCHEMA('battery_colour', 'Colour Type'),
+			...ENTITY_COLOUR_SCHEMA(type, 'battery_colour', 'Battery Colour'),
 		],
 	},
+	//	...ENTITY_ACTION_SCHEMA('battery', 'Battery')
 ];
 export const SOLAR_SCHEMA = (type: string) => [
 	{ name: 'solar_enabled', label: 'Solar enabled', selector: { boolean: {} } },
@@ -124,10 +147,11 @@ export const SOLAR_SCHEMA = (type: string) => [
 		type: 'grid',
 		name: '',
 		schema: [
-			ENTITY_COLOUR_TYPE_SCHEMA('solar_colour', 'Colour Type'),
-			ENTITY_COLOUR_SCHEMA(type, 'solar_colour', 'Solar Colour'),
+			...ENTITY_COLOUR_TYPE_SCHEMA('solar_colour', 'Colour Type'),
+			...ENTITY_COLOUR_SCHEMA(type, 'solar_colour', 'Solar Colour'),
 		],
 	},
+	//	...ENTITY_ACTION_SCHEMA('solar', 'Solar')
 ];
 export const LAYOUT_SCHEMA = [
 	{
