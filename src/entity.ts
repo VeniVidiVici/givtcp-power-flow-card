@@ -10,6 +10,21 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 	// protected createRenderRoot() {
 	// 	return this;
 	//   }
+	constructor() {
+		super();
+		this.addEventListener('click', (e) => {
+			e.stopPropagation();
+			const eventDetails = new CustomEvent('entity-details', {
+				bubbles: true,
+				composed: true,
+				detail: { type: this.data.type },
+			});
+			this.dispatchEvent(eventDetails);
+		});
+	}
+	static get observedAttributes() {
+		return ['entityDetails'];
+	}
 	render(): TemplateResult {
 		let fullTotal = 0;
 		const partTotals: { [n: string]: number } = {};
