@@ -33,8 +33,8 @@ export const cardConfigStruct = assign(
 		power_margin: optional(integer()),
 		dot_speed: optional(integer()),
 		corner_radius: optional(integer()),
-		invertor: union([entityId(), array(entityId())]),
-		battery: union([entityId(), array(entityId())]),
+		invertor: optional(union([entityId(), array(entityId())])),
+		battery: optional(union([entityId(), array(entityId())])),
 		battery_enabled: optional(boolean()),
 		solar_enabled: optional(boolean()),
 		circle_size: optional(integer()),
@@ -178,7 +178,7 @@ const LINE_GAP_SCHEMA = [
 		name: 'line_gap',
 		label: 'Line Gap',
 		default: LINE_GAP_DEFAULT,
-		selector: { number: { mode: 'slider', min: 0, max: 5, unit_of_measurement: '%' } },
+		selector: { number: { mode: 'slider', min: 0, max: 5 } },
 	},
 ];
 export const LAYOUT_TYPE_SCHEMA = (layout: string): object[] => {
