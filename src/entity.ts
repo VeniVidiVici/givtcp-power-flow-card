@@ -1,15 +1,12 @@
-import { css, html, LitElement, svg, TemplateResult } from 'lit';
+import { html, LitElement, svg, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { SVGUtils } from './svg-utils';
+import { SVGUtils } from './utils/svg-utils';
 import { FlowData, UnitOfPower } from './types';
 
 @customElement('givtcp-power-flow-card-entity')
 export class GivTCPPowerFlowCardEntity extends LitElement {
 	@property() data!: FlowData;
 	@property() lineWidth!: number;
-	// protected createRenderRoot() {
-	// 	return this;
-	//   }
 	constructor() {
 		super();
 		this.addEventListener('click', (e) => {
@@ -21,6 +18,9 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 			});
 			this.dispatchEvent(eventDetails);
 		});
+	}
+	protected createRenderRoot() {
+		return this;
 	}
 	static get observedAttributes() {
 		return ['entityDetails'];
@@ -65,6 +65,7 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 					? 'gtpc-entity-single'
 					: 'gtpc-entity-both'}"
 			>
+				<span class="gtpc-entity-name" data-entity-type="${this.data.type}">${this.data.name}</span>
 				${this.data.in !== undefined
 					? html`<span data-power="${this.data.in.total}" class="gtpc-entity-in"
 							><ha-icon icon="mdi:arrow-right"></ha-icon> ${this.formatPower(this.data.in.total)}</span
@@ -85,65 +86,6 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 		if (power < 1000000) return `${(power / 1000).toFixed(1)}${UnitOfPower.KILO_WATT}`;
 		return `${(power / 1000000).toFixed(1)}${UnitOfPower.MEGA_WATT}`;
 	}
-
-	static styles = css`
-		:host {
-		}
-		svg {
-			position: absolute;
-			z-index: 0;
-		}
-		svg > path {
-			fill: var(--ha-card-background, var(--card-background-color, white));
-			stroke-width: var(--gtpc-line-size);
-			vector-effect: non-scaling-stroke;
-		}
-		.gtpc-entity > span[data-power='0'] {
-			display: none;
-		}
-		.gtpc-entity.gtpc-entity-single > span > ha-icon {
-			display: none;
-		}
-		.gtpc-entity-extra,
-		.gtpc-entity-in,
-		.gtpc-entity-out,
-		.gtpc-entity-name {
-			color: var(--gtpc-icons-and-text-colour, var(--gtpc-color));
-			box-sizing: border-box;
-			font-size: calc(var(--gtpc-size) * 0.15);
-			--mdc-icon-size: calc(var(--gtpc-size) * 0.15);
-			line-height: 1;
-		}
-		.gtpc-entity-icon {
-			--mdc-icon-size: calc(var(--gtpc-size) * 0.4);
-			color: var(--gtpc-icons-and-text-colour, var(--gtpc-color));
-		}
-		.gtpc-entity-name {
-			text-align: center;
-		}
-		.gtpc-entity {
-			z-index: 2;
-			display: flex;
-			flex-direction: column;
-			flex-wrap: nowrap;
-			justify-content: center;
-			align-items: center;
-			align-content: normal;
-			width: var(--gtpc-size);
-			aspect-ratio: 1 / 1;
-			box-sizing: border-box;
-			overflow: hidden;
-		}
-		.gtpc-entity > * {
-			display: block;
-			flex-grow: 0;
-			flex-shrink: 1;
-			flex-basis: auto;
-			align-self: auto;
-			order: 0;
-			z-index: 2;
-		}
-	`;
 }
 declare global {
 	interface HTMLElementTagNameMap {

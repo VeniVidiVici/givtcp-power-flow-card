@@ -1,3 +1,4 @@
+import { LovelaceCardConfig } from 'custom-card-helpers';
 import {
 	CENTRE_ENTITY_DEFAULT,
 	CIRCLE_SIZE_DEFAULT,
@@ -8,6 +9,9 @@ import {
 	SOLAR_ICON_DEFAULT,
 	LINE_GAP_DEFAULT,
 	CORNER_RADIUS_DEFAULT,
+	EPS_ICON_DEFAULT,
+	CUSTOM1_ICON_DEFAULT,
+	CUSTOM2_ICON_DEFAULT,
 } from './const';
 import { CentreEntity, EntityLayout, LineStyle } from './types';
 import { any, assign, boolean, integer, object, optional, refine, string, array, union, tuple } from 'superstruct';
@@ -53,18 +57,22 @@ export const cardConfigStruct = assign(
 		battery_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
 		solar_colour_type: optional(string()),
 		solar_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
-		grid_tap_action: optional(any()),
-		grid_hold_action: optional(any()),
-		house_tap_action: optional(any()),
-		house_hold_action: optional(any()),
-		battery_tap_action: optional(any()),
-		battery_hold_action: optional(any()),
-		solar_tap_action: optional(any()),
-		solar_hold_action: optional(any()),
+		eps_enabled: optional(boolean()),
+		eps_icon: optional(string()),
+		eps_colour_type: optional(string()),
+		eps_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
+		custom1_enabled: optional(boolean()),
+		custom1_icon: optional(string()),
+		custom1_colour_type: optional(string()),
+		custom1_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
+		custom2_enabled: optional(boolean()),
+		custom2_icon: optional(string()),
+		custom2_colour_type: optional(string()),
+		custom2_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
 	})
 );
 
-export const ENTITY_SCHEMA = (invertors: string[], batteries: string[]) => [
+export const INVERTER_BATTERY_SCHEMA = (invertors: string[], batteries: string[]) => [
 	{
 		type: 'grid',
 		name: '',
@@ -106,56 +114,57 @@ const ENTITY_COLOUR_TYPE_SCHEMA = (name: string, label: string) => [
 		selector: { select: { mode: 'dropdown', options: ['ui', 'rgb'] } },
 	},
 ];
-export const GRID_SCHEMA = (type: string) => [
-	ICON_SCHEMA('grid_icon', 'Grid Icon', GRID_ICON_DEFAULT),
+export const ENTITY_SCHEMA = (config: LovelaceCardConfig, type: string, label: string, defaultIcon: string) => [
+	ICON_SCHEMA(type + '_icon', label + ' Icon', defaultIcon),
 	{
 		type: 'grid',
 		name: '',
 		schema: [
-			...ENTITY_COLOUR_TYPE_SCHEMA('grid_colour', 'Colour Type'),
-			...ENTITY_COLOUR_SCHEMA(type, 'grid_colour', 'Grid Colour'),
+			...ENTITY_COLOUR_TYPE_SCHEMA(type + '_colour', 'Colour Type'),
+			...ENTITY_COLOUR_SCHEMA(config[`${type}_colour_type`], type + '_colour', label + ' Colour'),
 		],
 	},
 	//	...ENTITY_ACTION_SCHEMA('grid', 'Grid')
 ];
-export const HOUSE_SCHEMA = (type: string) => [
-	ICON_SCHEMA('house_icon', 'House Icon', HOUSE_ICON_DEFAULT),
-	{
-		type: 'grid',
-		name: '',
-		schema: [
-			...ENTITY_COLOUR_TYPE_SCHEMA('house_colour', 'Colour Type'),
-			...ENTITY_COLOUR_SCHEMA(type, 'house_colour', 'House Colour'),
-		],
-	},
-	//	...ENTITY_ACTION_SCHEMA('house', 'House')
+
+export const GRID_SCHEMA = (config: LovelaceCardConfig) => [
+	...ENTITY_SCHEMA(config, 'grid', 'Grid', GRID_ICON_DEFAULT),
 ];
-export const BATTERY_SCHEMA = (type: string) => [
-	{ name: 'battery_enabled', label: 'Battery enabled', selector: { boolean: {} } },
-	ICON_SCHEMA('battery_icon', 'Battery Icon', BATTERY_ICON_DEFAULT),
-	{
-		type: 'grid',
-		name: '',
-		schema: [
-			...ENTITY_COLOUR_TYPE_SCHEMA('battery_colour', 'Colour Type'),
-			...ENTITY_COLOUR_SCHEMA(type, 'battery_colour', 'Battery Colour'),
-		],
-	},
-	//	...ENTITY_ACTION_SCHEMA('battery', 'Battery')
+export const HOUSE_SCHEMA = (config: LovelaceCardConfig) => [
+	...ENTITY_SCHEMA(config, 'house', 'House', HOUSE_ICON_DEFAULT),
 ];
-export const SOLAR_SCHEMA = (type: string) => [
-	{ name: 'solar_enabled', label: 'Solar enabled', selector: { boolean: {} } },
-	ICON_SCHEMA('solar_icon', 'Solar Icon', SOLAR_ICON_DEFAULT),
-	{
-		type: 'grid',
-		name: '',
-		schema: [
-			...ENTITY_COLOUR_TYPE_SCHEMA('solar_colour', 'Colour Type'),
-			...ENTITY_COLOUR_SCHEMA(type, 'solar_colour', 'Solar Colour'),
-		],
-	},
-	//	...ENTITY_ACTION_SCHEMA('solar', 'Solar')
-];
+export const BATTERY_SCHEMA = (config: LovelaceCardConfig) => {
+	let settings: object[] = [{ name: 'battery_enabled', label: 'Battery enabled', selector: { boolean: {} } }];
+	if (config.battery_enabled) {
+		settings = [
+			...settings,
+			...ENTITY_SCHEMA(config, 'battery', 'Battery', BATTERY_ICON_DEFAULT),
+			{ name: 'eps_enabled', label: 'EPS enabled', selector: { boolean: {} } },
+		];
+		if (config.eps_enabled) {
+			settings = [...settings, ...ENTITY_SCHEMA(config, 'eps', 'EPS', EPS_ICON_DEFAULT)];
+		}
+	}
+	return settings;
+};
+export const SOLAR_SCHEMA = (config: LovelaceCardConfig) => {
+	let settings: object[] = [{ name: 'solar_enabled', label: 'Solar enabled', selector: { boolean: {} } }];
+	if (config.solar_enabled) {
+		settings = [...settings, ...ENTITY_SCHEMA(config, 'solar', 'Solar', SOLAR_ICON_DEFAULT)];
+	}
+	return settings;
+};
+export const EXTRAS_SCHEMA = (config: LovelaceCardConfig) => {
+	let settings: object[] = [{ name: 'custom1_enabled', label: 'Custom 1 enabled', selector: { boolean: {} } }];
+	if (config.custom1_enabled) {
+		settings = [...settings, ...ENTITY_SCHEMA(config, 'custom1', 'Custom 1', CUSTOM1_ICON_DEFAULT)];
+	}
+	settings.push({ name: 'custom2_enabled', label: 'Custom 2 enabled', selector: { boolean: {} } });
+	if (config.custom2_enabled) {
+		settings = [...settings, ...ENTITY_SCHEMA(config, 'custom2', 'Custom 2', CUSTOM2_ICON_DEFAULT)];
+	}
+	return settings;
+};
 export const LAYOUT_SCHEMA = [
 	{
 		name: 'entity_layout',
@@ -181,21 +190,20 @@ const LINE_GAP_SCHEMA = [
 		selector: { number: { mode: 'slider', min: 0, max: 5 } },
 	},
 ];
-export const LAYOUT_TYPE_SCHEMA = (layout: string): object[] => {
-	if (layout === 'cross') {
+export const LAYOUT_TYPE_SCHEMA = (config: LovelaceCardConfig): object[] => {
+	if (config.entity_layout === 'cross') {
 		return [
-			...LINE_GAP_SCHEMA,
 			{
 				name: 'corner_radius',
 				default: CORNER_RADIUS_DEFAULT,
 				label: 'Corner Radius',
 				selector: { number: { mode: 'slider', min: 1, max: 10 } },
 			},
+			...LINE_GAP_SCHEMA,
 		];
 	}
-	if (layout === 'square') {
-		return [
-			...LINE_GAP_SCHEMA,
+	if (config.entity_layout === 'square') {
+		let squareSettings: object[] = [
 			{
 				name: 'line_style',
 				default: CENTRE_ENTITY_DEFAULT,
@@ -212,17 +220,23 @@ export const LAYOUT_TYPE_SCHEMA = (layout: string): object[] => {
 				},
 			},
 		];
+		if (config.line_style === LineStyle.Curved) {
+			squareSettings = [...squareSettings, ...LINE_GAP_SCHEMA];
+		}
+		return squareSettings;
 	}
-	if (layout === 'circle') {
+	if (config.entity_layout === 'circle') {
 		return [
 			{
 				name: 'circle_size',
 				default: CIRCLE_SIZE_DEFAULT,
-				selector: { number: { mode: 'slider', min: 25, max: 50 } },
+				label: 'Circle Size',
+				selector: { number: { mode: 'slider', min: 35, max: 45 } },
 			},
 			{
 				name: 'centre_entity',
 				default: CENTRE_ENTITY_DEFAULT,
+				label: 'Centre Entity',
 				selector: {
 					select: {
 						mode: 'dropdown',

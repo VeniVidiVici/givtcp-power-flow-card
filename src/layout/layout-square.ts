@@ -1,8 +1,8 @@
 import { TemplateResult, html, svg } from 'lit';
 import { GivTCPPowerFlowCardLayout } from './layout';
 import { customElement, property } from 'lit/decorators.js';
-import { SVGUtils } from './svg-utils';
-import { LineStyle } from './types';
+import { SVGUtils } from '../utils/svg-utils';
+import { LineStyle } from '../types';
 
 @customElement('givtcp-power-flow-card-layout-square')
 export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
@@ -29,7 +29,7 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 			showClass = 'no-battery';
 		}
 		return html`
-			<div class="gtpc-layout gtpc-${showClass} gtpc-layout-cross">
+			<div class="gtpc-layout gtpc-${showClass} gtpc-line-style-${this.lineStyle} gtpc-layout-square">
 				${this.flowData.map(
 					(flow) =>
 						html`<givtcp-power-flow-card-entity

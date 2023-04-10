@@ -4,12 +4,13 @@ import { customElement, state } from 'lit/decorators.js';
 import {
 	BATTERY_SCHEMA,
 	cardConfigStruct,
-	ENTITY_SCHEMA,
+	INVERTER_BATTERY_SCHEMA,
 	GRID_SCHEMA,
 	HOUSE_SCHEMA,
 	LAYOUT_SCHEMA,
 	LAYOUT_TYPE_SCHEMA,
 	SOLAR_SCHEMA,
+	EXTRAS_SCHEMA,
 } from './schemas';
 import { assert } from 'superstruct';
 import {
@@ -21,7 +22,7 @@ import {
 	ENTITIES,
 } from './const';
 import { UnitOfPower } from './types';
-import { ConfigUtils } from './config-utils';
+import { ConfigUtils } from './utils/config-utils';
 
 @customElement('givtcp-power-flow-card-editor')
 export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCardEditor {
@@ -56,7 +57,7 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 			case 0:
 				return [
 					{ name: 'name', label: 'Name', selector: { text: {} } },
-					...ENTITY_SCHEMA(this._invertors, this._batteries),
+					...INVERTER_BATTERY_SCHEMA(this._invertors, this._batteries),
 					{
 						type: 'grid',
 						name: '',
@@ -103,15 +104,17 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 					},
 				];
 			case 1:
-				return [...LAYOUT_SCHEMA, ...LAYOUT_TYPE_SCHEMA(this._config?.entity_layout)];
+				return [...LAYOUT_SCHEMA, ...LAYOUT_TYPE_SCHEMA(this._config)];
 			case 2:
-				return [...GRID_SCHEMA(this._config?.grid_colour_type)];
+				return [...GRID_SCHEMA(this._config)];
 			case 3:
-				return [...SOLAR_SCHEMA(this._config?.solar_colour_type)];
+				return [...SOLAR_SCHEMA(this._config)];
 			case 4:
-				return [...BATTERY_SCHEMA(this._config?.battery_colour_type)];
+				return [...BATTERY_SCHEMA(this._config)];
 			case 5:
-				return [...HOUSE_SCHEMA(this._config?.house_colour_type)];
+				return [...HOUSE_SCHEMA(this._config)];
+			case 6:
+				return [...EXTRAS_SCHEMA(this._config)];
 			default:
 				return [];
 		}
