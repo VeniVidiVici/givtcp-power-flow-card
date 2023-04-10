@@ -30,6 +30,10 @@ import {
 	SOLAR_ENABLED_DEFAULT,
 	CORNER_RADIUS_DEFAULT,
 	LINE_STYLE_DEFAULT,
+	EPS_ENABLED_DEFAULT,
+	CUSTOM1_ICON_DEFAULT,
+	CUSTOM2_ICON_DEFAULT,
+	EPS_ICON_DEFAULT,
 } from './const';
 import { ConfigUtils } from './utils/config-utils';
 
@@ -71,6 +75,26 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	public static async getConfigElement(): Promise<LovelaceCardEditor> {
 		return document.createElement('givtcp-power-flow-card-editor') as LovelaceCardEditor;
+	}
+	private get _epsEnabled(): boolean {
+		return this._config?.eps_enabled == undefined || !this._batteryEnabled
+			? EPS_ENABLED_DEFAULT
+			: this._config?.eps_enabled;
+	}
+	private get _epsTotal(): FlowTotal | undefined {
+		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_eps_power`];
+		return !entity || !this._epsEnabled
+			? undefined
+			: {
+					total: parseInt(entity.state, 10),
+					parts: [{ type: 'eps', value: parseInt(entity.state, 10) }],
+			  };
+	}
+	private get _custom1Enabled(): boolean {
+		return this._config?.custom1_enabled == undefined ? false : this._config?.custom1_enabled;
+	}
+	private get _custom2Enabled(): boolean {
+		return this._config?.custom2_enabled == undefined ? false : this._config?.custom2_enabled;
 	}
 	private get _lineStyle(): string {
 		return this._config?.line_style || LINE_STYLE_DEFAULT;
@@ -114,7 +138,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		return this._config?.power_margin || POWER_MARGIN_DEFAULT;
 	}
 	private get _lineGap(): number {
-		return this._config?.line_gap || LINE_GAP_DEFAULT;
+		return this._config?.line_gap === undefined ? LINE_GAP_DEFAULT : this._config?.line_gap;
 	}
 	private get _circleSize(): number {
 		return this._config?.circle_size || CIRCLE_SIZE_DEFAULT;
@@ -160,6 +184,12 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				return this._config?.grid_icon || GRID_ICON_DEFAULT;
 			case 'house':
 				return this._config?.house_icon || HOUSE_ICON_DEFAULT;
+			case 'eps':
+				return this._config?.eps_icon || EPS_ICON_DEFAULT;
+			case 'custom1':
+				return this._config?.custom1_icon || CUSTOM1_ICON_DEFAULT;
+			case 'custom2':
+				return this._config?.custom2_icon || CUSTOM2_ICON_DEFAULT;
 			default:
 				return '';
 		}
@@ -197,18 +227,26 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		return amount < this._powerMargin ? 0 : amount;
 	}
 	private getTotalFor(type: string, direction: FlowDirection): FlowTotal | undefined {
-		return this._activeFlows.reduce((acc: FlowTotal | undefined, flow) => {
-			const m = direction === FlowDirection.In ? flow.to === type : flow.from === type;
-			const power = this.getCleanPowerForFlow(flow.from, flow.to);
-			if (m && power !== undefined) {
-				if (acc === undefined) {
-					acc = { total: 0, parts: [] };
-				}
-				acc.parts.push({ type: flow.from, value: power });
-				acc.total += power;
-			}
-			return acc;
-		}, undefined);
+		switch (type) {
+			case 'eps':
+				return this._epsTotal;
+			case 'custom1':
+			case 'custom2':
+				return undefined;
+			default:
+				return this._activeFlows.reduce((acc: FlowTotal | undefined, flow) => {
+					const m = direction === FlowDirection.In ? flow.to === type : flow.from === type;
+					const power = this.getCleanPowerForFlow(flow.from, flow.to);
+					if (m && power !== undefined) {
+						if (acc === undefined) {
+							acc = { total: 0, parts: [] };
+						}
+						acc.parts.push({ type: flow.from, value: power });
+						acc.total += power;
+					}
+					return acc;
+				}, undefined);
+		}
 	}
 	constructor() {
 		super();
@@ -216,7 +254,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private setEntitySize(width: number): void {
 		setTimeout(() => {
 			this._width = width;
-			this.style.setProperty('--gtpc-size', Math.round(width / this._entitySize) + 'px');
+			this.style.setProperty('--gtpc-size', Math.ceil(width / this._entitySize) + 'px');
+			// this.style.setProperty('--gtpc-circle-offset', `${(width - (this._circleSize / 50) * width)}px`);
 			this.requestUpdate();
 		}, 0);
 	}
@@ -286,6 +325,24 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	render(): TemplateResult {
 		const flowData: FlowData[] = [
 			{
+				type: 'eps',
+				icon: this.getIconFor('eps'),
+				name: 'EPS',
+				out: this.getTotalFor('eps', FlowDirection.Out),
+			},
+			{
+				type: 'custom1',
+				icon: this.getIconFor('custom1'),
+				name: 'Custom 1',
+				out: this.getTotalFor('custom1', FlowDirection.Out),
+			},
+			{
+				type: 'custom2',
+				icon: this.getIconFor('custom2'),
+				name: 'Custom 2',
+				out: this.getTotalFor('custom2', FlowDirection.Out),
+			},
+			{
 				type: 'solar',
 				icon: this.getIconFor('solar'),
 				name: 'Solar',
@@ -326,6 +383,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					.lineGap=${this._lineGap}
 					.cornerRadius=${this._cornerRadius}
 					.entitySize=${this._entitySize}
+					.epsEnabled=${this._epsEnabled}
+					.custom1Enabled=${this._custom1Enabled}
+					.custom2Enabled=${this._custom2Enabled}
 				/>`;
 				break;
 			case EntityLayout.Square:
@@ -339,6 +399,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					.lineGap=${this._lineGap}
 					.lineStyle=${this._lineStyle}
 					.entitySize=${this._entitySize}
+					.epsEnabled=${this._epsEnabled}
+					.custom1Enabled=${this._custom1Enabled}
+					.custom2Enabled=${this._custom2Enabled}
 				/>`;
 				break;
 			case EntityLayout.Circle:
@@ -352,6 +415,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					.centreEntity=${this._centreEntity}
 					.circleSize=${this._circleSize}
 					.entitySize=${this._entitySize}
+					.epsEnabled=${this._epsEnabled}
+					.custom1Enabled=${this._custom1Enabled}
+					.custom2Enabled=${this._custom2Enabled}
 				/>`;
 				break;
 			default:
@@ -363,7 +429,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	private entityDetails(evt: CustomEvent): void {
 		evt.stopPropagation();
-		console.log(evt.detail.type);
 		switch (evt.detail.type) {
 			case 'grid':
 				fireEvent(this, 'hass-more-info', { entityId: `sensor.givtcp_${this._invertorSerial}_grid_power` });
@@ -373,6 +438,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				break;
 			case 'battery':
 				fireEvent(this, 'hass-more-info', { entityId: `sensor.givtcp_${this._invertorSerial}_battery_power` });
+				break;
+			case 'eps':
+				fireEvent(this, 'hass-more-info', { entityId: `sensor.givtcp_${this._invertorSerial}_eps_power` });
 				break;
 			case 'house':
 				break;
@@ -445,44 +513,139 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			width: 100%;
 			height: 100%;
 			box-sizing: border-box;
+			margin: 30px 0;
 		}
+		givtcp-power-flow-card-entity[data-type='eps'],
 		givtcp-power-flow-card-entity[data-type='grid'],
 		givtcp-power-flow-card-entity[data-type='solar'],
 		givtcp-power-flow-card-entity[data-type='battery'] {
 			cursor: var(--gtpc-click-cursor);
 		}
+		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='eps'],
+		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='eps'],
+		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='eps'] {
+			left: 0;
+			bottom: 0;
+		}
 		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
+		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='grid'] {
 			left: 0;
 			top: calc(50% - var(--gtpc-size) / 2);
 		}
 		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='solar'],
+		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='solar'],
 		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='solar'] {
 			top: 0;
 			left: calc(50% - var(--gtpc-size) / 2);
 		}
 		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'],
+		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='house'],
 		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='house'] {
 			right: 0;
 			top: calc(50% - var(--gtpc-size) / 2);
 		}
 		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='battery'],
+		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='battery'],
 		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='battery'] {
 			bottom: 0;
 			left: calc(50% - var(--gtpc-size) / 2);
 		}
+		.gtpc-no-solar.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='grid'],
+		.gtpc-no-solar.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='house'],
 		.gtpc-no-solar.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-no-solar.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'],
 		.gtpc-no-solar.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-no-solar.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='house'] {
 			top: 0;
 		}
+		.gtpc-no-battery.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='grid'],
+		.gtpc-no-battery.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='house'],
 		.gtpc-no-battery.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-no-battery.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'],
 		.gtpc-no-battery.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-no-battery.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='house'] {
 			bottom: 0;
 			top: initial;
+		}
+		.gtpc-line-style-angled.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='eps'] {
+			left: var(--gtpc-size);
+			bottom: var(--gtpc-size);
+		}
+		.gtpc-layout-circle .gtpc-entity-name[data-entity-type='grid'] {
+			display: none;
+		}
+		.gtpc-layout-circle .gtpc-entity-name[data-entity-type='house'] {
+			display: none;
+		}
+		.gtpc-line-style-straight.gtpc-layout-square .gtpc-entity-name[data-entity-type='grid'],
+		.gtpc-line-style-angled.gtpc-layout-square .gtpc-entity-name[data-entity-type='grid'] {
+			display: none;
+		}
+		.gtpc-line-style-straight.gtpc-layout-square .gtpc-entity-name[data-entity-type='house'],
+		.gtpc-line-style-angled.gtpc-layout-square .gtpc-entity-name[data-entity-type='house'] {
+			display: none;
+		}
+
+		.gtpc-entity {
+			z-index: 2;
+			display: flex;
+			flex-direction: column;
+			flex-wrap: nowrap;
+			justify-content: center;
+			align-items: center;
+			align-content: normal;
+			width: var(--gtpc-size);
+			aspect-ratio: 1 / 1;
+			box-sizing: border-box;
+			overflow: hidden;
+		}
+		.gtpc-entity > * {
+			display: block;
+			flex-grow: 0;
+			flex-shrink: 1;
+			flex-basis: auto;
+			align-self: auto;
+			order: 0;
+			z-index: 2;
+		}
+		.gtpc-entity > span[data-power='0'] {
+			display: none;
+		}
+		.gtpc-entity.gtpc-entity-single > span > ha-icon {
+			display: none;
+		}
+		.gtpc-entity-extra,
+		.gtpc-entity-in,
+		.gtpc-entity-out,
+		.gtpc-entity-name {
+			color: var(--gtpc-icons-and-text-colour, var(--gtpc-color));
+			box-sizing: border-box;
+			font-size: calc(var(--gtpc-size) * 0.15);
+			--mdc-icon-size: calc(var(--gtpc-size) * 0.15);
+			line-height: 1;
+		}
+		.gtpc-entity-icon {
+			--mdc-icon-size: calc(var(--gtpc-size) * 0.3);
+			color: var(--gtpc-icons-and-text-colour, var(--gtpc-color));
+		}
+		.gtpc-entity-name {
+			text-align: center;
+			position: absolute;
+			bottom: calc(var(--gtpc-size) * -0.2);
+		}
+		.gtpc-entity-name[data-entity-type='solar'] {
+			bottom: initial;
+			top: calc(var(--gtpc-size) * -0.2);
+		}
+		givtcp-power-flow-card-entity > svg {
+			position: absolute;
+			z-index: 0;
+		}
+		givtcp-power-flow-card-entity > svg > path {
+			fill: var(--ha-card-background, var(--card-background-color, white));
+			stroke-width: var(--gtpc-line-size);
+			vector-effect: non-scaling-stroke;
 		}
 	`;
 }

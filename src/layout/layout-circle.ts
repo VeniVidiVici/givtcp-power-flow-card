@@ -11,14 +11,34 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 	private width = 100;
 	private midX = 50;
 
+	private get midY(): number {
+		if (this.hasBattery && !this.hasSolar) {
+			return this.height / this.entitySize;
+		} else if (this.hasSolar && !this.hasBattery) {
+			return this.height - this.entityWidth / 2;
+		} else {
+			return this.height / 2;
+		}
+	}
+	private get circleMidY(): number {
+		if (this.hasBattery && !this.hasSolar) {
+			return 0;
+		} else if (this.hasSolar && !this.hasBattery) {
+			return this.height;
+		} else {
+			return this.midX;
+		}
+	}
 	private get entityWidth(): number {
 		return 100 / this.entitySize;
 	}
 	private get height(): number {
-		if (!this.hasSolar || !this.hasBattery) {
-			return this.width / 2;
+		if (!this.hasSolar && !this.hasBattery) {
+			return this.entityWidth;
+		} else if (!this.hasSolar || !this.hasBattery) {
+			return (this.entityWidth * this.entitySize) / 2;
 		} else {
-			return this.width;
+			return this.entityWidth * this.entitySize;
 		}
 	}
 	render(): TemplateResult {
@@ -53,33 +73,24 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 	}
 
 	private getPathForFlow(flow: string): string {
-		const entityPos = 100 / this.entitySize;
-
-		let midY = this.height / 2;
-		if (!this.hasSolar) {
-			midY = this.height / this.entitySize;
-		} else if (!this.hasBattery) {
-			midY = this.height - this.entityWidth / 2;
-		}
-
 		const circumference = Math.ceil(2 * Math.PI * this.circleSize);
 		const offset = Math.ceil(((this.entityWidth - 0) / circumference) * 100);
 		const segment = 25 - offset;
 		switch (flow) {
 			case 'solar-to-house':
-				return SVGUtils.getCirclePath(segment, offset / 2, this.circleSize, { x: 50, y: midY });
+				return SVGUtils.getCirclePath(segment, offset / 2, this.circleSize, { x: this.midX, y: this.circleMidY });
 			case 'battery-to-house':
-				return SVGUtils.getCirclePath(segment, 25 + offset / 2, this.circleSize, { x: 50, y: midY });
+				return SVGUtils.getCirclePath(segment, 25 + offset / 2, this.circleSize, { x: this.midX, y: this.circleMidY });
 			case 'battery-to-grid':
-				return SVGUtils.getCirclePath(segment, 50 + offset / 2, this.circleSize, { x: 50, y: midY });
+				return SVGUtils.getCirclePath(segment, 50 + offset / 2, this.circleSize, { x: this.midX, y: this.circleMidY });
 			case 'grid-to-battery':
-				return SVGUtils.getCirclePath(segment, 50 + offset / 2, this.circleSize, { x: 50, y: midY });
+				return SVGUtils.getCirclePath(segment, 50 + offset / 2, this.circleSize, { x: this.midX, y: this.circleMidY });
 			case 'solar-to-grid':
-				return SVGUtils.getCirclePath(segment, 75 + offset / 2, this.circleSize, { x: 50, y: midY });
+				return SVGUtils.getCirclePath(segment, 75 + offset / 2, this.circleSize, { x: this.midX, y: this.circleMidY });
 			case 'solar-to-battery':
-				return SVGUtils.getCurvePath(this.midX, entityPos, this.midX, this.height - entityPos, 0);
+				return SVGUtils.getCurvePath(this.midX, this.entityWidth, this.midX, this.height - this.entityWidth, 0);
 			case 'grid-to-house':
-				return SVGUtils.getCurvePath(entityPos, midY, this.width - entityPos, midY, 0);
+				return SVGUtils.getCurvePath(this.entityWidth, this.midY, this.width - this.entityWidth, this.midY, 0);
 			default:
 				return '';
 		}

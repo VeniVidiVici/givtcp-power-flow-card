@@ -22,6 +22,13 @@ import {
 	SOLAR_ENABLED_DEFAULT,
 	CORNER_RADIUS_DEFAULT,
 	LINE_STYLE_DEFAULT,
+	EPS_ENABLED_DEFAULT,
+	CUSTOM1_COLOUR_RGB_DEFAULT,
+	CUSTOM1_COLOUR_UI_DEFAULT,
+	CUSTOM2_COLOUR_RGB_DEFAULT,
+	CUSTOM2_COLOUR_UI_DEFAULT,
+	EPS_COLOUR_RGB_DEFAULT,
+	EPS_COLOUR_UI_DEFAULT,
 } from '../const';
 import { EntityLayout } from '../types';
 
@@ -43,14 +50,21 @@ export class ConfigUtils {
 			solar_colour_type: COLOUR_TYPE_DEFAULT,
 			battery_colour_type: COLOUR_TYPE_DEFAULT,
 			house_colour_type: COLOUR_TYPE_DEFAULT,
+			eps_colour_type: COLOUR_TYPE_DEFAULT,
+			custom1_colour_type: COLOUR_TYPE_DEFAULT,
+			custom2_colour_type: COLOUR_TYPE_DEFAULT,
 			battery_enabled: BATTERY_ENABLED_DEFAULT,
 			solar_enabled: SOLAR_ENABLED_DEFAULT,
 			corner_radius: CORNER_RADIUS_DEFAULT,
 			line_style: LINE_STYLE_DEFAULT,
+			eps_enabled: EPS_ENABLED_DEFAULT,
 			grid_colour: config.grid_colour_type === 'rgb' ? GRID_COLOUR_RGB_DEFAULT : GRID_COLOUR_UI_DEFAULT,
 			solar_colour: config.solar_colour_type === 'rgb' ? SOLAR_COLOUR_RGB_DEFAULT : SOLAR_COLOUR_UI_DEFAULT,
 			battery_colour: config.battery_colour_type === 'rgb' ? BATTERY_COLOUR_RGB_DEFAULT : BATTERY_COLOUR_UI_DEFAULT,
 			house_colour: config.house_colour_type === 'rgb' ? HOUSE_COLOUR_RGB_DEFAULT : HOUSE_COLOUR_UI_DEFAULT,
+			eps_colour: config.eps_colour_type === 'rgb' ? EPS_COLOUR_RGB_DEFAULT : EPS_COLOUR_UI_DEFAULT,
+			custom1_colour: config.custom1_colour_type === 'rgb' ? CUSTOM1_COLOUR_RGB_DEFAULT : CUSTOM1_COLOUR_UI_DEFAULT,
+			custom2_colour: config.custom2_colour_type === 'rgb' ? CUSTOM2_COLOUR_RGB_DEFAULT : CUSTOM2_COLOUR_UI_DEFAULT,
 		};
 		return defaults;
 	}

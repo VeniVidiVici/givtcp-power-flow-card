@@ -29,7 +29,7 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 			showClass = 'no-battery';
 		}
 		return html`
-			<div class="gtpc-layout gtpc-${showClass} gtpc-layout-cross">
+			<div class="gtpc-layout gtpc-${showClass} gtpc-line-style-${this.lineStyle} gtpc-layout-square">
 				${this.flowData.map(
 					(flow) =>
 						html`<givtcp-power-flow-card-entity
