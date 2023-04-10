@@ -11,8 +11,13 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 	private width = 100;
 	private midX = 50;
 
+	private get entityWidth(): number {
+		return 100 / this.entitySize;
+	}
 	private get midY(): number {
-		if (this.hasBattery && !this.hasSolar) {
+		if ((this.hasCustom1 && this.hasCustom2) || (this.hasSolar && this.hasCustom2)) {
+			return this.height / 2;
+		} else if (this.hasBattery && !this.hasSolar) {
 			return this.height / this.entitySize;
 		} else if (this.hasSolar && !this.hasBattery) {
 			return this.height - this.entityWidth / 2;
@@ -21,19 +26,20 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		}
 	}
 	private get circleMidY(): number {
-		if (this.hasBattery && !this.hasSolar) {
+		if ((this.hasCustom1 && this.hasCustom2) || (this.hasSolar && this.hasCustom2)) {
+			return this.height / 2;
+		} else if (this.hasBattery && !this.hasSolar) {
 			return 0;
 		} else if (this.hasSolar && !this.hasBattery) {
 			return this.height;
 		} else {
-			return this.midX;
+			return this.height / 2;
 		}
 	}
-	private get entityWidth(): number {
-		return 100 / this.entitySize;
-	}
 	private get height(): number {
-		if (!this.hasSolar && !this.hasBattery) {
+		if ((this.hasCustom1 && this.hasCustom2) || (this.hasSolar && this.hasCustom2)) {
+			return this.entityWidth * this.entitySize;
+		} else if (!this.hasSolar && !this.hasBattery) {
 			return this.entityWidth;
 		} else if (!this.hasSolar || !this.hasBattery) {
 			return (this.entityWidth * this.entitySize) / 2;
@@ -43,9 +49,9 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 	}
 	render(): TemplateResult {
 		let showClass = 'full';
-		if (!this.hasSolar) {
+		if (!this.hasSolar && !this.hasCustom1) {
 			showClass = 'no-solar';
-		} else if (!this.hasBattery) {
+		} else if (!this.hasBattery && !this.hasCustom2) {
 			showClass = 'no-battery';
 		}
 		return html`
@@ -91,6 +97,20 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 				return SVGUtils.getCurvePath(this.midX, this.entityWidth, this.midX, this.height - this.entityWidth, 0);
 			case 'grid-to-house':
 				return SVGUtils.getCurvePath(this.entityWidth, this.midY, this.width - this.entityWidth, this.midY, 0);
+			case 'house-to-custom1':
+				return SVGUtils.getStraightPath(
+					this.width - this.entityWidth / 2,
+					this.entityWidth,
+					this.width - this.entityWidth / 2,
+					this.midY - this.entityWidth / 2
+				);
+			case 'house-to-custom2':
+				return SVGUtils.getStraightPath(
+					this.width - this.entityWidth / 2,
+					this.height - this.entityWidth,
+					this.width - this.entityWidth / 2,
+					this.midY + this.entityWidth / 2
+				);
 			default:
 				return '';
 		}
