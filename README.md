@@ -1,7 +1,7 @@
 # givtcp-power-flow-card
 
 > **⚠ WARNING: VERY MUCH IN ALPHA STAGE**
-> While basic functionality is working this is still very much alpha, there are settings in the config UI that are not yet implimented and some basic settings are still missing.
+> While basic functionality is working this is still very much beta, there are settings in the config UI that are not yet implimented and some basic settings are still missing.
 
 [home-assistant](home-assistant.io) power flow card for [GivTCP](https://github.com/britkat1980/giv_tcp) users.
 
