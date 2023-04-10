@@ -62,13 +62,19 @@ export const cardConfigStruct = assign(
 		eps_colour_type: optional(string()),
 		eps_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
 		custom1_enabled: optional(boolean()),
+		custom1_name: optional(string()),
 		custom1_icon: optional(string()),
 		custom1_colour_type: optional(string()),
 		custom1_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
+		custom1_sensor: optional(entityId()),
+		custom1_extra_sensor: optional(entityId()),
 		custom2_enabled: optional(boolean()),
+		custom2_name: optional(string()),
 		custom2_icon: optional(string()),
 		custom2_colour_type: optional(string()),
 		custom2_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
+		custom2_sensor: optional(entityId()),
+		custom2_extra_sensor: optional(entityId()),
 	})
 );
 
@@ -77,8 +83,8 @@ export const INVERTER_BATTERY_SCHEMA = (invertors: string[], batteries: string[]
 		type: 'grid',
 		name: '',
 		schema: [
-			{ title: 'Invertor', name: 'invertor', selector: { entity: { include_entities: invertors } } },
-			{ title: 'Battery', name: 'battery', selector: { entity: { include_entities: batteries } } },
+			{ label: 'Invertor', name: 'invertor', selector: { entity: { include_entities: invertors } } },
+			{ label: 'Battery', name: 'battery', selector: { entity: { include_entities: batteries } } },
 		],
 	},
 ];
@@ -115,7 +121,7 @@ const ENTITY_COLOUR_TYPE_SCHEMA = (name: string, label: string) => [
 	},
 ];
 export const ENTITY_SCHEMA = (config: LovelaceCardConfig, type: string, label: string, defaultIcon: string) => [
-	ICON_SCHEMA(type + '_icon', label + ' Icon', defaultIcon),
+	ICON_SCHEMA(type + '_icon', 'Icon', defaultIcon),
 	{
 		type: 'grid',
 		name: '',
@@ -157,11 +163,43 @@ export const SOLAR_SCHEMA = (config: LovelaceCardConfig) => {
 export const EXTRAS_SCHEMA = (config: LovelaceCardConfig) => {
 	let settings: object[] = [{ name: 'custom1_enabled', label: 'Custom 1 enabled', selector: { boolean: {} } }];
 	if (config.custom1_enabled) {
-		settings = [...settings, ...ENTITY_SCHEMA(config, 'custom1', 'Custom 1', CUSTOM1_ICON_DEFAULT)];
+		settings = [
+			...settings,
+			{ name: 'custom1_name', label: 'Name', selector: { text: {} } },
+			{
+				type: 'grid',
+				name: '',
+				schema: [
+					{
+						name: 'custom1_sensor',
+						label: 'Power Sensor',
+						selector: { entity: { filter: { device_class: 'power' } } },
+					},
+					{ name: 'custom1_extra_sensor', label: 'Extra Data', selector: { entity: { domain: 'sensor' } } },
+				],
+			},
+			...ENTITY_SCHEMA(config, 'custom1', 'Custom 1', CUSTOM1_ICON_DEFAULT),
+		];
 	}
 	settings.push({ name: 'custom2_enabled', label: 'Custom 2 enabled', selector: { boolean: {} } });
 	if (config.custom2_enabled) {
-		settings = [...settings, ...ENTITY_SCHEMA(config, 'custom2', 'Custom 2', CUSTOM2_ICON_DEFAULT)];
+		settings = [
+			...settings,
+			{ name: 'custom2_name', label: 'Name', selector: { text: {} } },
+			{
+				type: 'grid',
+				name: '',
+				schema: [
+					{
+						name: 'custom2_sensor',
+						label: 'Power Sensor',
+						selector: { entity: { filter: { device_class: 'power' } } },
+					},
+					{ name: 'custom2_extra_sensor', label: 'Extra Data', selector: { entity: { domain: 'sensor' } } },
+				],
+			},
+			...ENTITY_SCHEMA(config, 'custom2', 'Custom 2', CUSTOM2_ICON_DEFAULT),
+		];
 	}
 	return settings;
 };

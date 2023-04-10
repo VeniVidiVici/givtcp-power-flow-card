@@ -112,9 +112,7 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 			case 4:
 				return [...BATTERY_SCHEMA(this._config)];
 			case 5:
-				return [...HOUSE_SCHEMA(this._config)];
-			case 6:
-				return [...EXTRAS_SCHEMA(this._config)];
+				return [...HOUSE_SCHEMA(this._config), ...EXTRAS_SCHEMA(this._config)];
 			default:
 				return [];
 		}
@@ -152,7 +150,6 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				<paper-tab>Solar</paper-tab>
 				<paper-tab>Battery</paper-tab>
 				<paper-tab>House</paper-tab>
-				<paper-tab>Extra</paper-tab>
 			</ha-tabs>
 			<ha-form
 				.hass=${this.hass}
@@ -177,10 +174,6 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				return 'Battery';
 			case 'entity_layout':
 				return 'Layout';
-			case 'circle_size':
-				return 'Circle Size';
-			case 'centre_entity':
-				return 'Centre Entity';
 			default:
 				return schema.name;
 		}

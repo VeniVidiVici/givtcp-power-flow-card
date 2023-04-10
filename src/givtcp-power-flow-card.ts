@@ -8,6 +8,8 @@ import './layout/layout-cross';
 import './layout/layout-circle';
 import './layout/layout-square';
 
+import { HassEntity } from 'home-assistant-js-websocket';
+
 import { CentreEntity, FlowData, EntityLayout, FlowDirection, FlowTotal } from './types';
 import {
 	CENTRE_ENTITY_DEFAULT,
@@ -34,6 +36,8 @@ import {
 	CUSTOM1_ICON_DEFAULT,
 	CUSTOM2_ICON_DEFAULT,
 	EPS_ICON_DEFAULT,
+	CUSTOM1_ENABLED_DEFAULT,
+	CUSTOM2_ENABLED_DEFAULT,
 } from './const';
 import { ConfigUtils } from './utils/config-utils';
 
@@ -59,6 +63,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		{ from: 'battery', to: 'grid', direction: FlowDirection.In },
 		{ from: 'grid', to: 'house', direction: FlowDirection.In },
 		{ from: 'grid', to: 'battery', direction: FlowDirection.Out },
+		{ from: 'house', to: 'custom1', direction: FlowDirection.Out },
+		{ from: 'house', to: 'custom2', direction: FlowDirection.Out },
 	];
 
 	private _width!: number;
@@ -66,15 +72,26 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private _animate!: boolean;
 	private _previousTimeStamp!: number;
 
+	public static async getConfigElement(): Promise<LovelaceCardEditor> {
+		return document.createElement('givtcp-power-flow-card-editor') as LovelaceCardEditor;
+	}
 	private get _activeFlows(): { from: string; to: string; direction: FlowDirection }[] {
 		return this.flows.filter((flow) => {
 			if (!this._solarEnabled && flow.from === 'solar') return false;
 			if (!this._batteryEnabled && (flow.from === 'battery' || flow.to === 'battery')) return false;
+			if (!this._custom1Enabled && flow.to === 'custom1') return false;
+			if (!this._custom2Enabled && flow.to === 'custom2') return false;
+			if (!this._epsEnabled && flow.to === 'eps') return false;
 			return true;
 		});
 	}
-	public static async getConfigElement(): Promise<LovelaceCardEditor> {
-		return document.createElement('givtcp-power-flow-card-editor') as LovelaceCardEditor;
+	private get _custom1Extra(): string | undefined {
+		const entity: HassEntity = this.hass.states[this._config?.custom1_extra_sensor];
+		return !entity || !this._custom1Enabled ? undefined : this.getFormatedState(entity);
+	}
+	private get _custom2Extra(): string | undefined {
+		const entity = this.hass.states[this._config?.custom2_extra_sensor];
+		return !entity || !this._custom2Enabled ? undefined : this.getFormatedState(entity);
 	}
 	private get _epsEnabled(): boolean {
 		return this._config?.eps_enabled == undefined || !this._batteryEnabled
@@ -90,11 +107,35 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					parts: [{ type: 'eps', value: parseInt(entity.state, 10) }],
 			  };
 	}
+	private get _custom1Total(): FlowTotal | undefined {
+		const entity = this.hass.states[this._config?.custom1_sensor];
+		return !entity || !this._custom1Enabled
+			? undefined
+			: {
+					total: this.getStateAsWatts(entity),
+					parts: [{ type: 'custom1', value: this.getStateAsWatts(entity) }],
+			  };
+	}
+	private get _custom2Total(): FlowTotal | undefined {
+		const entity = this.hass.states[this._config?.custom2_sensor];
+		return !entity || !this._custom2Enabled
+			? undefined
+			: {
+					total: this.getStateAsWatts(entity),
+					parts: [{ type: 'custom2', value: this.getStateAsWatts(entity) }],
+			  };
+	}
 	private get _custom1Enabled(): boolean {
-		return this._config?.custom1_enabled == undefined ? false : this._config?.custom1_enabled;
+		return this._config?.custom1_enabled == undefined ? CUSTOM1_ENABLED_DEFAULT : this._config?.custom1_enabled;
 	}
 	private get _custom2Enabled(): boolean {
-		return this._config?.custom2_enabled == undefined ? false : this._config?.custom2_enabled;
+		return this._config?.custom2_enabled == undefined ? CUSTOM2_ENABLED_DEFAULT : this._config?.custom2_enabled;
+	}
+	private get _custom1Name(): string {
+		return this._config?.custom1_name || 'Custom 1';
+	}
+	private get _custom2Name(): string {
+		return this._config?.custom2_name || 'Custom 2';
 	}
 	private get _lineStyle(): string {
 		return this._config?.line_style || LINE_STYLE_DEFAULT;
@@ -162,6 +203,29 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private get _batteryEnabled(): boolean {
 		return this._config?.battery_enabled == undefined ? true : this._config?.battery_enabled;
 	}
+	private getFormatedState(entity: HassEntity): string {
+		return `${entity.state}${entity.attributes.unit_of_measurement || ''}`;
+	}
+	private getStateAsWatts(entity: HassEntity): number {
+		if (entity.state === undefined) {
+			return 0;
+		}
+		if (entity.attributes.unit_of_measurement === undefined) {
+			return parseInt(entity.state, 10);
+		}
+		switch (entity.attributes.unit_of_measurement.toLowerCase()) {
+			case 'w':
+				return parseInt(entity.state, 10);
+			case 'kw':
+				return parseInt(entity.state, 10) * 1000;
+			case 'wh':
+				return parseInt(entity.state, 10) / 3600;
+			case 'kwh':
+				return (parseInt(entity.state, 10) * 1000) / 3600;
+			default:
+				return parseInt(entity.state, 10);
+		}
+	}
 	private getIconFor(type: string, level: undefined | number = undefined): string {
 		let icon;
 		switch (type) {
@@ -195,7 +259,14 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 	}
 	private getDemoPowerForFlow(from: string, to: string): number | undefined {
-		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_${from}_to_${to}`];
+		let entity;
+		if (to === 'custom1') {
+			entity = entity = this.hass.states[this._config?.custom1_sensor];
+		} else if (to === 'custom2') {
+			entity = entity = this.hass.states[this._config?.custom2_sensor];
+		} else {
+			entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_${from}_to_${to}`];
+		}
 		if (entity !== undefined) {
 			if (from === 'grid' && to === 'house') {
 				return 668;
@@ -211,6 +282,10 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				return 445;
 			} else if (from === 'solar' && to === 'grid') {
 				return 0;
+			} else if (from === 'house' && to === 'custom1') {
+				return 800;
+			} else if (from === 'house' && to === 'custom2') {
+				return 1000;
 			}
 			return 0;
 		}
@@ -219,7 +294,17 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private getCleanPowerForFlow(from: string, to: string): number | undefined {
 		if (!this._batteryEnabled && (from === 'battery' || to === 'battery')) return undefined;
 		if (!this._solarEnabled && (from === 'solar' || to === 'solar')) return undefined;
+		if (!this._epsEnabled && (from === 'eps' || to === 'eps')) return undefined;
+		if (!this._custom1Enabled && (from === 'custom1' || to === 'custom1')) return undefined;
+		if (!this._custom2Enabled && (from === 'custom2' || to === 'custom2')) return undefined;
 		if (this._config?.demo_mode) return this.getDemoPowerForFlow(from, to);
+		if (to === 'custom1') {
+			return this._custom1Total ? this.cleanSensorData(this._custom1Total.total) : undefined;
+		} else if (to === 'custom2') {
+			return this._custom2Total ? this.cleanSensorData(this._custom2Total.total) : undefined;
+		} else if (to === 'eps') {
+			return this._epsTotal ? this.cleanSensorData(this._epsTotal.total) : undefined;
+		}
 		const entity = this.hass.states[`sensor.givtcp_${this._invertorSerial}_${from}_to_${to}`];
 		return entity !== undefined ? this.cleanSensorData(parseFloat(entity?.state)) : undefined;
 	}
@@ -231,8 +316,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			case 'eps':
 				return this._epsTotal;
 			case 'custom1':
+				return this._custom1Total;
 			case 'custom2':
-				return undefined;
+				return this._custom2Total;
 			default:
 				return this._activeFlows.reduce((acc: FlowTotal | undefined, flow) => {
 					const m = direction === FlowDirection.In ? flow.to === type : flow.from === type;
@@ -333,13 +419,15 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			{
 				type: 'custom1',
 				icon: this.getIconFor('custom1'),
-				name: 'Custom 1',
+				name: this._custom1Name,
+				extra: this._custom1Extra,
 				out: this.getTotalFor('custom1', FlowDirection.Out),
 			},
 			{
 				type: 'custom2',
 				icon: this.getIconFor('custom2'),
-				name: 'Custom 2',
+				name: this._custom2Name,
+				extra: this._custom2Extra,
 				out: this.getTotalFor('custom2', FlowDirection.Out),
 			},
 			{
@@ -371,51 +459,49 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			},
 		].filter((v) => v.in !== undefined || v.out !== undefined);
 		let layout = html``;
+		let classes = '';
+		if (this._epsEnabled) classes += ' gtpc-eps';
+		if (this._custom1Enabled) classes += ' gtpc-custom1';
+		if (this._custom2Enabled) classes += ' gtpc-custom2';
 		switch (this._entityLayout) {
 			case EntityLayout.Cross:
 				layout = html`<givtcp-power-flow-card-layout-cross
+					class="${classes}"
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
 					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
 					.lineWidth=${this._lineWidth}
-					.hasBattery=${this._batteryEnabled}
-					.hasSolar=${this._solarEnabled}
 					.lineGap=${this._lineGap}
 					.cornerRadius=${this._cornerRadius}
 					.entitySize=${this._entitySize}
-					.epsEnabled=${this._epsEnabled}
 					.custom1Enabled=${this._custom1Enabled}
 					.custom2Enabled=${this._custom2Enabled}
 				/>`;
 				break;
 			case EntityLayout.Square:
 				layout = html`<givtcp-power-flow-card-layout-square
+					class="${classes}"
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
 					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
 					.lineWidth=${this._lineWidth}
-					.hasBattery=${this._batteryEnabled}
-					.hasSolar=${this._solarEnabled}
 					.lineGap=${this._lineGap}
 					.lineStyle=${this._lineStyle}
 					.entitySize=${this._entitySize}
-					.epsEnabled=${this._epsEnabled}
 					.custom1Enabled=${this._custom1Enabled}
 					.custom2Enabled=${this._custom2Enabled}
 				/>`;
 				break;
 			case EntityLayout.Circle:
 				layout = html`<givtcp-power-flow-card-layout-circle
+					class="${classes}"
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
 					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
 					.lineWidth=${this._lineWidth}
-					.hasBattery=${this._batteryEnabled}
-					.hasSolar=${this._solarEnabled}
 					.centreEntity=${this._centreEntity}
 					.circleSize=${this._circleSize}
 					.entitySize=${this._entitySize}
-					.epsEnabled=${this._epsEnabled}
 					.custom1Enabled=${this._custom1Enabled}
 					.custom2Enabled=${this._custom2Enabled}
 				/>`;
@@ -521,6 +607,18 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		givtcp-power-flow-card-entity[data-type='battery'] {
 			cursor: var(--gtpc-click-cursor);
 		}
+		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='custom1'],
+		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='custom1'],
+		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='custom1'] {
+			right: 0;
+			top: 0;
+		}
+		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='custom2'],
+		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='custom2'],
+		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='custom2'] {
+			right: 0;
+			bottom: 0;
+		}
 		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='eps'],
 		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='eps'],
 		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='eps'] {
@@ -571,6 +669,20 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		.gtpc-line-style-angled.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='eps'] {
 			left: var(--gtpc-size);
 			bottom: var(--gtpc-size);
+		}
+		.gtpc-line-style-angled.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='custom1'] {
+			right: var(--gtpc-size);
+			top: var(--gtpc-size);
+		}
+		.gtpc-line-style-angled.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='custom2'] {
+			right: var(--gtpc-size);
+			bottom: var(--gtpc-size);
+		}
+		givtcp-power-flow-card-layout-square.gtpc-custom2
+			.gtpc-line-style-curved.gtpc-layout-square
+			.gtpc-entity-name[data-entity-type='house'],
+		givtcp-power-flow-card-layout-cross.gtpc-custom2 .gtpc-entity-name[data-entity-type='house'] {
+			display: none;
 		}
 		.gtpc-layout-circle .gtpc-entity-name[data-entity-type='grid'] {
 			display: none;
@@ -634,6 +746,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			position: absolute;
 			bottom: calc(var(--gtpc-size) * -0.2);
 		}
+		.gtpc-entity-name[data-entity-type='custom1'],
 		.gtpc-entity-name[data-entity-type='solar'] {
 			bottom: initial;
 			top: calc(var(--gtpc-size) * -0.2);
