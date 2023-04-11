@@ -536,6 +536,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				fireEvent(this, 'hass-more-info', { entityId: this._config?.custom2_sensor });
 				break;
 			case 'house':
+				fireEvent(this, 'hass-more-info', { entityId: `sensor.givtcp_${this._invertorSerial}_load_power` });
 				break;
 			default:
 		}
@@ -615,6 +616,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 		givtcp-power-flow-card-entity[data-type='custom1'],
 		givtcp-power-flow-card-entity[data-type='custom2'],
+		givtcp-power-flow-card-entity[data-type='house'],
 		givtcp-power-flow-card-entity[data-type='eps'],
 		givtcp-power-flow-card-entity[data-type='grid'],
 		givtcp-power-flow-card-entity[data-type='solar'],
