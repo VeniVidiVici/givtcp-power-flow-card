@@ -7,7 +7,33 @@ export abstract class GivTCPPowerFlowCardLayout extends LitElement {
 	@property() flows!: { from: string; to: string; direction: FlowDirection }[];
 	@property() entitySize!: number;
 	@property() lineWidth!: number;
-
+	protected width = 100;
+	protected midX = this.width / 2;
+	protected get midY(): number {
+		if ((this.hasCustom1 && this.hasCustom2) || (this.hasSolar && this.hasCustom2)) {
+			return Math.round(this.height / 2);
+		} else if (this.hasBattery && !this.hasSolar) {
+			return Math.round(this.height / this.entitySize);
+		} else if (this.hasSolar && !this.hasBattery) {
+			return this.height - Math.round(this.entityWidth / 2);
+		} else {
+			return Math.round(this.height / 2);
+		}
+	}
+	protected get height(): number {
+		if ((this.hasCustom1 && this.hasCustom2) || (this.hasSolar && this.hasCustom2)) {
+			return this.entityWidth * this.entitySize;
+		} else if (!this.hasSolar && !this.hasBattery) {
+			return this.entityWidth;
+		} else if (!this.hasSolar || !this.hasBattery) {
+			return (this.entityWidth * Math.round(this.entitySize)) / 2;
+		} else {
+			return this.entityWidth * this.entitySize;
+		}
+	}
+	protected get entityWidth(): number {
+		return Math.round(this.width / this.entitySize);
+	}
 	protected get hasSolar(): boolean {
 		return this.isEnabled('solar') !== undefined;
 	}
