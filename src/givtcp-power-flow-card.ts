@@ -340,18 +340,17 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private setEntitySize(width: number): void {
 		setTimeout(() => {
 			this._width = width;
-			this.style.setProperty('--gtpc-size', Math.ceil(width / this._entitySize) + 'px');
+			this.style.setProperty('--gtpc-size', this._width / this._entitySize + 'px');
 			// this.style.setProperty('--gtpc-circle-offset', `${(width - (this._circleSize / 50) * width)}px`);
 			this.requestUpdate();
 		}, 0);
 	}
 	connectedCallback(): void {
 		super.connectedCallback();
-		this._resizeObserver = new ResizeObserver((changes) => {
-			for (const change of changes) {
-				if (change.contentRect.width !== this._width) {
-					this.setEntitySize(change.contentRect.width);
-				}
+		this._resizeObserver = new ResizeObserver(() => {
+			const elem = <Element>this.shadowRoot?.querySelector(`.gtpc-content`);
+			if (elem) {
+				if (elem.clientWidth != this._width) this.setEntitySize(elem.clientWidth);
 			}
 		});
 		this._resizeObserver.observe(this);
@@ -459,7 +458,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			},
 		].filter((v) => v.in !== undefined || v.out !== undefined);
 		let layout = html``;
-		let classes = '';
+		let classes = 'gtpc-content';
 		if (this._epsEnabled) classes += ' gtpc-eps';
 		if (this._custom1Enabled) classes += ' gtpc-custom1';
 		if (this._custom2Enabled) classes += ' gtpc-custom2';
@@ -510,7 +509,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				return html``;
 		}
 		return html`<ha-card header="${this._config?.name}">
-			${this._width > 0 ? html`<div class="card-content">${layout}</div>` : html``}
+			${this._width > 0
+				? html`<div class="card-content">${layout}</div>`
+				: html`<div class="card-content"><div class="${classes}" /></div>`}
 		</ha-card>`;
 	}
 	private entityDetails(evt: CustomEvent): void {
@@ -546,7 +547,10 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		this._config = ConfigUtils.migrateConfig(config, true);
 		const defaults = ConfigUtils.getDefaults(this._config);
 
-		if (this.clientWidth > 0) this.setEntitySize(this.clientWidth);
+		const elem = <Element>this.shadowRoot?.querySelector(`.gtpc-content`);
+		if (elem) {
+			this.setEntitySize(elem.clientWidth);
+		}
 		this.style.setProperty('--gtpc-line-size', `${this._lineWidth}px`);
 		this.style.setProperty('--gtpc-inactive-flow-display', this._hideInactiveFlows ? 'none' : 'block');
 		if (this._colourIconsAndText) {
@@ -578,11 +582,13 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			--gtpc-house-color: var(--info-color);
 			--gtpc-battery-color: var(--success-color);
 		}
-
+		.gtpc-content,
+		.gtpc-layout > svg {
+			display: block;
+		}
 		givtcp-power-flow-card-entity {
 			position: absolute;
 			width: var(--gtpc-size);
-			aspect-ratio: 1 / 1;
 		}
 		.gtpc-flow > circle {
 			stroke-width: 0;
