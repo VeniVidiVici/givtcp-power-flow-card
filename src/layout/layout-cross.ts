@@ -47,7 +47,7 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 	}
 
 	private getPathForFlow(flow: string): string {
-		const halfEntity = Math.round(this.entityWidth / 2);
+		const halfEntity = this.entityWidth / 2;
 		switch (flow) {
 			case 'solar-to-house':
 				return SVGUtils.getRoundedCornerPath(
