@@ -51,7 +51,7 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 	}
 
 	private getPathForFlow(flow: string): string {
-		const halfEntity = Math.round(this.entityWidth / 2);
+		const halfEntity = this.entityWidth / 2;
 		const circumference = Math.ceil(2 * Math.PI * this.circleSize);
 		const offset = Math.ceil(((this.entityWidth - 0) / circumference) * 100);
 		const segment = 25 - offset;

@@ -45,7 +45,7 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 	}
 
 	private getPathForFlow(flow: string): string {
-		const halfEntity = Math.round(this.entityWidth / 2);
+		const halfEntity = this.entityWidth / 2;
 		let start, end;
 		switch (flow) {
 			case 'solar-to-house':
@@ -185,6 +185,12 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 				switch (this.lineStyle) {
 					case LineStyle.Curved:
 					case LineStyle.Straight:
+						// start = this.calculateCirclePoint(0.25, halfEntity, [
+						// 	this.width - halfEntity,
+						// 	halfEntity,
+						// ]);
+						// end = this.calculateCirclePoint(0.75, halfEntity, [this.width - halfEntity, this.midY]);
+						// return SVGUtils.getStraightPath(start[0], start[1], end[0], end[1]);
 						return SVGUtils.getStraightPath(
 							this.width - halfEntity,
 							this.entityWidth,
