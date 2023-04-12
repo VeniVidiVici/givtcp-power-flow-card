@@ -20,6 +20,13 @@ You must have both the HA_AUTO_D (Home Assistant Auto Discovery) and MQTT_OUTPUT
 # HACS-Installation
 
 1. [install HACS](https://hacs.xyz/docs/installation/installation) you need to install this first.
-2. inisde home-assistant go to HACS -> Frontend then click the 3 dots in the upper right hand corner.
+2. inside home-assistant go to HACS -> Frontend then click the 3 dots in the upper right hand corner.
 3. select Custom repositories from the menu and enter https://github.com/VeniVidiVici/givtcp-power-flow-card in the Repository box and select Lovelace for the Category.
 4. install the givtcp-power-flow-card using the UI
+
+# Multiple Invertors and Batteries
+
+Currently multiple invertors and batteries support is limited, total power is calculated by adding all the invertors together and the same for the batteries. State of Charge is calculated by averaging all the batteries together.
+Clicking on an entity will show the details for the first battery or invertor in the list, this is a limitation of the way[home-assistant](home-assistant.io) handles these popups.
+
+Future versions will allow you to list invertors and batteries separately on the card.
