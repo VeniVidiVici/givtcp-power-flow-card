@@ -1,8 +1,5 @@
 # givtcp-power-flow-card
 
-> **⚠ WARNING: VERY MUCH IN ALPHA STAGE**
-> While basic functionality is working this is still very much beta, there are settings in the config UI that are not yet implimented and some basic settings are still missing.
-
 [home-assistant](home-assistant.io) power flow card for [GivTCP](https://github.com/britkat1980/giv_tcp) users.
 
 ![ezgif-1-513ef55daa](https://user-images.githubusercontent.com/19427540/230995889-6586adbf-5d4a-4b8e-8cf7-a3bef956aa36.gif)
@@ -27,6 +24,6 @@ You must have both the HA_AUTO_D (Home Assistant Auto Discovery) and MQTT_OUTPUT
 # Multiple Invertors and Batteries
 
 Currently multiple invertors and batteries support is limited, total power is calculated by adding all the invertors together and the same for the batteries. State of Charge is calculated by averaging all the batteries together.
-Clicking on an entity will show the details for the first battery or invertor in the list, this is a limitation of the way[home-assistant](home-assistant.io) handles these popups.
+Clicking on an entity will show the details for the first battery or invertor in the list, this is a limitation of the way [home-assistant](home-assistant.io) handles these popups.
 
 Future versions will allow you to list invertors and batteries separately on the card.
