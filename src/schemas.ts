@@ -12,6 +12,8 @@ import {
 	EPS_ICON_DEFAULT,
 	CUSTOM1_ICON_DEFAULT,
 	CUSTOM2_ICON_DEFAULT,
+	SINGLE_INVERTOR_DEFAULT,
+	SINGLE_BATTERY_DEFAULT,
 } from './const';
 import { CentreEntity, EntityLayout, LineStyle } from './types';
 import { any, assign, boolean, integer, object, optional, refine, string, array, union, tuple } from 'superstruct';
@@ -37,8 +39,12 @@ export const cardConfigStruct = assign(
 		power_margin: optional(integer()),
 		dot_speed: optional(integer()),
 		corner_radius: optional(integer()),
-		invertor: optional(union([entityId(), array(entityId())])),
-		battery: optional(union([entityId(), array(entityId())])),
+		single_invertor: optional(boolean()),
+		single_battery: optional(boolean()),
+		invertor: optional(entityId()),
+		battery: optional(entityId()),
+		invertors: optional(array(entityId())),
+		batteries: optional(array(entityId())),
 		battery_enabled: optional(boolean()),
 		solar_enabled: optional(boolean()),
 		circle_size: optional(integer()),
@@ -78,16 +84,42 @@ export const cardConfigStruct = assign(
 	})
 );
 
-export const INVERTER_BATTERY_SCHEMA = (invertors: string[], batteries: string[]) => [
-	{
-		type: 'grid',
-		name: '',
-		schema: [
-			{ label: 'Invertor', name: 'invertor', selector: { entity: { include_entities: invertors } } },
-			{ label: 'Battery', name: 'battery', selector: { entity: { include_entities: batteries } } },
-		],
-	},
-];
+export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: string[], batteries: string[]) => {
+	const singleInvertor = config.single_invertor !== undefined ? config.single_invertor : SINGLE_INVERTOR_DEFAULT;
+	const singleBattery = config.single_battery !== undefined ? config.single_battery : SINGLE_BATTERY_DEFAULT;
+	return [
+		{
+			type: 'grid',
+			name: '',
+			schema: [
+				{
+					type: 'grid',
+					name: '',
+					schema: [
+						{ name: 'single_invertor', label: 'Single Invertor', selector: { boolean: {} } },
+						{
+							label: singleInvertor ? 'Invertors' : 'Invertors',
+							name: singleInvertor ? 'invertor' : 'invertors',
+							selector: { entity: { multiple: !singleInvertor, include_entities: invertors } },
+						},
+					],
+				},
+				{
+					type: 'grid',
+					name: '',
+					schema: [
+						{ name: 'single_battery', label: 'Single Battery', selector: { boolean: {} } },
+						{
+							label: singleBattery ? 'Battery' : 'Batteries',
+							name: singleBattery ? 'battery' : 'batteries',
+							selector: { entity: { multiple: !singleBattery, include_entities: batteries } },
+						},
+					],
+				},
+			],
+		},
+	];
+};
 
 const ICON_SCHEMA = (name: string, label: string, placeholder: string) => ({
 	name,

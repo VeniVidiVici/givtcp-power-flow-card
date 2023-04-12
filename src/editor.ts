@@ -57,7 +57,7 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 			case 0:
 				return [
 					{ name: 'name', label: 'Name', selector: { text: {} } },
-					...INVERTER_BATTERY_SCHEMA(this._invertors, this._batteries),
+					...INVERTER_BATTERY_SCHEMA(this._config, this._invertors, this._batteries),
 					{
 						type: 'grid',
 						name: '',

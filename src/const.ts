@@ -42,3 +42,5 @@ export const CUSTOM1_COLOUR_RGB_DEFAULT = [14, 139, 125];
 export const CUSTOM2_ENABLED_DEFAULT = false;
 export const CUSTOM2_COLOUR_UI_DEFAULT = 'teal';
 export const CUSTOM2_COLOUR_RGB_DEFAULT = [14, 139, 125];
+export const SINGLE_INVERTOR_DEFAULT = true;
+export const SINGLE_BATTERY_DEFAULT = true;
