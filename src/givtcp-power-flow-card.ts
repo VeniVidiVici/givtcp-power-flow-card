@@ -7,10 +7,11 @@ import './entity';
 import './layout/layout-cross';
 import './layout/layout-circle';
 import './layout/layout-square';
+import './layout/layout-list';
 
 import { HassEntity } from 'home-assistant-js-websocket';
 
-import { CentreEntity, FlowData, EntityLayout, FlowDirection, FlowTotal } from './types';
+import { CentreEntity, FlowData, EntityLayout, FlowDirection, FlowTotal, FlowPower } from './types';
 import {
 	CENTRE_ENTITY_DEFAULT,
 	CIRCLE_SIZE_DEFAULT,
@@ -366,7 +367,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 						if (acc === undefined) {
 							acc = { total: 0, parts: [] };
 						}
-						acc.parts.push({ type: flow.from, value: power });
+						acc.parts.push({ type: flow.from, to: flow.to, value: power });
 						acc.total += power;
 					}
 					return acc;
@@ -500,6 +501,15 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				in: this.getTotalFor('battery', FlowDirection.In),
 			},
 		].filter((v) => v.in !== undefined || v.out !== undefined);
+
+		const flowPowers: FlowPower[] = this._activeFlows
+			.map((flow) => ({
+				from: flow.from,
+				to: flow.to,
+				value: this.getCleanPowerForFlow(flow.from, flow.to),
+			}))
+			.filter((v) => v.value !== undefined) as FlowPower[];
+
 		let layout = html``;
 		let classes = 'gtpc-content';
 		if (this._epsEnabled) classes += ' gtpc-eps';
@@ -516,8 +526,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					.lineGap=${this._lineGap}
 					.cornerRadius=${this._cornerRadius}
 					.entitySize=${this._entitySize}
-					.custom1Enabled=${this._custom1Enabled}
-					.custom2Enabled=${this._custom2Enabled}
 				/>`;
 				break;
 			case EntityLayout.Square:
@@ -530,8 +538,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					.lineGap=${this._lineGap}
 					.lineStyle=${this._lineStyle}
 					.entitySize=${this._entitySize}
-					.custom1Enabled=${this._custom1Enabled}
-					.custom2Enabled=${this._custom2Enabled}
 				/>`;
 				break;
 			case EntityLayout.Circle:
@@ -544,8 +550,17 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					.centreEntity=${this._centreEntity}
 					.circleSize=${this._circleSize}
 					.entitySize=${this._entitySize}
-					.custom1Enabled=${this._custom1Enabled}
-					.custom2Enabled=${this._custom2Enabled}
+				/>`;
+				break;
+			case EntityLayout.List:
+				layout = html`<givtcp-power-flow-card-layout-list
+					class="${classes}"
+					.flowData=${flowData}
+					.flows=${this._activeFlows}
+					.flowPowers=${flowPowers}
+					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
+					.lineWidth=${this._lineWidth}
+					.entitySize=${this._entitySize}
 				/>`;
 				break;
 			default:
@@ -643,7 +658,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			stroke-width: var(--gtpc-line-size);
 			vector-effect: non-scaling-stroke;
 		}
-		.gtpc-flow[data-pos='0'] {
+		.gtpc-flow[data-pos='0'],
+		.gtpc-layout-list > div[data-power='0'] {
 			display: var(--gtpc-inactive-flow-display);
 		}
 		.gtpc-flow[data-pos='0'] > circle {
@@ -758,7 +774,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			display: none;
 		}
 
-		.gtpc-entity {
+		.gtpc-entity,
+		.gtpc-list-entity {
 			z-index: 2;
 			display: flex;
 			flex-direction: column;
@@ -771,7 +788,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			box-sizing: border-box;
 			overflow: hidden;
 		}
-		.gtpc-entity > * {
+		.gtpc-entity > *,
+		.gtpc-list-entity > * {
 			display: block;
 			flex-grow: 0;
 			flex-shrink: 1;
@@ -779,6 +797,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			align-self: auto;
 			order: 0;
 			z-index: 2;
+			line-height: 1;
 		}
 		.gtpc-entity > span[data-power='0'] {
 			display: none;
@@ -819,6 +838,69 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			fill: var(--ha-card-background, var(--card-background-color, white));
 			stroke-width: var(--gtpc-line-size);
 			vector-effect: non-scaling-stroke;
+		}
+		.gtpc-list-row {
+			margin-bottom: 3px;
+		}
+		.gtpc-layout.gtpc-layout-list .gtpc-list-entity {
+			--mdc-icon-size: calc(var(--gtpc-size) * 0.2);
+			font-size: calc(var(--gtpc-size) * 0.15);
+		}
+		.gtpc-list-flow-value {
+			position: absolute;
+			top: 75%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+		}
+		.gtpc-layout.gtpc-layout-list .gtpc-list-entity {
+			border-radius: 50%;
+			border-style: solid;
+			border-width: 1px;
+			height: calc(var(--gtpc-size) / 2);
+			width: calc(var(--gtpc-size) / 2);
+			position: absolute;
+			top: 0;
+			background-color: var(--ha-card-background, var(--card-background-color, white));
+		}
+
+		.gtpc-layout.gtpc-layout-list .gtpc-list-entity.gtpc-from-entity {
+			left: 0;
+		}
+		.gtpc-layout.gtpc-layout-list .gtpc-list-entity.gtpc-to-entity {
+			right: 0;
+		}
+		.gtpc-layout-list > div {
+			position: relative;
+		}
+		.gtpc-layout-list > div > svg {
+		}
+		.gtpc-layout.gtpc-layout-list .gtpc-list-entity[data-type='grid'] {
+			color: var(--gtpc-grid-color);
+			border-color: var(--gtpc-grid-color);
+		}
+		.gtpc-layout.gtpc-layout-list .gtpc-list-entity[data-type='solar'] {
+			color: var(--gtpc-solar-color);
+			border-color: var(--gtpc-solar-color);
+		}
+		.gtpc-layout.gtpc-layout-list .gtpc-list-entity[data-type='house'] {
+			color: var(--gtpc-house-color);
+			border-color: var(--gtpc-house-color);
+		}
+		.gtpc-layout.gtpc-layout-list .gtpc-list-entity[data-type='battery'] {
+			color: var(--gtpc-battery-color);
+			border-color: var(--gtpc-battery-color);
+		}
+		.gtpc-layout.gtpc-layout-list .gtpc-list-entity[data-type='eps'] {
+			color: var(--gtpc-eps-color);
+			border-color: var(--gtpc-eps-color);
+		}
+		.gtpc-layout.gtpc-layout-list .gtpc-list-entity[data-type='custom1'] {
+			color: var(--gtpc-custom1-color);
+			border-color: var(--gtpc-custom1-color);
+		}
+		.gtpc-layout.gtpc-layout-list .gtpc-list-entity[data-type='custom2'] {
+			color: var(--gtpc-custom2-color);
+			border-color: var(--gtpc-custom2-color);
 		}
 	`;
 }
