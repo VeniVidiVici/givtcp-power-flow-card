@@ -13,7 +13,7 @@ export enum LineStyle {
 }
 export interface FlowTotal {
 	total: number;
-	parts: { type: string; value: number }[];
+	parts: { type: string; value: number; to?: string }[];
 }
 export enum FlowDirection {
 	In = 0,
@@ -36,4 +36,9 @@ export enum UnitOfPower {
 	WATT = 'W',
 	KILO_WATT = 'kW',
 	MEGA_WATT = 'MW',
+}
+export interface FlowPower {
+	from: string;
+	to: string;
+	value: number;
 }

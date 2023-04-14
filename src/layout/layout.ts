@@ -1,6 +1,6 @@
 import { LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
-import { FlowData, FlowDirection } from '../types';
+import { FlowData, FlowDirection, UnitOfPower } from '../types';
 
 export abstract class GivTCPPowerFlowCardLayout extends LitElement {
 	@property() flowData!: FlowData[];
@@ -54,5 +54,10 @@ export abstract class GivTCPPowerFlowCardLayout extends LitElement {
 	}
 	protected isEnabled(flow: string) {
 		return this.flowData.find((f) => f.type === flow) ?? undefined;
+	}
+	protected formatPower(power: number): string {
+		if (power < 1000) return `${power}${UnitOfPower.WATT}`;
+		if (power < 1000000) return `${(power / 1000).toFixed(1)}${UnitOfPower.KILO_WATT}`;
+		return `${(power / 1000000).toFixed(1)}${UnitOfPower.MEGA_WATT}`;
 	}
 }
