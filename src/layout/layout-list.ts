@@ -32,14 +32,14 @@ export class GivTCPPowerFlowCardLayoutList extends GivTCPPowerFlowCardLayout {
 							</svg>
 							<div class="gtpc-list-entity gtpc-from-entity" data-type="${flow.from}">
 								<ha-icon .icon="${this.iconFor(flow.from)}"></ha-icon>
-								${this.extraFor(flow.from) ? html`<div>${this.extraFor(flow.from)}</div>` : html``}
+								${this.extraFor(flow.from) ? html`<div class="gtpc-entity-extra">${this.extraFor(flow.from)}</div>` : html``}
 							</div>
 							<div class="gtpc-list-flow-value">
 								<span>${this.formatPower(flow.value)}</span>
 							</div>
 							<div class="gtpc-list-entity gtpc-to-entity" data-type="${flow.to}">
 								<ha-icon .icon="${this.iconFor(flow.to)}"></ha-icon>
-								${this.extraFor(flow.to) ? html`<div>${this.extraFor(flow.to)}</div>` : html``}
+								${this.extraFor(flow.to) ? html`<div class="gtpc-entity-extra">${this.extraFor(flow.to)}</div>` : html``}
 							</div>
 							</div>
 						</div>`

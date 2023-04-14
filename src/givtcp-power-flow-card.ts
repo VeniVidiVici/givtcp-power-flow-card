@@ -855,12 +855,15 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		.gtpc-layout.gtpc-layout-list .gtpc-list-entity {
 			border-radius: 50%;
 			border-style: solid;
-			border-width: 1px;
+			border-width: var(--gtpc-line-size);
 			height: calc(var(--gtpc-size) / 2);
 			width: calc(var(--gtpc-size) / 2);
 			position: absolute;
 			top: 0;
 			background-color: var(--ha-card-background, var(--card-background-color, white));
+		}
+		.gtpc-layout.gtpc-layout-list .gtpc-list-entity ha-icon {
+			color: var(--gtpc-icons-and-text-colour, var(--gtpc-color));
 		}
 
 		.gtpc-layout.gtpc-layout-list .gtpc-list-entity.gtpc-from-entity {
