@@ -4,6 +4,7 @@ import { LitElement, css, html, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import './editor';
 import './entity';
+import './details';
 import './layout/layout-cross';
 import './layout/layout-circle';
 import './layout/layout-square';
@@ -40,6 +41,8 @@ import {
 	CUSTOM1_ENABLED_DEFAULT,
 	CUSTOM2_ENABLED_DEFAULT,
 	SINGLE_INVERTOR_DEFAULT,
+	DETAILS_ENABLED_DEFAULT,
+	NUM_DETAIL_COLUMNS_DEFAULT,
 } from './const';
 import { ConfigUtils } from './utils/config-utils';
 
@@ -96,9 +99,15 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		return !entity || !this._custom2Enabled ? undefined : this.getFormatedState(entity);
 	}
 	private get _epsEnabled(): boolean {
-		return this._config?.eps_enabled == undefined || !this._batteryEnabled
+		return this._config?.eps_enabled === undefined || !this._batteryEnabled
 			? EPS_ENABLED_DEFAULT
 			: this._config?.eps_enabled;
+	}
+	private get _detailsEnabled(): boolean {
+		return this._config?.details_enabled === undefined ? DETAILS_ENABLED_DEFAULT : this._config?.details_enabled;
+	}
+	private get _detailEntities(): HassEntity[] {
+		return this._detailsEnabled ? this._config.detail_entities.map((e: string) => this.hass.states[e]) : [];
 	}
 	private get _epsTotal(): FlowTotal | undefined {
 		return this._invertorSerial && this._epsEnabled
@@ -134,16 +143,16 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			  };
 	}
 	private get _singleInverter(): boolean {
-		return this._config?.single_invertor == undefined ? SINGLE_INVERTOR_DEFAULT : this._config?.single_invertor;
+		return this._config?.single_invertor === undefined ? SINGLE_INVERTOR_DEFAULT : this._config?.single_invertor;
 	}
 	// private get _singleBattery(): boolean {
-	// 	return this._config?.single_battery == undefined ? SINGLE_BATTERY_DEFAULT : this._config?.single_battery;
+	// 	return this._config?.single_battery === undefined ? SINGLE_BATTERY_DEFAULT : this._config?.single_battery;
 	// }
 	private get _custom1Enabled(): boolean {
-		return this._config?.custom1_enabled == undefined ? CUSTOM1_ENABLED_DEFAULT : this._config?.custom1_enabled;
+		return this._config?.custom1_enabled === undefined ? CUSTOM1_ENABLED_DEFAULT : this._config?.custom1_enabled;
 	}
 	private get _custom2Enabled(): boolean {
-		return this._config?.custom2_enabled == undefined ? CUSTOM2_ENABLED_DEFAULT : this._config?.custom2_enabled;
+		return this._config?.custom2_enabled === undefined ? CUSTOM2_ENABLED_DEFAULT : this._config?.custom2_enabled;
 	}
 	private get _custom1Name(): string {
 		return this._config?.custom1_name || 'Custom 1';
@@ -222,21 +231,24 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private get _lineWidth(): number {
 		return this._config?.line_width || LINE_WIDTH_DEFAULT;
 	}
+	private get _numColumn(): number {
+		return this._config?.num_detail_columns || NUM_DETAIL_COLUMNS_DEFAULT;
+	}
 	private get _hideInactiveFlows(): boolean {
-		return this._config?.hide_inactive_flows == undefined
+		return this._config?.hide_inactive_flows === undefined
 			? HIDE_INACTIVE_FLOWS_DEFAULT
 			: this._config?.hide_inactive_flows;
 	}
 	private get _colourIconsAndText(): boolean {
-		return this._config?.colour_icons_and_text == undefined
+		return this._config?.colour_icons_and_text === undefined
 			? COLOUR_ICONS_AND_TEXT_DEFAULT
 			: this._config?.colour_icons_and_text;
 	}
 	private get _solarEnabled(): boolean {
-		return this._config?.solar_enabled == undefined ? SOLAR_ENABLED_DEFAULT : this._config?.solar_enabled;
+		return this._config?.solar_enabled === undefined ? SOLAR_ENABLED_DEFAULT : this._config?.solar_enabled;
 	}
 	private get _batteryEnabled(): boolean {
-		return this._config?.battery_enabled == undefined ? true : this._config?.battery_enabled;
+		return this._config?.battery_enabled === undefined ? true : this._config?.battery_enabled;
 	}
 	private getFormatedState(entity: HassEntity): string {
 		return `${entity.state}${entity.attributes.unit_of_measurement || ''}`;
@@ -566,9 +578,10 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			default:
 				return html``;
 		}
+		const details = html`<givtcp-power-flow-card-details .entities=${this._detailEntities} />`;
 		return html`<ha-card header="${this._config?.name}">
 			${this._width > 0
-				? html`<div class="card-content">${layout}</div>`
+				? html`<div class="card-content">${layout}${details}</div>`
 				: html`<div class="card-content"><div class="${classes}" /></div>`}
 		</ha-card>`;
 	}
@@ -610,6 +623,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		if (elem) {
 			this.setEntitySize(elem.clientWidth);
 		}
+
+		this.style.setProperty('--gtpc-column-width', `${100 / this._numColumn}%`);
 		this.style.setProperty('--gtpc-line-size', `${this._lineWidth}px`);
 		this.style.setProperty('--gtpc-inactive-flow-display', this._hideInactiveFlows ? 'none' : 'block');
 		if (this._colourIconsAndText) {
@@ -673,6 +688,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			box-sizing: border-box;
 			margin: 30px 0;
 		}
+		.gtpc-detail,
 		.gtpc-list-row[data-from],
 		.gtpc-list-row[data-from],
 		.gtpc-list-row[data-from],
@@ -911,6 +927,32 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		.gtpc-layout.gtpc-layout-list .gtpc-list-entity[data-type='custom2'] {
 			color: var(--gtpc-custom2-color);
 			border-color: var(--gtpc-custom2-color);
+		}
+		.gtpc-details {
+			display: flex;
+			flex-wrap: wrap;
+			box-sizing: border-box;
+			align-items: center;
+			align-content: center;
+		}
+		.gtpc-detail {
+			flex-direction: column;
+			align-items: center;
+			padding: 1rem 0.5rem;
+			box-sizing: border-box;
+			width: var(--gtpc-column-width, 33.3%);
+			text-align: center;
+		}
+		.gtpc-detail-title {
+			font-size: 0.8rem;
+			--mdc-icon-size: 1.1rem;
+			color: var(--secondary-text-color);
+		}
+		.gtpc-detail-state {
+			font-size: 1rem;
+		}
+		.gtpc-detail-title > *:nth-child(1) {
+			flex-grow: 1;
 		}
 	`;
 }

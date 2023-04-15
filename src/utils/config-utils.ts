@@ -31,6 +31,8 @@ import {
 	EPS_COLOUR_UI_DEFAULT,
 	SINGLE_INVERTOR_DEFAULT,
 	SINGLE_BATTERY_DEFAULT,
+	DETAILS_ENABLED_DEFAULT,
+	NUM_DETAIL_COLUMNS_DEFAULT,
 } from '../const';
 import { EntityLayout } from '../types';
 
@@ -69,6 +71,8 @@ export class ConfigUtils {
 			custom2_colour: config.custom2_colour_type === 'rgb' ? CUSTOM2_COLOUR_RGB_DEFAULT : CUSTOM2_COLOUR_UI_DEFAULT,
 			single_invertor: SINGLE_INVERTOR_DEFAULT,
 			single_battery: SINGLE_BATTERY_DEFAULT,
+			details_enabled: DETAILS_ENABLED_DEFAULT,
+			num_detail_columns: NUM_DETAIL_COLUMNS_DEFAULT,
 		};
 		return defaults;
 	}
