@@ -673,13 +673,20 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			box-sizing: border-box;
 			margin: 30px 0;
 		}
-		givtcp-power-flow-card-entity[data-type='custom1'],
-		givtcp-power-flow-card-entity[data-type='custom2'],
-		givtcp-power-flow-card-entity[data-type='house'],
-		givtcp-power-flow-card-entity[data-type='eps'],
-		givtcp-power-flow-card-entity[data-type='grid'],
-		givtcp-power-flow-card-entity[data-type='solar'],
-		givtcp-power-flow-card-entity[data-type='battery'] {
+		.gtpc-list-row[data-from],
+		.gtpc-list-row[data-from],
+		.gtpc-list-row[data-from],
+		.gtpc-list-row[data-from],
+		.gtpc-list-row[data-from],
+		.gtpc-list-row[data-from],
+		.gtpc-list-row[data-from],
+		givtcp-power-flow-card-entity[data-type],
+		givtcp-power-flow-card-entity[data-type],
+		givtcp-power-flow-card-entity[data-type],
+		givtcp-power-flow-card-entity[data-type],
+		givtcp-power-flow-card-entity[data-type],
+		givtcp-power-flow-card-entity[data-type],
+		givtcp-power-flow-card-entity[data-type] {
 			cursor: var(--gtpc-click-cursor);
 		}
 		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='custom1'],

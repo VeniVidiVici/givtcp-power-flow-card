@@ -7,7 +7,23 @@ import { SVGUtils } from '../utils/svg-utils';
 @customElement('givtcp-power-flow-card-layout-list')
 export class GivTCPPowerFlowCardLayoutList extends GivTCPPowerFlowCardLayout {
 	@property() flowPowers!: FlowPower[];
-
+	constructor() {
+		super();
+		this.addEventListener('click', (e) => {
+			if (e.target && (e.target instanceof HTMLElement || e.target instanceof SVGElement)) {
+				const type = e.target.closest('.gtpc-list-row')?.getAttribute('data-from');
+				if (type) {
+					e.stopPropagation();
+					const eventDetails = new CustomEvent('entity-details', {
+						bubbles: true,
+						composed: true,
+						detail: { type: type },
+					});
+					this.dispatchEvent(eventDetails);
+				}
+			}
+		});
+	}
 	private get halfEntity(): number {
 		return this.entityWidth / 2;
 	}
@@ -26,7 +42,9 @@ export class GivTCPPowerFlowCardLayoutList extends GivTCPPowerFlowCardLayout {
 				${this.flowPowers
 					.sort((a, b) => b.value - a.value)
 					.map(
-						(flow) => html`<div class="gtpc-list-row" data-power='${flow.value}'>
+						(flow) => html`<div class="gtpc-list-row" data-from='${flow.from}' data-to='${flow.to}' data-power='${
+							flow.value
+						}'>
 							<svg viewBox="0 0 100 ${this.halfEntity}" xmlns="http://www.w3.org/2000/svg">
 								${this.getGroupForFlow(flow.from, flow.to)}
 							</svg>
