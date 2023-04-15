@@ -1,6 +1,6 @@
 import { fireEvent, HomeAssistant, LovelaceCardConfig, LovelaceCardEditor, LovelaceConfig } from 'custom-card-helpers';
 import { html, LitElement, TemplateResult } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import {
 	BATTERY_SCHEMA,
 	cardConfigStruct,
@@ -11,6 +11,7 @@ import {
 	LAYOUT_TYPE_SCHEMA,
 	SOLAR_SCHEMA,
 	EXTRAS_SCHEMA,
+	DETAILS_SCHEMA,
 } from './schemas';
 import { assert } from 'superstruct';
 import {
@@ -20,16 +21,91 @@ import {
 	DOT_SPEED_DEFAULT,
 	ENTITY_SIZE_DEFAULT,
 	ENTITIES,
+	SINGLE_INVERTOR_DEFAULT,
+	SINGLE_BATTERY_DEFAULT,
 } from './const';
 import { UnitOfPower } from './types';
 import { ConfigUtils } from './utils/config-utils';
 
 @customElement('givtcp-power-flow-card-editor')
 export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCardEditor {
-	hass?: HomeAssistant | undefined;
+	@property() hass!: HomeAssistant;
 	lovelace?: LovelaceConfig | undefined;
 	@state() private _config!: LovelaceCardConfig;
 	@state() private _curView?: number;
+
+	private get _extraEntities(): string[] {
+		const invertors = this._invertorSerial;
+		const batteries = this._batterySerial;
+		return this.hass
+			? Object.keys(this.hass.states).filter(
+					(eid) =>
+						invertors.some((invertor) => eid.includes(invertor)) ||
+						batteries.some(
+							(battery) =>
+								eid.includes(battery) &&
+								(['battery', 'energy', 'monetary', 'power', 'current', 'voltage', 'timestamp'].includes(
+									this.hass.states[eid].attributes.device_class || ''
+								) ||
+									['total_increasing', 'total', 'measurement'].includes(
+										this.hass.states[eid].attributes.state_class || ''
+									))
+						)
+			  )
+			: [];
+	}
+	private get _singleInverter(): boolean {
+		return this._config?.single_invertor == undefined ? SINGLE_INVERTOR_DEFAULT : this._config?.single_invertor;
+	}
+	private get _singleBattery(): boolean {
+		return this._config?.single_battery == undefined ? SINGLE_BATTERY_DEFAULT : this._config?.single_battery;
+	}
+	private get _batterySerial(): string[] {
+		if (this._singleBattery) {
+			try {
+				return this._config?.battery && this.hass.states[this._config?.battery]
+					? [this.hass.states[this._config?.battery].state.toLowerCase()] || []
+					: [];
+			} catch (e) {
+				console.error(e);
+				return [];
+			}
+		} else {
+			try {
+				return (
+					this._config?.batteries
+						?.filter((battery: string) => this.hass.states[battery])
+						.map((battery: string) => this.hass.states[battery].state.toLowerCase() || '') || []
+				);
+			} catch (e) {
+				console.error(e);
+				return [];
+			}
+		}
+	}
+	private get _invertorSerial(): string[] {
+		if (this._singleInverter) {
+			try {
+				return this._config?.invertor && this.hass.states[this._config?.invertor]
+					? [this.hass.states[this._config?.invertor].state.toLowerCase()] || []
+					: [];
+			} catch (e) {
+				console.error(e);
+				return [];
+			}
+		} else {
+			try {
+				return (
+					this._config?.invertors
+						?.filter((invertor: string) => this.hass.states[invertor])
+						.map((invertor: string) => this.hass.states[invertor].state.toLowerCase() || '') || []
+				);
+			} catch (e) {
+				console.error(e);
+				return [];
+			}
+		}
+	}
 	private get _batteries(): string[] {
 		return this.hass
 			? Object.keys(this.hass.states).filter((eid) =>
@@ -52,6 +128,8 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 	// 	/^sensor\.givtcp_[a-zA-Z]{2}\d{4}[a-zA-Z]\d{3}_(invertor|battery)_serial_number$/g.test(eid)
 	// ) : [];
 	// }
+	//state_class: total_increasing, total, measurement
+	//device_class: battery, energy, monetary, power, current, voltage, timestamp
 	private get _schema(): object[] {
 		switch (this._curView) {
 			case 0:
@@ -113,6 +191,8 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				return [...BATTERY_SCHEMA(this._config)];
 			case 5:
 				return [...HOUSE_SCHEMA(this._config), ...EXTRAS_SCHEMA(this._config)];
+			case 6:
+				return [...DETAILS_SCHEMA(this._config, this._extraEntities)];
 			default:
 				return [];
 		}
@@ -150,6 +230,7 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				<paper-tab>Solar</paper-tab>
 				<paper-tab>Battery</paper-tab>
 				<paper-tab>House</paper-tab>
+				<paper-tab>Details</paper-tab>
 			</ha-tabs>
 			<ha-form
 				.hass=${this.hass}

@@ -14,6 +14,7 @@ import {
 	CUSTOM2_ICON_DEFAULT,
 	SINGLE_INVERTOR_DEFAULT,
 	SINGLE_BATTERY_DEFAULT,
+	NUM_DETAIL_COLUMNS_DEFAULT,
 } from './const';
 import { CentreEntity, EntityLayout, LineStyle } from './types';
 import { any, assign, boolean, integer, object, optional, refine, string, array, union, tuple } from 'superstruct';
@@ -81,12 +82,18 @@ export const cardConfigStruct = assign(
 		custom2_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
 		custom2_sensor: optional(entityId()),
 		custom2_extra_sensor: optional(entityId()),
+		detail_entities: optional(array(entityId())),
+		details_enabled: optional(boolean()),
+		num_detail_columns: optional(integer()),
 	})
 );
 
 export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: string[], batteries: string[]) => {
 	const singleInvertor = config.single_invertor !== undefined ? config.single_invertor : SINGLE_INVERTOR_DEFAULT;
 	const singleBattery = config.single_battery !== undefined ? config.single_battery : SINGLE_BATTERY_DEFAULT;
+
+	const invertorList = singleInvertor ? invertors : invertors.filter((x) => config.invertors.indexOf(x) === -1);
+	const batteryList = singleInvertor ? batteries : batteries.filter((x) => config.batteries.indexOf(x) === -1);
 	return [
 		{
 			type: 'grid',
@@ -100,7 +107,7 @@ export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: s
 						{
 							label: singleInvertor ? 'Invertors' : 'Invertors',
 							name: singleInvertor ? 'invertor' : 'invertors',
-							selector: { entity: { multiple: !singleInvertor, include_entities: invertors } },
+							selector: { entity: { multiple: !singleInvertor, include_entities: invertorList } },
 						},
 					],
 				},
@@ -112,7 +119,7 @@ export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: s
 						{
 							label: singleBattery ? 'Battery' : 'Batteries',
 							name: singleBattery ? 'battery' : 'batteries',
-							selector: { entity: { multiple: !singleBattery, include_entities: batteries } },
+							selector: { entity: { multiple: !singleBattery, include_entities: batteryList } },
 						},
 					],
 				},
@@ -323,4 +330,29 @@ export const LAYOUT_TYPE_SCHEMA = (config: LovelaceCardConfig): object[] => {
 		];
 	}
 	return [];
+};
+export const DETAILS_SCHEMA = (config: LovelaceCardConfig, entities: string[]): object[] => {
+	let settings: object[] = [{ name: 'details_enabled', label: 'Details enabled', selector: { boolean: {} } }];
+	if (config.details_enabled) {
+		settings = [
+			...settings,
+			{
+				name: 'num_detail_columns',
+				label: 'Number of columns',
+				default: NUM_DETAIL_COLUMNS_DEFAULT,
+				selector: { number: { mode: 'slider', min: 1, max: 5 } },
+			},
+			{
+				label: 'Entities',
+				name: 'detail_entities',
+				selector: {
+					entity: {
+						multiple: true,
+						include_entities: entities.filter((x) => config.detail_entities.indexOf(x) === -1),
+					},
+				},
+			},
+		];
+	}
+	return settings;
 };
