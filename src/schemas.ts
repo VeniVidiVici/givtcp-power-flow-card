@@ -16,7 +16,7 @@ import {
 	SINGLE_BATTERY_DEFAULT,
 	NUM_DETAIL_COLUMNS_DEFAULT,
 } from './const';
-import { CentreEntity, EntityLayout, LineStyle } from './types';
+import { CentreEntity, DotEasing, EntityLayout, LineStyle } from './types';
 import { any, assign, boolean, integer, object, optional, refine, string, array, union, tuple } from 'superstruct';
 const isEntityId = (value: string): boolean => value.includes('.');
 const entityId = () => refine(string(), 'entity ID (domain.entity)', isEntityId);
@@ -31,60 +31,67 @@ export const cardConfigStruct = assign(
 	object({
 		name: optional(string()),
 		demo_mode: optional(boolean()),
-		hide_inactive_flows: optional(boolean()),
-		colour_icons_and_text: optional(boolean()),
-		entity_layout: optional(string()),
-		line_gap: optional(integer()),
-		line_width: optional(integer()),
-		dot_size: optional(integer()),
-		power_margin: optional(integer()),
-		dot_speed: optional(integer()),
-		corner_radius: optional(integer()),
-		single_invertor: optional(boolean()),
-		single_battery: optional(boolean()),
-		invertor: optional(entityId()),
-		battery: optional(entityId()),
-		invertors: optional(array(entityId())),
 		batteries: optional(array(entityId())),
-		battery_enabled: optional(boolean()),
-		solar_enabled: optional(boolean()),
-		circle_size: optional(integer()),
-		entity_size: optional(integer()),
-		centre_entity: optional(string()),
-		grid_icon: optional(string()),
-		house_icon: optional(string()),
-		battery_icon: optional(string()),
-		solar_icon: optional(string()),
-		line_style: optional(string()),
-		grid_colour_type: optional(string()),
-		grid_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
-		house_colour_type: optional(string()),
-		house_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
 		battery_colour_type: optional(string()),
 		battery_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
-		solar_colour_type: optional(string()),
-		solar_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
-		eps_enabled: optional(boolean()),
-		eps_icon: optional(string()),
-		eps_colour_type: optional(string()),
-		eps_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
-		custom1_enabled: optional(boolean()),
-		custom1_name: optional(string()),
-		custom1_icon: optional(string()),
+		battery_dot_easing: optional(string()),
+		battery_enabled: optional(boolean()),
+		battery_icon: optional(string()),
+		battery: optional(entityId()),
+		centre_entity: optional(string()),
+		circle_size: optional(integer()),
+		colour_icons_and_text: optional(boolean()),
+		corner_radius: optional(integer()),
 		custom1_colour_type: optional(string()),
 		custom1_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
-		custom1_sensor: optional(entityId()),
+		custom1_dot_easing: optional(string()),
+		custom1_enabled: optional(boolean()),
 		custom1_extra_sensor: optional(entityId()),
-		custom2_enabled: optional(boolean()),
-		custom2_name: optional(string()),
-		custom2_icon: optional(string()),
+		custom1_icon: optional(string()),
+		custom1_name: optional(string()),
+		custom1_sensor: optional(entityId()),
 		custom2_colour_type: optional(string()),
 		custom2_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
-		custom2_sensor: optional(entityId()),
+		custom2_dot_easing: optional(string()),
+		custom2_enabled: optional(boolean()),
 		custom2_extra_sensor: optional(entityId()),
+		custom2_icon: optional(string()),
+		custom2_name: optional(string()),
+		custom2_sensor: optional(entityId()),
 		detail_entities: optional(array(entityId())),
 		details_enabled: optional(boolean()),
+		dot_size: optional(integer()),
+		dot_speed: optional(integer()),
+		entity_layout: optional(string()),
+		entity_size: optional(integer()),
+		eps_colour_type: optional(string()),
+		eps_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
+		eps_dot_easing: optional(string()),
+		eps_enabled: optional(boolean()),
+		eps_icon: optional(string()),
+		grid_colour_type: optional(string()),
+		grid_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
+		grid_dot_easing: optional(string()),
+		grid_icon: optional(string()),
+		hide_inactive_flows: optional(boolean()),
+		house_colour_type: optional(string()),
+		house_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
+		house_dot_easing: optional(string()),
+		house_icon: optional(string()),
+		invertor: optional(entityId()),
+		invertors: optional(array(entityId())),
+		line_gap: optional(integer()),
+		line_style: optional(string()),
+		line_width: optional(integer()),
 		num_detail_columns: optional(integer()),
+		power_margin: optional(integer()),
+		single_battery: optional(boolean()),
+		single_invertor: optional(boolean()),
+		solar_colour_type: optional(string()),
+		solar_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),
+		solar_dot_easing: optional(string()),
+		solar_enabled: optional(boolean()),
+		solar_icon: optional(string()),
 	})
 );
 
@@ -128,11 +135,13 @@ export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: s
 	];
 };
 
-const ICON_SCHEMA = (name: string, label: string, placeholder: string) => ({
-	name,
-	label,
-	selector: { icon: { placeholder } },
-});
+const ICON_SCHEMA = (name: string, label: string, placeholder: string) => [
+	{
+		name,
+		label,
+		selector: { icon: { placeholder } },
+	},
+];
 // const ENTITY_ACTION_SCHEMA = (name: string, label: string) => [
 // 	{
 // 		type: 'grid',
@@ -144,6 +153,24 @@ const ICON_SCHEMA = (name: string, label: string, placeholder: string) => ({
 // 	},
 // ];
 
+const ENTITY_EASING_SCHEMA = (name: string, label: string) => [
+	{
+		name,
+		default: DotEasing.Linear,
+		label,
+		selector: {
+			select: {
+				mode: 'dropdown',
+				options: [
+					{ value: DotEasing.Linear, label: 'Linear' },
+					{ value: DotEasing.EaseInOut, label: 'Ease In & Out' },
+					{ value: DotEasing.EaseIn, label: 'Ease In' },
+					{ value: DotEasing.EaseOut, label: 'Ease Out' },
+				],
+			},
+		},
+	},
+];
 const ENTITY_COLOUR_SCHEMA = (type: string, name: string, label: string) => [
 	{
 		name,
@@ -160,11 +187,12 @@ const ENTITY_COLOUR_TYPE_SCHEMA = (name: string, label: string) => [
 	},
 ];
 export const ENTITY_SCHEMA = (config: LovelaceCardConfig, type: string, label: string, defaultIcon: string) => [
-	ICON_SCHEMA(type + '_icon', 'Icon', defaultIcon),
 	{
 		type: 'grid',
 		name: '',
 		schema: [
+			...ICON_SCHEMA(type + '_icon', 'Icon', defaultIcon),
+			...ENTITY_EASING_SCHEMA(type + '_dot_easing', label + ' Dot Easing'),
 			...ENTITY_COLOUR_TYPE_SCHEMA(type + '_colour', 'Colour Type'),
 			...ENTITY_COLOUR_SCHEMA(config[`${type}_colour_type`], type + '_colour', label + ' Colour'),
 		],

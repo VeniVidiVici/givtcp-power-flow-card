@@ -42,3 +42,9 @@ export interface FlowPower {
 	to: string;
 	value: number;
 }
+export enum DotEasing {
+	Linear = 'linear',
+	EaseIn = 'easeIn',
+	EaseOut = 'easeOut',
+	EaseInOut = 'easeInOut',
+}
