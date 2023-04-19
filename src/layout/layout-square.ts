@@ -28,7 +28,11 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 			<div class="gtpc-layout gtpc-${showClass} gtpc-line-style-${this.lineStyle} gtpc-layout-square">
 				${this.flowData.map(
 					(flow) =>
-						html`<givtcp-power-flow-card-entity data-type="${flow.type}" .lineWidth=${this.lineWidth} .data=${flow} />`
+						html`<givtcp-power-flow-card-entity
+							data-type="${flow.type}"
+							.entityLineWidth=${this.entityLineWidth}
+							.data=${flow}
+						/>`
 				)}
 				<svg viewBox="0 0 ${this.width} ${this.height}" xmlns="http://www.w3.org/2000/svg">
 					${this.flows.map((flow) => this.getGroupForFlow(flow.from, flow.to))}

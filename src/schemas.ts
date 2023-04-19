@@ -63,6 +63,7 @@ export const cardConfigStruct = assign(
 		dot_size: optional(integer()),
 		dot_speed: optional(integer()),
 		entity_layout: optional(string()),
+		entity_line_width: optional(integer()),
 		entity_size: optional(integer()),
 		eps_colour_type: optional(string()),
 		eps_colour: optional(union([string(), tuple([integer(), integer(), integer()])])),

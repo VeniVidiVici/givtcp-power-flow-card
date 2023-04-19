@@ -6,7 +6,7 @@ import { FlowData, UnitOfPower } from './types';
 @customElement('givtcp-power-flow-card-entity')
 export class GivTCPPowerFlowCardEntity extends LitElement {
 	@property() data!: FlowData;
-	@property() lineWidth!: number;
+	@property() entityLineWidth!: number;
 	constructor() {
 		super();
 		this.addEventListener('click', (e) => {
@@ -40,11 +40,12 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 
 		let offset = 0;
 		this.style.setProperty('--gtpc-color', `var(--gtpc-${this.data.type}-color)`);
+		const radius = Math.floor(50 - this.entityLineWidth / 2) - 1;
 		return html`
 			${svg`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
 		${
 			fullTotal <= 0
-				? svg`<path d="${SVGUtils.getCirclePath(100, 0, 50 - this.lineWidth / 2)}" style="stroke: var(--gtpc-${
+				? svg`<path d="${SVGUtils.getCirclePath(100, 0, radius)}" style="stroke: var(--gtpc-${
 						this.data.type
 				  }-color)" />`
 				: Object.keys(partTotals).map((key) => {
@@ -54,7 +55,7 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 							? svg`<path d="${SVGUtils.getCirclePath(
 									percentage,
 									offset,
-									50 - this.lineWidth / 2
+									radius
 							  )}" style="stroke: var(--gtpc-${key}-color)" />`
 							: html``;
 				  })

@@ -265,6 +265,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private get _lineWidth(): number {
 		return this._config?.line_width || LINE_WIDTH_DEFAULT;
 	}
+	private get _entityLineWidth(): number {
+		return this._config?.entity_line_width || this._lineWidth;
+	}
 	private get _numColumn(): number {
 		return this._config?.num_detail_columns || NUM_DETAIL_COLUMNS_DEFAULT;
 	}
@@ -640,7 +643,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
 					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
-					.lineWidth=${this._lineWidth}
+					.entityLineWidth=${this._entityLineWidth}
 					.lineGap=${this._lineGap}
 					.cornerRadius=${this._cornerRadius}
 					.entitySize=${this._entitySize}
@@ -652,7 +655,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
 					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
-					.lineWidth=${this._lineWidth}
+					.entityLineWidth=${this._entityLineWidth}
 					.lineGap=${this._lineGap}
 					.lineStyle=${this._lineStyle}
 					.entitySize=${this._entitySize}
@@ -664,7 +667,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
 					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
-					.lineWidth=${this._lineWidth}
+					.entityLineWidth=${this._entityLineWidth}
 					.centreEntity=${this._centreEntity}
 					.circleSize=${this._circleSize}
 					.entitySize=${this._entitySize}
@@ -677,7 +680,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					.flows=${this._activeFlows}
 					.flowPowers=${flowPowers}
 					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
-					.lineWidth=${this._lineWidth}
+					.entityLineWidth=${this._entityLineWidth}
 					.entitySize=${this._entitySize}
 				/>`;
 				break;
@@ -732,6 +735,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 
 		this.style.setProperty('--gtpc-column-width', `${100 / this._numColumn}%`);
 		this.style.setProperty('--gtpc-line-size', `${this._lineWidth}px`);
+		this.style.setProperty('--gtpc-entity-line-size', `${this._entityLineWidth}px`);
 		this.style.setProperty('--gtpc-inactive-flow-display', this._hideInactiveFlows ? 'none' : 'block');
 		if (this._colourIconsAndText) {
 			this.style.removeProperty('--gtpc-icons-and-text-colour');
@@ -965,7 +969,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		givtcp-power-flow-card-entity > svg > path {
 			fill-opacity: 0;
 			fill: var(--ha-card-background, var(--card-background-color, white));
-			stroke-width: var(--gtpc-line-size);
+			stroke-width: var(--gtpc-entity-line-size);
 			vector-effect: non-scaling-stroke;
 		}
 		.gtpc-list-row {
@@ -984,7 +988,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		.gtpc-layout.gtpc-layout-list .gtpc-list-entity {
 			border-radius: 50%;
 			border-style: solid;
-			border-width: var(--gtpc-line-size);
+			border-width: var(--gtpc-entity-line-size);
 			height: calc(var(--gtpc-size) / 2);
 			width: calc(var(--gtpc-size) / 2);
 			position: absolute;
