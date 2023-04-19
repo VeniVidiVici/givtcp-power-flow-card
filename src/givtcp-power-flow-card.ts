@@ -12,7 +12,7 @@ import './layout/layout-list';
 
 import { HassEntity } from 'home-assistant-js-websocket';
 
-import { CentreEntity, FlowData, EntityLayout, FlowDirection, FlowTotal, FlowPower } from './types';
+import { CentreEntity, FlowData, EntityLayout, FlowDirection, FlowTotal, FlowPower, DotEasing } from './types';
 import {
 	CENTRE_ENTITY_DEFAULT,
 	CIRCLE_SIZE_DEFAULT,
@@ -43,6 +43,13 @@ import {
 	SINGLE_INVERTOR_DEFAULT,
 	DETAILS_ENABLED_DEFAULT,
 	NUM_DETAIL_COLUMNS_DEFAULT,
+	GRID_DOT_EASING_DEFAULT,
+	HOUSE_DOT_EASING_DEFAULT,
+	SOLAR_DOT_EASING_DEFAULT,
+	BATTERY_DOT_EASING_DEFAULT,
+	CUSTOM1_DOT_EASING_DEFAULT,
+	CUSTOM2_DOT_EASING_DEFAULT,
+	EPS_DOT_EASING_DEFAULT,
 } from './const';
 import { ConfigUtils } from './utils/config-utils';
 
@@ -97,6 +104,33 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private get _custom2Extra(): string | undefined {
 		const entity = this.hass.states[this._config?.custom2_extra_sensor];
 		return !entity || !this._custom2Enabled ? undefined : this.getFormatedState(entity);
+	}
+	private get _gridDotEasing(): DotEasing {
+		return this._config?.grid_dot_easing === undefined ? GRID_DOT_EASING_DEFAULT : this._config?.grid_dot_easing;
+	}
+	private get _houseDotEasing(): DotEasing {
+		return this._config?.house_dot_easing === undefined ? HOUSE_DOT_EASING_DEFAULT : this._config?.house_dot_easing;
+	}
+	private get _solarDotEasing(): DotEasing {
+		return this._config?.solar_dot_easing === undefined ? SOLAR_DOT_EASING_DEFAULT : this._config?.solar_dot_easing;
+	}
+	private get _batteryDotEasing(): DotEasing {
+		return this._config?.battery_dot_easing === undefined
+			? BATTERY_DOT_EASING_DEFAULT
+			: this._config?.battery_dot_easing;
+	}
+	private get _epsDotEasing(): DotEasing {
+		return this._config?.eps_dot_easing === undefined ? EPS_DOT_EASING_DEFAULT : this._config?.eps_dot_easing;
+	}
+	private get _custom1DotEasing(): DotEasing {
+		return this._config?.custom1_dot_easing === undefined
+			? CUSTOM1_DOT_EASING_DEFAULT
+			: this._config?.custom1_dot_easing;
+	}
+	private get _custom2DotEasing(): DotEasing {
+		return this._config?.custom2_dot_easing === undefined
+			? CUSTOM2_DOT_EASING_DEFAULT
+			: this._config?.custom2_dot_easing;
 	}
 	private get _epsEnabled(): boolean {
 		return this._config?.eps_enabled === undefined || !this._batteryEnabled
@@ -273,6 +307,26 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				return parseInt(entity.state, 10);
 		}
 	}
+	private _dotEasingFor(type: string): DotEasing {
+		switch (type) {
+			case 'solar':
+				return this._solarDotEasing;
+			case 'battery':
+				return this._batteryDotEasing;
+			case 'grid':
+				return this._gridDotEasing;
+			case 'house':
+				return this._houseDotEasing;
+			case 'eps':
+				return this._epsDotEasing;
+			case 'custom1':
+				return this._custom1DotEasing;
+			case 'custom2':
+				return this._custom2DotEasing;
+			default:
+				return DotEasing.Linear;
+		}
+	}
 	private getIconFor(type: string, level: undefined | number = undefined): string {
 		let icon;
 		switch (type) {
@@ -431,6 +485,51 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		this._resizeObserver?.unobserve(this);
 		this._animate = false;
 	}
+
+	private calculateDotPosition(
+		elapsedTime: number,
+		lastPosition: number,
+		speedFactor: number,
+		ease: DotEasing
+	): number {
+		const percentPerMillisecond = 0.0075 * speedFactor;
+		const pixelsMoved = elapsedTime * percentPerMillisecond;
+		const newPosition = lastPosition + pixelsMoved / 100;
+
+		if (newPosition >= 1) {
+			return 0; // the dot has completed the path, so it starts again
+		}
+
+		let easedPosition;
+		const t = newPosition;
+
+		// apply ease-in and ease-out effect
+		switch (ease) {
+			case DotEasing.EaseIn:
+				// ease-in effect
+				easedPosition = t * t * t;
+				break;
+			case DotEasing.EaseOut:
+				// ease-out effect
+				easedPosition = 1 - (1 - t) ** 3;
+				break;
+			case DotEasing.EaseInOut:
+				// ease-in-out effect
+				if (t < 0.5) {
+					easedPosition = 4 * t ** 3;
+				} else {
+					easedPosition = 1 - (-2 * t + 2) ** 3 / 2;
+				}
+				break;
+			case DotEasing.Linear:
+			default:
+				easedPosition = t;
+				break;
+		}
+
+		return easedPosition;
+	}
+
 	private advanceFlowDot(elapsed: number, from: string, to: string, direction: FlowDirection): void {
 		const g = <SVGGElement>this.shadowRoot?.querySelector(`.gtpc-${from}-to-${to}-flow`);
 		if (!g) return;
@@ -442,22 +541,29 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			return;
 		}
 		try {
-			let pos = parseFloat(g.getAttribute('data-pos') || '0');
+			const currentPos = parseFloat(g.getAttribute('data-pos') || '0');
+			g.setAttribute(
+				'data-pos',
+				this.calculateDotPosition(elapsed, currentPos, (power / 1000) * this._dotSpeed, DotEasing.Linear).toString()
+			);
+
+			let newDisplayPos = this.calculateDotPosition(
+				elapsed,
+				currentPos,
+				(power / 1000) * this._dotSpeed,
+				this._dotEasingFor(from)
+			);
+			if (direction === FlowDirection.Out) {
+				newDisplayPos = 1 - newDisplayPos;
+			}
+
 			circle.setAttribute('visibility', power ? 'visible' : 'hidden');
 			const lineLength = path.getTotalLength();
-			const point = path.getPointAtLength(lineLength * pos);
+			const point = path.getPointAtLength(lineLength * newDisplayPos);
 			circle.setAttributeNS(null, 'cx', point.x.toString());
 			circle.setAttributeNS(null, 'cy', point.y.toString());
 			circle.setAttributeNS(null, 'r', (this._dotSize / 4).toString());
-			const moveBy = (elapsed * power * this._dotSpeed) / 10000 / 1000;
-			if (direction === FlowDirection.In) {
-				pos += moveBy;
-				if (pos > 1) pos = 0;
-			} else {
-				pos -= moveBy;
-				if (pos < 0) pos = 1;
-			}
-			g.setAttribute('data-pos', pos.toString());
+
 			g.setAttribute('data-power', power.toString());
 		} catch (e) {
 			console.error(e);
@@ -944,11 +1050,17 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			text-align: center;
 		}
 		.gtpc-detail-title {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
 			font-size: 0.8rem;
 			--mdc-icon-size: 1.1rem;
 			color: var(--secondary-text-color);
 		}
 		.gtpc-detail-state {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
 			font-size: 1rem;
 		}
 		.gtpc-detail-title > *:nth-child(1) {
