@@ -6,7 +6,7 @@ export abstract class GivTCPPowerFlowCardLayout extends LitElement {
 	@property() flowData!: FlowData[];
 	@property() flows!: { from: string; to: string; direction: FlowDirection }[];
 	@property() entitySize!: number;
-	@property() lineWidth!: number;
+	@property() entityLineWidth!: number;
 	protected width = 100;
 	protected midX = this.width / 2;
 	protected get midY(): number {

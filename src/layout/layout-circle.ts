@@ -32,7 +32,7 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 					(flow) =>
 						html`<givtcp-power-flow-card-entity
 							data-type="${flow.type}"
-							.lineWidth=${this.lineWidth}
+							.entityLineWidth=${this.entityLineWidth}
 							.data=${flow}
 						></givtcp-power-flow-card-entity>`
 				)}

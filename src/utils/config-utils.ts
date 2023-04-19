@@ -62,6 +62,7 @@ export class ConfigUtils {
 			dot_size: DOT_SIZE_DEFAULT,
 			dot_speed: DOT_SPEED_DEFAULT,
 			entity_layout: EntityLayout.Cross,
+			entity_line_width: LINE_WIDTH_DEFAULT,
 			entity_size: ENTITY_SIZE_DEFAULT,
 			eps_colour_type: COLOUR_TYPE_DEFAULT,
 			eps_colour: config.eps_colour_type === 'rgb' ? EPS_COLOUR_RGB_DEFAULT : EPS_COLOUR_UI_DEFAULT,

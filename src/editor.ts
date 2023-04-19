@@ -154,7 +154,13 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 							},
 							{
 								name: 'line_width',
-								label: 'Line Width',
+								label: 'Flow Size',
+								default: LINE_WIDTH_DEFAULT,
+								selector: { number: { mode: 'slider', min: 1, max: 10 } },
+							},
+							{
+								name: 'entity_line_width',
+								label: 'Outline Size',
 								default: LINE_WIDTH_DEFAULT,
 								selector: { number: { mode: 'slider', min: 1, max: 10 } },
 							},
@@ -164,12 +170,6 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 								default: ENTITY_SIZE_DEFAULT,
 								selector: { number: { mode: 'slider', min: 3, max: 7 } },
 							},
-						],
-					},
-					{
-						type: 'grid',
-						name: '',
-						schema: [
 							{
 								name: 'power_margin',
 								label: 'Power Threshold',
