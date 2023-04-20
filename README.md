@@ -1,3 +1,11 @@
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=flat-square)](https://github.com/hacs/integration)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/VeniVidiVici/givtcp-power-flow-card?style=flat-square)
+
+[![Github All Releases](https://img.shields.io/github/downloads/VeniVidiVici/givtcp-power-flow-card/total.svg)]()
+![Build](https://github.com/VeniVidiVici/givtcp-power-flow-card/actions/workflows/build.yml/badge.svg)
+
+
+
 # givtcp-power-flow-card
 
 [home-assistant](home-assistant.io) power flow card for [GivTCP](https://github.com/britkat1980/giv_tcp) users.
