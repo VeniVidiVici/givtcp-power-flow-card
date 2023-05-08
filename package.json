@@ -31,6 +31,6 @@
 		"vite-plugin-eslint": "^1.8.1"
 	},
 	"dependencies": {
-		"lit": "^2.7.3"
+		"lit": "^2.7.4"
 	}
 }
