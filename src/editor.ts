@@ -107,18 +107,10 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 		}
 	}
 	private get _batteries(): string[] {
-		return this.hass
-			? Object.keys(this.hass.states).filter((eid) =>
-					/^sensor\.givtcp_[a-zA-Z]{2}\d{4}[a-zA-Z]\d{3}_battery_serial_number$/g.test(eid)
-			  )
-			: [];
+		return this.hass ? Object.keys(this.hass.states).filter((eid) => eid.includes('battery_serial_number')) : [];
 	}
 	private get _invertors(): string[] {
-		return this.hass
-			? Object.keys(this.hass.states).filter((eid) =>
-					/^sensor\.givtcp_[a-zA-Z]{2}\d{4}[a-zA-Z]\d{3}_invertor_serial_number$/g.test(eid)
-			  )
-			: [];
+		return this.hass ? Object.keys(this.hass.states).filter((eid) => eid.includes('invertor_serial_number')) : [];
 	}
 	private get _defaults(): LovelaceCardConfig {
 		return ConfigUtils.getDefaults(this._config);

@@ -6,6 +6,10 @@ export interface FlowData {
 	in?: FlowTotal;
 	out?: FlowTotal;
 }
+export interface entityName {
+	prefix: string;
+	suffix: string;
+}
 export enum LineStyle {
 	Straight = 'straight',
 	Curved = 'curved',
