@@ -100,8 +100,8 @@ export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: s
 	const singleInvertor = config.single_invertor !== undefined ? config.single_invertor : SINGLE_INVERTOR_DEFAULT;
 	const singleBattery = config.single_battery !== undefined ? config.single_battery : SINGLE_BATTERY_DEFAULT;
 
-	const invertorList = singleInvertor ? invertors : invertors.filter((x) => config.invertors.indexOf(x) === -1);
-	const batteryList = singleInvertor ? batteries : batteries.filter((x) => config.batteries.indexOf(x) === -1);
+	const invertorList = singleInvertor ? invertors : invertors.filter((x) => config.invertors?.length > 0 ? config.invertors?.indexOf(x) === -1 : true);
+	const batteryList = singleBattery ? batteries : batteries.filter((x) => config.batteries?.length > 0 ? config.batteries?.indexOf(x) === -1 : true);
 	return [
 		{
 			type: 'grid',
@@ -113,7 +113,7 @@ export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: s
 					schema: [
 						{ name: 'single_invertor', label: 'Single Invertor', selector: { boolean: {} } },
 						{
-							label: singleInvertor ? 'Invertors' : 'Invertors',
+							label: singleInvertor ? 'Invertor' : 'Invertors',
 							name: singleInvertor ? 'invertor' : 'invertors',
 							selector: { entity: { multiple: !singleInvertor, include_entities: invertorList } },
 						},
