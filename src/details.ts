@@ -23,7 +23,7 @@ export class GivTCPPowerFlowCardDetails extends LitElement {
 	}
 	render(): TemplateResult {
 		return html`<div class="gtpc-details">
-			${this.entities.map(
+			${this.entities?.map(
 				(entity) => html`<div class="gtpc-detail" data-entity-id="${entity?.entity_id}">
 					<div class="gtpc-detail-title">${this.formatEntityName(entity?.attributes?.friendly_name)}</div>
 					<state-badge .stateObj=${entity} .stateColor=${true}></state-badge>
