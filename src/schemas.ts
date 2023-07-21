@@ -100,8 +100,12 @@ export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: s
 	const singleInvertor = config.single_invertor !== undefined ? config.single_invertor : SINGLE_INVERTOR_DEFAULT;
 	const singleBattery = config.single_battery !== undefined ? config.single_battery : SINGLE_BATTERY_DEFAULT;
 
-	const invertorList = singleInvertor ? invertors : invertors.filter((x) => config.invertors?.length > 0 ? config.invertors?.indexOf(x) === -1 : true);
-	const batteryList = singleBattery ? batteries : batteries.filter((x) => config.batteries?.length > 0 ? config.batteries?.indexOf(x) === -1 : true);
+	const invertorList = singleInvertor
+		? invertors
+		: invertors.filter((x) => (config.invertors?.length > 0 ? config.invertors?.indexOf(x) === -1 : true));
+	const batteryList = singleBattery
+		? batteries
+		: batteries.filter((x) => (config.batteries?.length > 0 ? config.batteries?.indexOf(x) === -1 : true));
 	return [
 		{
 			type: 'grid',
