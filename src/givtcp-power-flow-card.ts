@@ -150,7 +150,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		return this._config?.details_enabled === undefined ? DETAILS_ENABLED_DEFAULT : this._config?.details_enabled;
 	}
 	private get _detailEntities(): HassEntity[] {
-		return this._detailsEnabled ? this._config.detail_entities.map((e: string) => this.hass.states[e]) : [];
+		return this._detailsEnabled ? this._config?.detail_entities?.map((e: string) => this.hass.states[e]) : [];
 	}
 	private get _epsTotal(): FlowTotal | undefined {
 		return this._inverterName && this._epsEnabled

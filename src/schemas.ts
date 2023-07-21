@@ -381,7 +381,9 @@ export const DETAILS_SCHEMA = (config: LovelaceCardConfig, entities: string[]): 
 				selector: {
 					entity: {
 						multiple: true,
-						include_entities: entities.filter((x) => config.detail_entities.indexOf(x) === -1),
+						include_entities: entities.filter((x) =>
+							config.detail_entities ? config.detail_entities.indexOf(x) === -1 : true
+						),
 					},
 				},
 			},
