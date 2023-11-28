@@ -25,7 +25,7 @@
 		"eslint": "^8.45.0",
 		"eslint-config-prettier": "^8.8.0",
 		"home-assistant-js-websocket": "^8.2.0",
-		"prettier": "^2.8.8",
+		"prettier": "^3.1.0",
 		"typescript": "^5.1.6",
 		"vite": "^4.3.9",
 		"vite-plugin-eslint": "^1.8.1"
