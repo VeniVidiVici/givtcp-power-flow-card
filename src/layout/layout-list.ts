@@ -60,7 +60,7 @@ export class GivTCPPowerFlowCardLayoutList extends GivTCPPowerFlowCardLayout {
 								${this.extraFor(flow.to) ? html`<div class="gtpc-entity-extra">${this.extraFor(flow.to)}</div>` : html``}
 							</div>
 							</div>
-						</div>`
+						</div>`,
 					)}
 			</div>
 		`;
