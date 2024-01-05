@@ -163,8 +163,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 						}
 						return acc;
 					},
-					{ total: 0, parts: [] } as FlowTotal
-			  )
+					{ total: 0, parts: [] } as FlowTotal,
+				)
 			: undefined;
 	}
 	private get _custom1Total(): FlowTotal | undefined {
@@ -174,7 +174,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			: {
 					total: this.getStateAsWatts(entity),
 					parts: [{ type: 'custom1', value: this.getStateAsWatts(entity) }],
-			  };
+				};
 	}
 	private get _custom2Total(): FlowTotal | undefined {
 		const entity = this.hass.states[this._config?.custom2_sensor];
@@ -183,7 +183,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			: {
 					total: this.getStateAsWatts(entity),
 					parts: [{ type: 'custom2', value: this.getStateAsWatts(entity) }],
-			  };
+				};
 	}
 	private get _singleInverter(): boolean {
 		return this._config?.single_invertor === undefined ? SINGLE_INVERTOR_DEFAULT : this._config?.single_invertor;
@@ -529,7 +529,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		elapsedTime: number,
 		lastPosition: number,
 		speedFactor: number,
-		ease: DotEasing
+		ease: DotEasing,
 	): number {
 		const percentPerMillisecond = 0.0075 * speedFactor;
 		const pixelsMoved = elapsedTime * percentPerMillisecond;
@@ -583,14 +583,14 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			const currentPos = parseFloat(g.getAttribute('data-pos') || '0');
 			g.setAttribute(
 				'data-pos',
-				this.calculateDotPosition(elapsed, currentPos, (power / 1000) * this._dotSpeed, DotEasing.Linear).toString()
+				this.calculateDotPosition(elapsed, currentPos, (power / 1000) * this._dotSpeed, DotEasing.Linear).toString(),
 			);
 
 			let newDisplayPos = this.calculateDotPosition(
 				elapsed,
 				currentPos,
 				(power / 1000) * this._dotSpeed,
-				this._dotEasingFor(from)
+				this._dotEasingFor(from),
 			);
 			if (direction === FlowDirection.Out) {
 				newDisplayPos = 1 - newDisplayPos;
@@ -771,9 +771,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		if (!config.invertor && !config.invertors) {
 			throw new Error('You need to define at least one invertor entity');
 		}
-		if (!config.battery && !config.batteries) {
-			throw new Error('You need to define at least one battery entity');
-		}
+		// if (!config.battery && !config.batteries) {
+		// 	throw new Error('You need to define at least one battery entity');
+		// }
 		this._config = ConfigUtils.migrateConfig(config, true);
 		const defaults = ConfigUtils.getDefaults(this._config);
 

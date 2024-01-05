@@ -34,7 +34,7 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 							data-type="${flow.type}"
 							.entityLineWidth=${this.entityLineWidth}
 							.data=${flow}
-						></givtcp-power-flow-card-entity>`
+						></givtcp-power-flow-card-entity>`,
 				)}
 				<svg viewBox="0 0 ${this.width} ${this.height}" xmlns="http://www.w3.org/2000/svg">
 					${this.flows.map((flow) => this.getGroupForFlow(flow.from, flow.to))}
@@ -75,14 +75,14 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 					this.width - halfEntity,
 					this.entityWidth,
 					this.width - halfEntity,
-					this.midY - halfEntity
+					this.midY - halfEntity,
 				);
 			case 'house-to-custom2':
 				return SVGUtils.getStraightPath(
 					this.width - halfEntity,
 					this.height - this.entityWidth,
 					this.width - halfEntity,
-					this.midY + halfEntity
+					this.midY + halfEntity,
 				);
 			default:
 				return '';

@@ -24,11 +24,12 @@ export class GivTCPPowerFlowCardDetails extends LitElement {
 	render(): TemplateResult {
 		return html`<div class="gtpc-details">
 			${this.entities?.map(
-				(entity) => html`<div class="gtpc-detail" data-entity-id="${entity?.entity_id}">
-					<div class="gtpc-detail-title">${this.formatEntityName(entity?.attributes?.friendly_name)}</div>
-					<state-badge .stateObj=${entity} .stateColor=${true}></state-badge>
-					<div class="gtpc-detail-state">${entity?.state} ${entity?.attributes?.unit_of_measurement}</div>
-				</div>`
+				(entity) =>
+					html`<div class="gtpc-detail" data-entity-id="${entity?.entity_id}">
+						<div class="gtpc-detail-title">${this.formatEntityName(entity?.attributes?.friendly_name)}</div>
+						<state-badge .stateObj=${entity} .stateColor=${true}></state-badge>
+						<div class="gtpc-detail-state">${entity?.state} ${entity?.attributes?.unit_of_measurement}</div>
+					</div>`,
 			)}
 		</div>`;
 	}

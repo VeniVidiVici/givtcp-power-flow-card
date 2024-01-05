@@ -47,7 +47,7 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 			fullTotal <= 0
 				? svg`<path d="${SVGUtils.getCirclePath(100, 0, radius)}" style="stroke: var(--gtpc-${
 						this.data.type
-				  }-color)" />`
+					}-color)" />`
 				: Object.keys(partTotals).map((key) => {
 						const percentage = (partTotals[key] / fullTotal) * 100;
 						offset += fullTotal > 0 ? ((fullTotal - partTotals[key]) / fullTotal) * 100 : 0;
@@ -55,10 +55,10 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 							? svg`<path d="${SVGUtils.getCirclePath(
 									percentage,
 									offset,
-									radius
-							  )}" style="stroke: var(--gtpc-${key}-color)" />`
+									radius,
+								)}" style="stroke: var(--gtpc-${key}-color)" />`
 							: html``;
-				  })
+					})
 		}
 		</svg>`}
 			<div
@@ -70,12 +70,12 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 				${this.data.in !== undefined
 					? html`<span data-power="${this.data.in.total}" class="gtpc-entity-in"
 							><ha-icon icon="mdi:arrow-right"></ha-icon> ${this.formatPower(this.data.in.total)}</span
-					  >`
+						>`
 					: html``}
 				${this.data.out !== undefined
 					? html`<span data-power="${this.data.out.total}" class="gtpc-entity-out"
 							><ha-icon icon="mdi:arrow-left"></ha-icon> ${this.formatPower(this.data.out.total)}</span
-					  >`
+						>`
 					: html``}
 				<ha-icon class="gtpc-entity-icon" .icon="${this.data.icon}"></ha-icon>
 				${this.data.extra !== undefined ? html`<span class="gtpc-entity-extra">${this.data.extra}</span>` : html``}
