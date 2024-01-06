@@ -93,7 +93,7 @@ export const cardConfigStruct = assign(
 		solar_dot_easing: optional(string()),
 		solar_enabled: optional(boolean()),
 		solar_icon: optional(string()),
-	})
+	}),
 );
 
 export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: string[], batteries: string[]) => {
@@ -117,7 +117,7 @@ export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: s
 					schema: [
 						{ name: 'single_invertor', label: 'Single Invertor', selector: { boolean: {} } },
 						{
-							label: singleInvertor ? 'Invertor' : 'Invertors',
+							label: singleInvertor ? 'Invertor/AIO' : 'Invertors',
 							name: singleInvertor ? 'invertor' : 'invertors',
 							selector: { entity: { multiple: !singleInvertor, include_entities: invertorList } },
 						},
@@ -382,7 +382,7 @@ export const DETAILS_SCHEMA = (config: LovelaceCardConfig, entities: string[]): 
 					entity: {
 						multiple: true,
 						include_entities: entities.filter((x) =>
-							config.detail_entities ? config.detail_entities.indexOf(x) === -1 : true
+							config.detail_entities ? config.detail_entities.indexOf(x) === -1 : true,
 						),
 					},
 				},

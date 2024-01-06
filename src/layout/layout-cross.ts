@@ -30,7 +30,7 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 							data-type="${flow.type}"
 							.entityLineWidth=${this.entityLineWidth}
 							.data=${flow}
-						></givtcp-power-flow-card-entity>`
+						></givtcp-power-flow-card-entity>`,
 				)}
 				<svg viewBox="0 0 100 ${this.height}" xmlns="http://www.w3.org/2000/svg">
 					${this.flows.map((flow) => this.getGroupForFlow(flow.from, flow.to))}
@@ -56,7 +56,7 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 					this.width - this.entityWidth,
 					this.midY - this.lineGap,
 					this.cornerRadius,
-					0
+					0,
 				);
 			case 'battery-to-house':
 				return SVGUtils.getRoundedCornerPath(
@@ -65,7 +65,7 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 					this.midX + this.xLineGap,
 					this.height - this.entityWidth,
 					this.cornerRadius,
-					2
+					2,
 				);
 			case 'battery-to-grid':
 				return SVGUtils.getRoundedCornerPath(
@@ -74,7 +74,7 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 					this.entityWidth,
 					this.midY + this.lineGap,
 					this.cornerRadius,
-					3
+					3,
 				);
 			case 'grid-to-battery':
 				return SVGUtils.getRoundedCornerPath(
@@ -83,7 +83,7 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 					this.entityWidth,
 					this.midY + this.lineGap,
 					this.cornerRadius,
-					3
+					3,
 				);
 			case 'solar-to-grid':
 				return SVGUtils.getRoundedCornerPath(
@@ -92,7 +92,7 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 					this.midX - this.xLineGap,
 					this.entityWidth,
 					this.cornerRadius,
-					1
+					1,
 				);
 			case 'solar-to-battery':
 				return SVGUtils.getCurvePath(this.midX, this.entityWidth, this.midX, this.height - this.entityWidth, 0);
@@ -103,14 +103,14 @@ export class GivTCPPowerFlowCardLayoutCross extends GivTCPPowerFlowCardLayout {
 					this.width - halfEntity,
 					this.entityWidth,
 					this.width - halfEntity,
-					this.midY - halfEntity
+					this.midY - halfEntity,
 				);
 			case 'house-to-custom2':
 				return SVGUtils.getStraightPath(
 					this.width - halfEntity,
 					this.height - this.entityWidth,
 					this.width - halfEntity,
-					this.midY + halfEntity
+					this.midY + halfEntity,
 				);
 			default:
 				return '';

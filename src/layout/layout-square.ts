@@ -32,7 +32,7 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 							data-type="${flow.type}"
 							.entityLineWidth=${this.entityLineWidth}
 							.data=${flow}
-						/>`
+						/>`,
 				)}
 				<svg viewBox="0 0 ${this.width} ${this.height}" xmlns="http://www.w3.org/2000/svg">
 					${this.flows.map((flow) => this.getGroupForFlow(flow.from, flow.to))}
@@ -60,7 +60,7 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 							this.entityWidth,
 							this.width - this.entityWidth,
 							this.midY - this.lineGap,
-							-90
+							-90,
 						);
 					case LineStyle.Angled:
 						return SVGUtils.getLShape(
@@ -68,14 +68,14 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 							halfEntity,
 							this.width - halfEntity,
 							this.midY - halfEntity,
-							0
+							0,
 						);
 					case LineStyle.Straight:
 						return SVGUtils.getStraightPath(
 							this.midX + halfEntity,
 							halfEntity,
 							this.width - halfEntity,
-							this.midY - halfEntity
+							this.midY - halfEntity,
 						);
 					default:
 						return '';
@@ -88,7 +88,7 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 							this.midY + this.lineGap,
 							this.midX + this.xLineGap,
 							this.height - this.entityWidth,
-							-90
+							-90,
 						);
 					case LineStyle.Angled:
 						return SVGUtils.getLShape(
@@ -96,14 +96,14 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 							this.midY + halfEntity,
 							this.midX + halfEntity,
 							this.height - halfEntity,
-							1
+							1,
 						);
 					case LineStyle.Straight:
 						return SVGUtils.getStraightPath(
 							this.width - halfEntity,
 							this.midY + halfEntity,
 							this.midX + halfEntity,
-							this.height - halfEntity
+							this.height - halfEntity,
 						);
 					default:
 						return '';
@@ -116,7 +116,7 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 							this.height - this.entityWidth,
 							this.entityWidth,
 							this.midY + this.lineGap,
-							-90
+							-90,
 						);
 					case LineStyle.Angled:
 						return SVGUtils.getLShape(
@@ -124,14 +124,14 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 							this.height - halfEntity,
 							halfEntity,
 							this.midY + halfEntity,
-							0
+							0,
 						);
 					case LineStyle.Straight:
 						return SVGUtils.getStraightPath(
 							this.midX - halfEntity,
 							this.height - halfEntity,
 							halfEntity,
-							this.midY + halfEntity
+							this.midY + halfEntity,
 						);
 					default:
 						return '';
@@ -144,7 +144,7 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 							this.height - this.entityWidth,
 							this.entityWidth,
 							this.midY + this.lineGap,
-							-90
+							-90,
 						);
 					case LineStyle.Angled:
 						return SVGUtils.getLShape(
@@ -152,14 +152,14 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 							this.height - halfEntity,
 							halfEntity,
 							this.midY + halfEntity,
-							0
+							0,
 						);
 					case LineStyle.Straight:
 						return SVGUtils.getStraightPath(
 							this.midX - halfEntity,
 							this.height - halfEntity,
 							halfEntity,
-							this.midY + halfEntity
+							this.midY + halfEntity,
 						);
 					default:
 						return '';
@@ -172,7 +172,7 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 							this.midY - this.lineGap,
 							this.midX - this.xLineGap,
 							this.entityWidth,
-							-90
+							-90,
 						);
 					case LineStyle.Angled:
 						return SVGUtils.getLShape(halfEntity, this.midY - halfEntity, this.midX - halfEntity, halfEntity, 1);
@@ -199,7 +199,7 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 							this.width - halfEntity,
 							this.entityWidth,
 							this.width - halfEntity,
-							this.midY - halfEntity
+							this.midY - halfEntity,
 						);
 					case LineStyle.Angled:
 						start = this.calculateCirclePoint(0.125, halfEntity, [
@@ -219,7 +219,7 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 							this.width - halfEntity,
 							this.height - this.entityWidth,
 							this.width - halfEntity,
-							this.midY + halfEntity
+							this.midY + halfEntity,
 						);
 					case LineStyle.Angled:
 						start = this.calculateCirclePoint(0.875, halfEntity, [
@@ -238,7 +238,7 @@ export class GivTCPPowerFlowCardLayoutSquare extends GivTCPPowerFlowCardLayout {
 	private calculateCirclePoint(
 		percentAroundCircumference: number,
 		radius: number,
-		centerPoint: [number, number]
+		centerPoint: [number, number],
 	): [number, number] {
 		// Calculate the angle in radians for the given percent around the circumference
 		const angle = percentAroundCircumference * 2 * Math.PI;

@@ -163,8 +163,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 						}
 						return acc;
 					},
-					{ total: 0, parts: [] } as FlowTotal
-			  )
+					{ total: 0, parts: [] } as FlowTotal,
+				)
 			: undefined;
 	}
 	private get _custom1Total(): FlowTotal | undefined {
@@ -174,7 +174,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			: {
 					total: this.getStateAsWatts(entity),
 					parts: [{ type: 'custom1', value: this.getStateAsWatts(entity) }],
-			  };
+				};
 	}
 	private get _custom2Total(): FlowTotal | undefined {
 		const entity = this.hass.states[this._config?.custom2_sensor];
@@ -183,7 +183,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			: {
 					total: this.getStateAsWatts(entity),
 					parts: [{ type: 'custom2', value: this.getStateAsWatts(entity) }],
-			  };
+				};
 	}
 	private get _singleInverter(): boolean {
 		return this._config?.single_invertor === undefined ? SINGLE_INVERTOR_DEFAULT : this._config?.single_invertor;
@@ -225,7 +225,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			.filter((soc) => soc != undefined) as number[];
 
 		const sum = allSoc.reduce((a, b) => a + b, 0);
-		return Math.round(sum / allSoc.length);
+		return Math.max(0, Math.min(Math.round(sum / allSoc.length), 100));
 	}
 	private get _entityLayout(): EntityLayout {
 		return this._config?.entity_layout || ENTITY_LAYOUT_DEFAULT;
@@ -367,7 +367,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					}
 
 					const soc = Math.ceil(level / 10) * 10;
-					icon = icon + '-' + soc.toString();
+					if (level < 100) {
+						icon = icon + '-' + soc.toString();
+					}
 				}
 				return icon;
 			case 'grid':
@@ -529,7 +531,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		elapsedTime: number,
 		lastPosition: number,
 		speedFactor: number,
-		ease: DotEasing
+		ease: DotEasing,
 	): number {
 		const percentPerMillisecond = 0.0075 * speedFactor;
 		const pixelsMoved = elapsedTime * percentPerMillisecond;
@@ -583,14 +585,14 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			const currentPos = parseFloat(g.getAttribute('data-pos') || '0');
 			g.setAttribute(
 				'data-pos',
-				this.calculateDotPosition(elapsed, currentPos, (power / 1000) * this._dotSpeed, DotEasing.Linear).toString()
+				this.calculateDotPosition(elapsed, currentPos, (power / 1000) * this._dotSpeed, DotEasing.Linear).toString(),
 			);
 
 			let newDisplayPos = this.calculateDotPosition(
 				elapsed,
 				currentPos,
 				(power / 1000) * this._dotSpeed,
-				this._dotEasingFor(from)
+				this._dotEasingFor(from),
 			);
 			if (direction === FlowDirection.Out) {
 				newDisplayPos = 1 - newDisplayPos;
@@ -612,12 +614,14 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		const flowData: FlowData[] = [
 			{
 				type: 'eps',
+				linePos: 90,
 				icon: this.getIconFor('eps'),
 				name: 'EPS',
 				out: this.getTotalFor('eps', FlowDirection.Out),
 			},
 			{
 				type: 'custom1',
+				linePos: 180,
 				icon: this.getIconFor('custom1'),
 				name: this._custom1Name,
 				extra: this._custom1Extra,
@@ -625,6 +629,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			},
 			{
 				type: 'custom2',
+				linePos: 0,
 				icon: this.getIconFor('custom2'),
 				name: this._custom2Name,
 				extra: this._custom2Extra,
@@ -632,18 +637,21 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			},
 			{
 				type: 'solar',
+				linePos: 180,
 				icon: this.getIconFor('solar'),
 				name: 'Solar',
 				out: this.getTotalFor('solar', FlowDirection.Out),
 			},
 			{
 				type: 'house',
+				linePos: 270,
 				icon: this.getIconFor('house'),
 				name: 'House',
 				in: this.getTotalFor('house', FlowDirection.In),
 			},
 			{
 				type: 'grid',
+				linePos: 90,
 				icon: this.getIconFor('grid'),
 				name: 'Grid',
 				out: this.getTotalFor('grid', FlowDirection.In),
@@ -651,6 +659,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			},
 			{
 				type: 'battery',
+				linePos: 0,
 				icon: this.getIconFor('battery', this._batterySoc),
 				name: 'Battery',
 				extra: this._batterySoc !== undefined ? `${this._batterySoc}${PERCENTAGE}` : undefined,
@@ -658,7 +667,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				in: this.getTotalFor('battery', FlowDirection.In),
 			},
 		].filter((v) => v.in !== undefined || v.out !== undefined);
-
 		const flowPowers: FlowPower[] = this._activeFlows
 			.map((flow) => ({
 				from: flow.from,
@@ -771,9 +779,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		if (!config.invertor && !config.invertors) {
 			throw new Error('You need to define at least one invertor entity');
 		}
-		if (!config.battery && !config.batteries) {
-			throw new Error('You need to define at least one battery entity');
-		}
+		// if (!config.battery && !config.batteries) {
+		// 	throw new Error('You need to define at least one battery entity');
+		// }
 		this._config = ConfigUtils.migrateConfig(config, true);
 		const defaults = ConfigUtils.getDefaults(this._config);
 
@@ -984,7 +992,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		.gtpc-entity > span[data-power='0'] {
 			display: none;
 		}
-		.gtpc-entity.gtpc-entity-single > span > ha-icon {
+		.gtpc-entity.gtpc-entity-single > span > svg {
 			display: none;
 		}
 		.gtpc-entity-extra,
@@ -996,6 +1004,12 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			font-size: calc(var(--gtpc-size) * 0.15);
 			--mdc-icon-size: calc(var(--gtpc-size) * 0.15);
 			line-height: 1;
+		}
+		.gtpc-entity-in > svg,
+		.gtpc-entity-out > svg {
+			width: calc(var(--gtpc-size) * 0.1);
+			height: calc(var(--gtpc-size) * 0.1);
+			stroke-width: calc(var(--gtpc-size) * 0.02);
 		}
 		.gtpc-entity-icon {
 			--mdc-icon-size: calc(var(--gtpc-size) * 0.3);

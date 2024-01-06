@@ -45,13 +45,13 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 							(battery) =>
 								eid.includes(battery) &&
 								(['battery', 'energy', 'monetary', 'power', 'current', 'voltage', 'timestamp'].includes(
-									this.hass.states[eid].attributes.device_class || ''
+									this.hass.states[eid].attributes.device_class || '',
 								) ||
 									['total_increasing', 'total', 'measurement'].includes(
-										this.hass.states[eid].attributes.state_class || ''
-									))
-						)
-			  )
+										this.hass.states[eid].attributes.state_class || '',
+									)),
+						),
+				)
 			: [];
 	}
 	private get _singleInverter(): boolean {

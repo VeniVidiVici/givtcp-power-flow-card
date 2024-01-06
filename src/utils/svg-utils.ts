@@ -40,7 +40,7 @@ export class SVGUtils {
 		width: number,
 		height: number,
 		cornerRadius: number,
-		offset?: { x: number; y: number }
+		offset?: { x: number; y: number },
 	): string {
 		const d = Math.min(width, height);
 		const r = Math.min(cornerRadius, d / 2);
@@ -59,7 +59,7 @@ export class SVGUtils {
 		endX: number,
 		endY: number,
 		cornerRadius: number,
-		direction: number
+		direction: number,
 	): string {
 		let path = `M ${startX} ${startY} `; // Start the path at the starting coordinates
 		if (direction == 1) {
@@ -106,7 +106,7 @@ export class SVGUtils {
 		startY: number,
 		endX: number,
 		endY: number,
-		cornerRadius: number
+		cornerRadius: number,
 	): string {
 		let path = `M ${startX} ${startY} `; // Start the path at the starting coordinates
 
@@ -138,7 +138,7 @@ export class SVGUtils {
 		percentage: number,
 		offsetPercentage = 0,
 		radius = 50,
-		center = { x: 50, y: 50 }
+		center = { x: 50, y: 50 },
 	): string {
 		const offset = (offsetPercentage / 100) * 360; // the offset in degrees based on the offset percentage
 		const startAngle = -90 + offset; // the starting angle of the circle (12 o'clock position) with offset
