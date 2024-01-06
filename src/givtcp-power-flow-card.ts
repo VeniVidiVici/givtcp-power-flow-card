@@ -225,7 +225,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			.filter((soc) => soc != undefined) as number[];
 
 		const sum = allSoc.reduce((a, b) => a + b, 0);
-		return Math.round(sum / allSoc.length);
+		return Math.max(0, Math.min(Math.round(sum / allSoc.length), 100));
 	}
 	private get _entityLayout(): EntityLayout {
 		return this._config?.entity_layout || ENTITY_LAYOUT_DEFAULT;
