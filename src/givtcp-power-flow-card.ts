@@ -367,7 +367,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					}
 
 					const soc = Math.ceil(level / 10) * 10;
-					if (level < 100) {
+					if (soc < 100) {
 						icon = icon + '-' + soc.toString();
 					}
 				}
