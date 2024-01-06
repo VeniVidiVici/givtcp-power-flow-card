@@ -367,7 +367,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					}
 
 					const soc = Math.ceil(level / 10) * 10;
-					icon = icon + '-' + soc.toString();
+					if (level < 100) {
+						icon = icon + '-' + soc.toString();
+					}
 				}
 				return icon;
 			case 'grid':
@@ -612,12 +614,14 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		const flowData: FlowData[] = [
 			{
 				type: 'eps',
+				linePos: 90,
 				icon: this.getIconFor('eps'),
 				name: 'EPS',
 				out: this.getTotalFor('eps', FlowDirection.Out),
 			},
 			{
 				type: 'custom1',
+				linePos: 180,
 				icon: this.getIconFor('custom1'),
 				name: this._custom1Name,
 				extra: this._custom1Extra,
@@ -625,6 +629,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			},
 			{
 				type: 'custom2',
+				linePos: 0,
 				icon: this.getIconFor('custom2'),
 				name: this._custom2Name,
 				extra: this._custom2Extra,
@@ -632,18 +637,21 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			},
 			{
 				type: 'solar',
+				linePos: 180,
 				icon: this.getIconFor('solar'),
 				name: 'Solar',
 				out: this.getTotalFor('solar', FlowDirection.Out),
 			},
 			{
 				type: 'house',
+				linePos: 270,
 				icon: this.getIconFor('house'),
 				name: 'House',
 				in: this.getTotalFor('house', FlowDirection.In),
 			},
 			{
 				type: 'grid',
+				linePos: 90,
 				icon: this.getIconFor('grid'),
 				name: 'Grid',
 				out: this.getTotalFor('grid', FlowDirection.In),
@@ -651,6 +659,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			},
 			{
 				type: 'battery',
+				linePos: 0,
 				icon: this.getIconFor('battery', this._batterySoc),
 				name: 'Battery',
 				extra: this._batterySoc !== undefined ? `${this._batterySoc}${PERCENTAGE}` : undefined,
@@ -658,7 +667,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				in: this.getTotalFor('battery', FlowDirection.In),
 			},
 		].filter((v) => v.in !== undefined || v.out !== undefined);
-
 		const flowPowers: FlowPower[] = this._activeFlows
 			.map((flow) => ({
 				from: flow.from,
@@ -984,7 +992,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		.gtpc-entity > span[data-power='0'] {
 			display: none;
 		}
-		.gtpc-entity.gtpc-entity-single > span > ha-icon {
+		.gtpc-entity.gtpc-entity-single > span > svg {
 			display: none;
 		}
 		.gtpc-entity-extra,
@@ -996,6 +1004,12 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			font-size: calc(var(--gtpc-size) * 0.15);
 			--mdc-icon-size: calc(var(--gtpc-size) * 0.15);
 			line-height: 1;
+		}
+		.gtpc-entity-in > svg,
+		.gtpc-entity-out > svg {
+			width: calc(var(--gtpc-size) * 0.1);
+			height: calc(var(--gtpc-size) * 0.1);
+			stroke-width: calc(var(--gtpc-size) * 0.02);
 		}
 		.gtpc-entity-icon {
 			--mdc-icon-size: calc(var(--gtpc-size) * 0.3);

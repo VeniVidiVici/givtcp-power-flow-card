@@ -22,6 +22,13 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 	protected createRenderRoot() {
 		return this;
 	}
+	protected getArrow(degrees: number): TemplateResult {
+		return html`${svg`<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+			<g transform="rotate(${degrees} 16 16)">
+			<path d="M26.71,10.29l-10-10a1,1,0,0,0-1.41,0l-10,10,1.41,1.41L15,3.41V32h2V3.41l8.29,8.29Z" style="fill: var(--gtpc-${this.data.type}-color); stroke: var(--gtpc-${this.data.type}-color)" />
+			</g>
+  		</svg>`}`;
+	}
 	static get observedAttributes() {
 		return ['entityDetails'];
 	}
@@ -69,12 +76,12 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 				<span class="gtpc-entity-name" data-entity-type="${this.data.type}">${this.data.name}</span>
 				${this.data.in !== undefined
 					? html`<span data-power="${this.data.in.total}" class="gtpc-entity-in"
-							><ha-icon icon="mdi:arrow-right"></ha-icon> ${this.formatPower(this.data.in.total)}</span
+							>${this.getArrow(this.data.linePos || 0)} ${this.formatPower(this.data.in.total)}</span
 						>`
 					: html``}
 				${this.data.out !== undefined
 					? html`<span data-power="${this.data.out.total}" class="gtpc-entity-out"
-							><ha-icon icon="mdi:arrow-left"></ha-icon> ${this.formatPower(this.data.out.total)}</span
+							>${this.getArrow((this.data.linePos || 0) * -1)} ${this.formatPower(this.data.out.total)}</span
 						>`
 					: html``}
 				<ha-icon class="gtpc-entity-icon" .icon="${this.data.icon}"></ha-icon>

@@ -5,6 +5,7 @@ export interface FlowData {
 	extra?: string;
 	in?: FlowTotal;
 	out?: FlowTotal;
+	linePos?: number;
 }
 export interface entityName {
 	prefix: string;
