@@ -81,7 +81,7 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 					: html``}
 				${this.data.out !== undefined
 					? html`<span data-power="${this.data.out.total}" class="gtpc-entity-out"
-							>${this.getArrow((this.data.linePos || 0) * -1)} ${this.formatPower(this.data.out.total)}</span
+							>${this.getArrow(((this.data.linePos || 0) + 180) % 360)} ${this.formatPower(this.data.out.total)}</span
 						>`
 					: html``}
 				<ha-icon class="gtpc-entity-icon" .icon="${this.data.icon}"></ha-icon>
