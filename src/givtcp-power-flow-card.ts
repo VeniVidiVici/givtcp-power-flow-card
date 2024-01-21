@@ -156,7 +156,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		return this._inverterName && this._epsEnabled
 			? this._inverterName.reduce(
 					(acc, name) => {
-						const entity = this.hass.states[`sensor.${name.prefix}_eps_power${name.suffix}}`];
+						const entity = this.hass.states[`sensor.${name.prefix}_eps_power${name.suffix}`];
 						if (entity) {
 							acc.total += parseInt(entity?.state, 10);
 							acc.parts.push({ type: 'eps', value: parseInt(entity?.state, 10) });
@@ -411,23 +411,23 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 		if (entity !== undefined) {
 			if (from === 'grid' && to === 'house') {
-				return 668;
+				return 0;
 			} else if (from === 'solar' && to === 'house') {
-				return 724;
+				return 870;
 			} else if (from === 'solar' && to === 'battery') {
-				return 764;
+				return 3600;
 			} else if (from === 'battery' && to === 'house') {
 				return 0;
 			} else if (from === 'battery' && to === 'grid') {
 				return 0;
 			} else if (from === 'grid' && to === 'battery') {
-				return 445;
-			} else if (from === 'solar' && to === 'grid') {
 				return 0;
+			} else if (from === 'solar' && to === 'grid') {
+				return 567;
 			} else if (from === 'house' && to === 'custom1') {
-				return 800;
+				return 0;
 			} else if (from === 'house' && to === 'custom2') {
-				return 1000;
+				return 0;
 			}
 			return 0;
 		}
@@ -663,8 +663,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				icon: this.getIconFor('battery', this._batterySoc),
 				name: 'Battery',
 				extra: this._batterySoc !== undefined ? `${this._batterySoc}${PERCENTAGE}` : undefined,
-				out: this.getTotalFor('battery', FlowDirection.Out),
-				in: this.getTotalFor('battery', FlowDirection.In),
+				out: this.getTotalFor('battery', FlowDirection.In),
+				in: this.getTotalFor('battery', FlowDirection.Out),
 			},
 		].filter((v) => v.in !== undefined || v.out !== undefined);
 		const flowPowers: FlowPower[] = this._activeFlows
