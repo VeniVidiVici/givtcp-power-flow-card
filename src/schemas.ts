@@ -180,7 +180,7 @@ const ENTITY_COLOUR_SCHEMA = (type: string, name: string, label: string) => [
 	{
 		name,
 		label,
-		selector: type == 'ui' ? { 'ui-color': {} } : { color_rgb: {} },
+		selector: type === 'ui' ? { 'ui-color': {} } : { color_rgb: {} },
 	},
 ];
 
@@ -353,7 +353,6 @@ export const LAYOUT_TYPE_SCHEMA = (config: LovelaceCardConfig): object[] => {
 						options: [
 							{ value: CentreEntity.None, label: 'None' },
 							{ value: CentreEntity.House, label: 'House' },
-							{ value: CentreEntity.Inverter, label: 'Inverter' },
 							{ value: CentreEntity.Solar, label: 'Solar' },
 							{ value: CentreEntity.Battery, label: 'Battery' },
 						],
