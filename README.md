@@ -15,6 +15,44 @@
 You need to have [GivTCP](https://github.com/britkat1980/giv_tcp) intergrated into your [home-assistant](home-assistant.io) (either as an addon or a standalone docker container).
 You must have both the HA_AUTO_D (Home Assistant Auto Discovery) and MQTT_OUTPUT options enabled.
 
+# Local development
+
+This repo now includes a reusable Home Assistant Docker setup so you can get back to card development quickly.
+
+## One-time setup
+
+1. Install dependencies with `npm install`.
+2. Start Home Assistant with `npm run ha:start`.
+3. In a second terminal, start the card watcher with `npm run dev:watch`.
+4. Open `http://localhost:8123` and finish the normal Home Assistant onboarding.
+5. The demo dashboard is already configured and loads the local build from `/local/givtcp-power-flow-card/givtcp-power-flow-card.js?v=dev`.
+
+## Daily workflow
+
+1. Run `npm run ha:start`.
+2. Run `npm run dev:watch`.
+3. Edit files in `src/`.
+4. Refresh Home Assistant in the browser to pick up the rebuilt card bundle.
+
+## Useful commands
+
+- `npm run ha:start` - start the local Home Assistant container
+- `npm run ha:stop` - stop the local Home Assistant container
+- `npm run ha:logs` - follow Home Assistant logs
+- `npm run dev:watch` - rebuild the card on every file save
+- `npm run build` - produce a release build in `dist/`
+
+## Local Home Assistant contents
+
+- `docker-compose.dev.yml` starts an isolated Home Assistant container on port `8123`
+- `home-assistant/config/configuration.yaml` registers the card as a Lovelace resource and seeds demo entities
+- `home-assistant/config/ui-lovelace.yaml` provides a ready-made dashboard for the card
+- `dist/` is bind-mounted into Home Assistant's `www` folder so each rebuild is immediately available after a browser refresh
+
+## Using real GivTCP data later
+
+When you want to test against your live setup instead of the seeded demo sensors, point the card at your real `sensor.*_invertor_serial_number` entity and related GivTCP sensors, or copy the same resource path into your normal Home Assistant instance.
+
 # HACS-Installation
 
 1. [install HACS](https://hacs.xyz/docs/installation/installation) you need to install this first.

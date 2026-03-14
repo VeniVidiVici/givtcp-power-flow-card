@@ -7,11 +7,13 @@ export default defineConfig({
 	build: {
 		lib: {
 			entry: 'src/givtcp-power-flow-card.ts',
+			fileName: () => 'givtcp-power-flow-card.js',
 			formats: ['es'],
 		},
 		rollupOptions: {},
 	},
 	optimizeDeps: {
-		disabled: true,
+		noDiscovery: true,
+		include: [],
 	},
 });

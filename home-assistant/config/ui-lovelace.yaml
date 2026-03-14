@@ -1,0 +1,14 @@
+title: GivTCP Dev
+views:
+  - title: Power Flow
+    path: default_view
+    icon: mdi:flash
+    cards:
+      - type: custom:givtcp-power-flow-card
+        name: GivTCP Dev Card
+        invertor: sensor.dev_invertor_serial_number
+        battery: sensor.dev_battery_serial_number
+        detail_entities:
+          - sensor.dev_inverter_temperature
+          - sensor.dev_battery_throughput_today
+          - sensor.dev_pv_generation_today
