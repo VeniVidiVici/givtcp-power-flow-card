@@ -1,0 +1,12 @@
+services:
+  homeassistant:
+    container_name: givtcp-power-flow-card-dev-ha
+    image: ghcr.io/home-assistant/home-assistant:stable
+    restart: unless-stopped
+    ports:
+      - '8123:8123'
+    environment:
+      TZ: Europe/London
+    volumes:
+      - ./home-assistant/config:/config
+      - ./dist:/config/www/givtcp-power-flow-card

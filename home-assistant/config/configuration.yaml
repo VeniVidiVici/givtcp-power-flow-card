@@ -1,0 +1,112 @@
+default_config:
+
+lovelace:
+  mode: yaml
+  resources:
+    - url: /local/givtcp-power-flow-card/givtcp-power-flow-card.js?v=dev
+      type: module
+
+template:
+  - sensor:
+      - name: Dev Invertor Serial Number
+        unique_id: dev_invertor_serial_number
+        state: DEV1234567
+      - name: Dev Battery Serial Number
+        unique_id: dev_battery_serial_number
+        state: BAT7654321
+      - name: Dev Grid Power
+        unique_id: dev_grid_power
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 456
+      - name: Dev PV Power
+        unique_id: dev_pv_power
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 5037
+      - name: Dev Battery Power
+        unique_id: dev_battery_power
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 2180
+      - name: Dev EPS Power
+        unique_id: dev_eps_power
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 0
+      - name: Dev Load Power
+        unique_id: dev_load_power
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 3401
+      - name: Dev SOC
+        unique_id: dev_soc
+        device_class: battery
+        state_class: measurement
+        unit_of_measurement: '%'
+        state: 64
+      - name: Dev Solar To Grid
+        unique_id: dev_solar_to_grid
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 987
+      - name: Dev Solar To Battery
+        unique_id: dev_solar_to_battery
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 2180
+      - name: Dev Solar To House
+        unique_id: dev_solar_to_house
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 1870
+      - name: Dev Battery To House
+        unique_id: dev_battery_to_house
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 0
+      - name: Dev Battery To Grid
+        unique_id: dev_battery_to_grid
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 0
+      - name: Dev Grid To House
+        unique_id: dev_grid_to_house
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 544
+      - name: Dev Grid To Battery
+        unique_id: dev_grid_to_battery
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 0
+      - name: Dev Inverter Temperature
+        unique_id: dev_inverter_temperature
+        device_class: temperature
+        state_class: measurement
+        unit_of_measurement: '°C'
+        state: 37
+      - name: Dev Battery Throughput Today
+        unique_id: dev_battery_throughput_today
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: kWh
+        state: 12.4
+      - name: Dev PV Generation Today
+        unique_id: dev_pv_generation_today
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: kWh
+        state: 18.9
