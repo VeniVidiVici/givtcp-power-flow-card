@@ -42,25 +42,27 @@ export class GivTCPPowerFlowCardLayoutList extends GivTCPPowerFlowCardLayout {
 				${this.flowPowers
 					.sort((a, b) => b.value - a.value)
 					.map(
-						(flow) => html`<div class="gtpc-list-row" data-from='${flow.from}' data-to='${flow.to}' data-power='${
-							flow.value
-						}'>
-							<svg viewBox="0 0 100 ${this.halfEntity}" xmlns="http://www.w3.org/2000/svg">
-								${this.getGroupForFlow(flow.from, flow.to)}
-							</svg>
-							<div class="gtpc-list-entity gtpc-from-entity" data-type="${flow.from}">
-								<ha-icon .icon="${this.iconFor(flow.from)}"></ha-icon>
-								${this.extraFor(flow.from) ? html`<div class="gtpc-entity-extra">${this.extraFor(flow.from)}</div>` : html``}
-							</div>
-							<div class="gtpc-list-flow-value">
-								<span>${this.formatPower(flow.value)}</span>
-							</div>
-							<div class="gtpc-list-entity gtpc-to-entity" data-type="${flow.to}">
-								<ha-icon .icon="${this.iconFor(flow.to)}"></ha-icon>
-								${this.extraFor(flow.to) ? html`<div class="gtpc-entity-extra">${this.extraFor(flow.to)}</div>` : html``}
-							</div>
-							</div>
-						</div>`,
+						(flow) =>
+							html`<div class="gtpc-list-row" data-from="${flow.from}" data-to="${flow.to}" data-power="${flow.value}">
+								<svg viewBox="0 0 100 ${this.halfEntity}" xmlns="http://www.w3.org/2000/svg">
+									${this.getGroupForFlow(flow.from, flow.to)}
+								</svg>
+								<div class="gtpc-list-entity gtpc-from-entity" data-type="${flow.from}">
+									<ha-icon .icon="${this.iconFor(flow.from)}"></ha-icon>
+									${this.extraFor(flow.from)
+										? html`<div class="gtpc-entity-extra">${this.extraFor(flow.from)}</div>`
+										: html``}
+								</div>
+								<div class="gtpc-list-flow-value">
+									<span>${this.formatPower(flow.value)}</span>
+								</div>
+								<div class="gtpc-list-entity gtpc-to-entity" data-type="${flow.to}">
+									<ha-icon .icon="${this.iconFor(flow.to)}"></ha-icon>
+									${this.extraFor(flow.to)
+										? html`<div class="gtpc-entity-extra">${this.extraFor(flow.to)}</div>`
+										: html``}
+								</div>
+							</div>`,
 					)}
 			</div>
 		`;

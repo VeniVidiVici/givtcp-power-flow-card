@@ -169,12 +169,17 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 	//state_class: total_increasing, total, measurement
 	//device_class: battery, energy, monetary, power, current, voltage, timestamp
 	private get _schema(): object[] {
+		const config = {
+			...this._defaults,
+			...this._config,
+		};
+
 		switch (this._curView) {
 			case 0:
 				return [
 					{ name: 'name', label: 'Name', selector: { text: {} } },
 					{ name: 'demo_mode', label: 'Demo Mode', selector: { boolean: {} } },
-					...INVERTER_BATTERY_SCHEMA(this._config, this._invertors, this._batteries),
+					...INVERTER_BATTERY_SCHEMA(config, this._invertors, this._batteries),
 					{
 						type: 'grid',
 						name: '',
@@ -221,17 +226,17 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 					},
 				];
 			case 1:
-				return [...LAYOUT_SCHEMA, ...LAYOUT_TYPE_SCHEMA(this._config)];
+				return [...LAYOUT_SCHEMA, ...LAYOUT_TYPE_SCHEMA(config)];
 			case 2:
-				return [...GRID_SCHEMA(this._config)];
+				return [...GRID_SCHEMA(config)];
 			case 3:
-				return [...SOLAR_SCHEMA(this._config)];
+				return [...SOLAR_SCHEMA(config)];
 			case 4:
-				return [...BATTERY_SCHEMA(this._config)];
+				return [...BATTERY_SCHEMA(config)];
 			case 5:
-				return [...HOUSE_SCHEMA(this._config), ...EXTRAS_SCHEMA(this._config)];
+				return [...HOUSE_SCHEMA(config), ...EXTRAS_SCHEMA(config)];
 			case 6:
-				return [...DETAILS_SCHEMA(this._config, this._extraEntities)];
+				return [...DETAILS_SCHEMA(config, this._extraEntities)];
 			default:
 				return [];
 		}
