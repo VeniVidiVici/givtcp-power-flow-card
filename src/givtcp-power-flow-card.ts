@@ -267,6 +267,36 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				return undefined;
 		}
 	}
+	private getSolarInputTotal(sensorIds: string[] | undefined): number | undefined {
+		if (!sensorIds?.length) {
+			return undefined;
+		}
+		const values = sensorIds
+			.map((entityId) => this.hass.states[entityId])
+			.filter((entity): entity is HassEntity => entity !== undefined)
+			.map((entity) => this.getStateAsWatts(entity))
+			.filter((value) => value > 0);
+
+		if (!values.length) {
+			return undefined;
+		}
+
+		return values.reduce((total, value) => total + value, 0);
+	}
+	private get _solarExtra(): string | undefined {
+		const lines = [this.getEntityCountExtra('solar')].filter((value): value is string => !!value);
+		const input1 = this.getSolarInputTotal(this._config?.solar_input_1_sensors);
+		const input2 = this.getSolarInputTotal(this._config?.solar_input_2_sensors);
+
+		if (input1 !== undefined) {
+			lines.push(`PV1 ${this.formatPower(input1)}`);
+		}
+		if (input2 !== undefined) {
+			lines.push(`PV2 ${this.formatPower(input2)}`);
+		}
+
+		return lines.length ? lines.join('\n') : undefined;
+	}
 	private isAggregateEntity(type: string): boolean {
 		switch (type) {
 			case 'battery':
@@ -398,6 +428,11 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	private getFormatedState(entity: HassEntity): string {
 		return `${entity?.state}${entity?.attributes.unit_of_measurement || ''}`;
+	}
+	private formatPower(power: number): string {
+		if (power < 1000) return `${power}W`;
+		if (power < 1000000) return `${(power / 1000).toFixed(1)}kW`;
+		return `${(power / 1000000).toFixed(1)}MW`;
 	}
 	private parseNumericState(entity: HassEntity): number | undefined {
 		const value = parseFloat(entity.state);
@@ -742,7 +777,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				linePos: 180,
 				icon: this.getIconFor('solar'),
 				name: this.getEntityLabel('solar'),
-				extra: this.getEntityCountExtra('solar'),
+				extra: this._solarExtra,
 				aggregate: this.isAggregateEntity('solar'),
 				out: this.getTotalFor('solar', FlowDirection.Out),
 			},
@@ -888,7 +923,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	setConfig(config: LovelaceCardConfig): void {
 		if (!config.invertor && !config.invertors) {
-			throw new Error('You need to define at least one invertor entity');
+			throw new Error(
+				'You need to define at least one GivTCP invertor serial number entity (for example sensor.*_invertor_serial_number).',
+			);
 		}
 		// if (!config.battery && !config.batteries) {
 		// 	throw new Error('You need to define at least one battery entity');
@@ -1111,6 +1148,10 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			font-size: calc(var(--gtpc-size) * 0.15);
 			--mdc-icon-size: calc(var(--gtpc-size) * 0.15);
 			line-height: 1;
+		}
+		.gtpc-entity-extra {
+			white-space: pre-line;
+			text-align: center;
 		}
 		.gtpc-entity.gtpc-entity-aggregate {
 			gap: calc(var(--gtpc-size) * 0.01);

@@ -8,6 +8,10 @@ views:
         name: GivTCP Dev Card
         invertor: sensor.dev_invertor_serial_number
         battery: sensor.dev_battery_serial_number
+        solar_input_1_sensors:
+          - sensor.dev_pv_input_1
+        solar_input_2_sensors:
+          - sensor.dev_pv_input_2
         detail_entities:
           - sensor.dev_inverter_temperature
           - sensor.dev_battery_throughput_today
@@ -22,6 +26,12 @@ views:
         batteries:
           - sensor.dev_battery_serial_number
           - sensor.dev_battery_serial_number_2
+        solar_input_1_sensors:
+          - sensor.dev_pv_input_1
+          - sensor.dev_pv_input_1_2
+        solar_input_2_sensors:
+          - sensor.dev_pv_input_2
+          - sensor.dev_pv_input_2_2
         detail_entities:
           - sensor.dev_inverter_temperature
           - sensor.dev_inverter_temperature_2

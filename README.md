@@ -15,6 +15,21 @@
 You need to have [GivTCP](https://github.com/britkat1980/giv_tcp) intergrated into your [home-assistant](home-assistant.io) (either as an addon or a standalone docker container).
 You must have both the HA_AUTO_D (Home Assistant Auto Discovery) and MQTT_OUTPUT options enabled.
 
+## Supported data source
+
+This card is designed for GivTCP entity naming and discovery. In practice that means the card expects GivTCP serial number sensors such as `sensor.*_invertor_serial_number` and `sensor.*_battery_serial_number`.
+
+If you are using another inverter integration such as FoxESS, the card will not auto-configure unless that integration exposes equivalent GivTCP-style entities.
+
+## Configuring entities
+
+1. Open the card editor and go to `General`.
+2. Pick your `Invertor/AIO` or `Invertors` from the discovered `sensor.*_invertor_serial_number` entities.
+3. Pick your `Battery` or `Batteries` from the discovered `sensor.*_battery_serial_number` entities.
+4. The card derives the rest of the flow sensors from those serial numbers.
+
+If you want to represent extra loads or generation sources that are not part of GivTCP, use `Custom 1` and `Custom 2` in the `House` tab and point them at any power sensor.
+
 # Local development
 
 This repo now includes a reusable Home Assistant Docker setup so you can get back to card development quickly.
@@ -70,6 +85,10 @@ Currently multiple invertors and batteries support is limited, total power is ca
 Clicking on an entity will show the details for the first battery or invertor in the list, this is a limitation of the way [home-assistant](home-assistant.io) handles these popups.
 
 Future versions will allow you to list invertors and batteries separately on the card.
+
+## Solar input sensors
+
+You can optionally show individual solar input wattage on the solar node by setting `Solar Input 1 Sensors` and `Solar Input 2 Sensors` in the `Solar` tab. Each field accepts one or more power sensors, so you can sum matching PV input sensors across multiple inverters.
 
 ## Multiple layouts to choose form
 

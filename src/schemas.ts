@@ -86,6 +86,8 @@ export const cardConfigStruct = assign(
 		line_width: optional(integer()),
 		num_detail_columns: optional(integer()),
 		power_margin: optional(integer()),
+		solar_input_1_sensors: optional(array(entityId())),
+		solar_input_2_sensors: optional(array(entityId())),
 		single_battery: optional(boolean()),
 		single_invertor: optional(boolean()),
 		solar_colour_type: optional(string()),
@@ -224,7 +226,26 @@ export const BATTERY_SCHEMA = (config: LovelaceCardConfig) => {
 export const SOLAR_SCHEMA = (config: LovelaceCardConfig) => {
 	let settings: object[] = [{ name: 'solar_enabled', label: 'Solar enabled', selector: { boolean: {} } }];
 	if (config.solar_enabled) {
-		settings = [...settings, ...ENTITY_SCHEMA(config, 'solar', 'Solar', SOLAR_ICON_DEFAULT)];
+		settings = [
+			...settings,
+			...ENTITY_SCHEMA(config, 'solar', 'Solar', SOLAR_ICON_DEFAULT),
+			{
+				type: 'grid',
+				name: '',
+				schema: [
+					{
+						name: 'solar_input_1_sensors',
+						label: 'Solar Input 1 Sensors',
+						selector: { entity: { multiple: true, filter: { device_class: 'power' } } },
+					},
+					{
+						name: 'solar_input_2_sensors',
+						label: 'Solar Input 2 Sensors',
+						selector: { entity: { multiple: true, filter: { device_class: 'power' } } },
+					},
+				],
+			},
+		];
 	}
 	return settings;
 };
