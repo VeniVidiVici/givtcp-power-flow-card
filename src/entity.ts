@@ -71,7 +71,7 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 			<div
 				class="gtpc-entity ${this.data.in === undefined || this.data.out === undefined
 					? 'gtpc-entity-single'
-					: 'gtpc-entity-both'}"
+					: 'gtpc-entity-both'} ${this.data.aggregate ? 'gtpc-entity-aggregate' : ''}"
 			>
 				<span class="gtpc-entity-name" data-entity-type="${this.data.type}">${this.data.name}</span>
 				${this.data.in !== undefined

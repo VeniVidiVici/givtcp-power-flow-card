@@ -49,6 +49,7 @@ import {
 	EPS_ICON_DEFAULT,
 	CUSTOM1_ENABLED_DEFAULT,
 	CUSTOM2_ENABLED_DEFAULT,
+	SINGLE_BATTERY_DEFAULT,
 	SINGLE_INVERTOR_DEFAULT,
 	DETAILS_ENABLED_DEFAULT,
 	NUM_DETAIL_COLUMNS_DEFAULT,
@@ -158,8 +159,11 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 					(acc, name) => {
 						const entity = this.hass.states[`sensor.${name.prefix}_eps_power${name.suffix}`];
 						if (entity) {
-							acc.total += parseInt(entity?.state, 10);
-							acc.parts.push({ type: 'eps', value: parseInt(entity?.state, 10) });
+							const value = this.parseNumericState(entity);
+							if (value !== undefined) {
+								acc.total += value;
+								acc.parts.push({ type: 'eps', value });
+							}
 						}
 						return acc;
 					},
@@ -188,9 +192,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private get _singleInverter(): boolean {
 		return this._config?.single_invertor === undefined ? SINGLE_INVERTOR_DEFAULT : this._config?.single_invertor;
 	}
-	// private get _singleBattery(): boolean {
-	// 	return this._config?.single_battery === undefined ? SINGLE_BATTERY_DEFAULT : this._config?.single_battery;
-	// }
+	private get _singleBattery(): boolean {
+		return this._config?.single_battery === undefined ? SINGLE_BATTERY_DEFAULT : this._config?.single_battery;
+	}
 	private get _custom1Enabled(): boolean {
 		return this._config?.custom1_enabled === undefined ? CUSTOM1_ENABLED_DEFAULT : this._config?.custom1_enabled;
 	}
@@ -219,13 +223,93 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		const allSoc = this._inverterName
 			.map((name) => {
 				const entity = this.hass.states[`sensor.${name.prefix}_soc${name.suffix}`];
-				if (entity && entity.state) return parseInt(entity.state, 10);
-				return entity ? parseInt(entity.state, 10) : undefined;
+				return entity ? this.parseNumericState(entity) : undefined;
 			})
-			.filter((soc) => soc != undefined) as number[];
+			.filter((soc) => soc !== undefined) as number[];
+
+		if (allSoc.length === 0) {
+			return undefined;
+		}
 
 		const sum = allSoc.reduce((a, b) => a + b, 0);
 		return Math.max(0, Math.min(Math.round(sum / allSoc.length), 100));
+	}
+	private get _inverterCount(): number {
+		return this._inverterName.length;
+	}
+	private get _batteryCount(): number {
+		if (this._singleBattery) {
+			return this._config?.battery ? 1 : 0;
+		}
+		return this._config?.batteries?.length || 0;
+	}
+	private getEntityLabel(type: string): string {
+		switch (type) {
+			case 'battery':
+				return this._batteryCount > 1 ? 'Batteries' : 'Battery';
+			case 'solar':
+				return this._inverterCount > 1 ? 'Solar' : 'Solar';
+			case 'grid':
+				return 'Grid';
+			case 'house':
+				return 'House';
+			default:
+				return type;
+		}
+	}
+	private getEntityCountExtra(type: string): string | undefined {
+		switch (type) {
+			case 'battery':
+				return this._batteryCount > 1 ? `${this._batteryCount} units` : undefined;
+			case 'solar':
+				return this._inverterCount > 1 ? `${this._inverterCount} inverters` : undefined;
+			default:
+				return undefined;
+		}
+	}
+	private isAggregateEntity(type: string): boolean {
+		switch (type) {
+			case 'battery':
+				return this._batteryCount > 1;
+			case 'solar':
+				return this._inverterCount > 1;
+			default:
+				return false;
+		}
+	}
+	private scaleFlowTotal(flow: FlowTotal | undefined, nextTotal: number): FlowTotal | undefined {
+		if (!flow || flow.total <= 0 || nextTotal <= 0) {
+			return undefined;
+		}
+		const scale = nextTotal / flow.total;
+		return {
+			total: nextTotal,
+			parts: flow.parts.map((part) => ({
+				...part,
+				value: part.value * scale,
+			})),
+		};
+	}
+	private getZeroFlowTotal(): FlowTotal {
+		return { total: 0, parts: [] };
+	}
+	private getDisplayTotals(type: string): { in?: FlowTotal; out?: FlowTotal } {
+		const incoming = this.getTotalFor(type, FlowDirection.In);
+		const outgoing = this.getTotalFor(type, FlowDirection.Out);
+
+		if (this._singleInverter || (type !== 'grid' && type !== 'battery') || !incoming || !outgoing) {
+			return { in: incoming, out: outgoing };
+		}
+
+		if (incoming.total === outgoing.total) {
+			return { in: this.getZeroFlowTotal() };
+		}
+
+		if (incoming.total > outgoing.total) {
+			return { in: this.scaleFlowTotal(incoming, incoming.total - outgoing.total) };
+		}
+
+		return { out: this.scaleFlowTotal(outgoing, outgoing.total - incoming.total) };
 	}
 	private get _entityLayout(): EntityLayout {
 		return this._config?.entity_layout || ENTITY_LAYOUT_DEFAULT;
@@ -272,6 +356,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			// }
 		}
 	}
+	private get _primaryInverter(): entityName | undefined {
+		return this._inverterName[0];
+	}
 	// private get _batterySerial(): string {
 	// 	return this._config?.battery ? this.hass.states[this._config?.battery].state.toLowerCase() || '' : '';
 	// }
@@ -312,24 +399,29 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	private getFormatedState(entity: HassEntity): string {
 		return `${entity?.state}${entity?.attributes.unit_of_measurement || ''}`;
 	}
+	private parseNumericState(entity: HassEntity): number | undefined {
+		const value = parseFloat(entity.state);
+		return Number.isFinite(value) ? value : undefined;
+	}
 	private getStateAsWatts(entity: HassEntity): number {
-		if (entity?.state === undefined) {
+		const value = this.parseNumericState(entity);
+		if (value === undefined) {
 			return 0;
 		}
 		if (entity.attributes.unit_of_measurement === undefined) {
-			return parseInt(entity?.state, 10);
+			return value;
 		}
 		switch (entity.attributes.unit_of_measurement.toLowerCase()) {
 			case 'w':
-				return parseInt(entity?.state, 10);
+				return value;
 			case 'kw':
-				return parseInt(entity?.state, 10) * 1000;
+				return value * 1000;
 			case 'wh':
-				return parseInt(entity?.state, 10) / 3600;
+				return value / 3600;
 			case 'kwh':
-				return (parseInt(entity?.state, 10) * 1000) / 3600;
+				return (value * 1000) / 3600;
 			default:
-				return parseInt(entity?.state, 10);
+				return value;
 		}
 	}
 	private _dotEasingFor(type: string): DotEasing {
@@ -353,7 +445,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 	}
 	private getIconFor(type: string, level: undefined | number = undefined): string {
-		let icon;
+		let icon: string;
 		switch (type) {
 			case 'solar':
 				return this._config?.solar_icon || SOLAR_ICON_DEFAULT;
@@ -400,14 +492,16 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		return name.suffix === '' && name.prefix === '' ? undefined : name;
 	}
 	private getDemoPowerForFlow(from: string, to: string): number | undefined {
-		let entity;
+		const inverter = this._primaryInverter;
+		let entity: HassEntity | undefined;
 		if (to === 'custom1') {
 			entity = entity = this.hass.states[this._config?.custom1_sensor];
 		} else if (to === 'custom2') {
 			entity = entity = this.hass.states[this._config?.custom2_sensor];
+		} else if (!inverter) {
+			return undefined;
 		} else {
-			entity =
-				this.hass.states[`sensor.${this._inverterName[0].prefix}_${from}_to_${to}${this._inverterName[0].suffix}`];
+			entity = this.hass.states[`sensor.${inverter.prefix}_${from}_to_${to}${inverter.suffix}`];
 		}
 		if (entity !== undefined) {
 			if (from === 'grid' && to === 'house') {
@@ -497,7 +591,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		this._resizeObserver = new ResizeObserver(() => {
 			const elem = <Element>this.shadowRoot?.querySelector(`.gtpc-content`);
 			if (elem) {
-				if (elem.clientWidth != this._width) this.setEntitySize(elem.clientWidth);
+				if (elem.clientWidth !== this._width) this.setEntitySize(elem.clientWidth);
 			}
 		});
 		this._resizeObserver.observe(this);
@@ -541,7 +635,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			return 0; // the dot has completed the path, so it starts again
 		}
 
-		let easedPosition;
+		let easedPosition: number;
 		const t = newPosition;
 
 		// apply ease-in and ease-out effect
@@ -611,6 +705,14 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 	}
 	render(): TemplateResult {
+		const batteryTotals = this.getDisplayTotals('battery');
+		const gridTotals = this.getDisplayTotals('grid');
+		const batteryExtra = [
+			this.getEntityCountExtra('battery'),
+			this._batterySoc !== undefined ? `${this._batterySoc}${PERCENTAGE}` : undefined,
+		]
+			.filter((value): value is string => !!value)
+			.join(' - ');
 		const flowData: FlowData[] = [
 			{
 				type: 'eps',
@@ -639,32 +741,35 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				type: 'solar',
 				linePos: 180,
 				icon: this.getIconFor('solar'),
-				name: 'Solar',
+				name: this.getEntityLabel('solar'),
+				extra: this.getEntityCountExtra('solar'),
+				aggregate: this.isAggregateEntity('solar'),
 				out: this.getTotalFor('solar', FlowDirection.Out),
 			},
 			{
 				type: 'house',
 				linePos: 270,
 				icon: this.getIconFor('house'),
-				name: 'House',
+				name: this.getEntityLabel('house'),
 				in: this.getTotalFor('house', FlowDirection.In),
 			},
 			{
 				type: 'grid',
 				linePos: 90,
 				icon: this.getIconFor('grid'),
-				name: 'Grid',
-				out: this.getTotalFor('grid', FlowDirection.In),
-				in: this.getTotalFor('grid', FlowDirection.Out),
+				name: this.getEntityLabel('grid'),
+				out: gridTotals.in,
+				in: gridTotals.out,
 			},
 			{
 				type: 'battery',
 				linePos: 0,
 				icon: this.getIconFor('battery', this._batterySoc),
-				name: 'Battery',
-				extra: this._batterySoc !== undefined ? `${this._batterySoc}${PERCENTAGE}` : undefined,
-				out: this.getTotalFor('battery', FlowDirection.In),
-				in: this.getTotalFor('battery', FlowDirection.Out),
+				name: this.getEntityLabel('battery'),
+				extra: batteryExtra || undefined,
+				aggregate: this.isAggregateEntity('battery'),
+				out: batteryTotals.in,
+				in: batteryTotals.out,
 			},
 		].filter((v) => v.in !== undefined || v.out !== undefined);
 		const flowPowers: FlowPower[] = this._activeFlows
@@ -740,25 +845,30 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	private entityDetails(evt: CustomEvent): void {
 		evt.stopPropagation();
+		const inverter = this._primaryInverter;
 		switch (evt.detail.type) {
 			case 'grid':
+				if (!inverter) return;
 				fireEvent(this, 'hass-more-info', {
-					entityId: `sensor.${this._inverterName[0].prefix}_grid_power${this._inverterName[0].suffix}`,
+					entityId: `sensor.${inverter.prefix}_grid_power${inverter.suffix}`,
 				});
 				break;
 			case 'solar':
+				if (!inverter) return;
 				fireEvent(this, 'hass-more-info', {
-					entityId: `sensor.${this._inverterName[0].prefix}_pv_power${this._inverterName[0].suffix}`,
+					entityId: `sensor.${inverter.prefix}_pv_power${inverter.suffix}`,
 				});
 				break;
 			case 'battery':
+				if (!inverter) return;
 				fireEvent(this, 'hass-more-info', {
-					entityId: `sensor.${this._inverterName[0].prefix}_battery_power${this._inverterName[0].suffix}`,
+					entityId: `sensor.${inverter.prefix}_battery_power${inverter.suffix}`,
 				});
 				break;
 			case 'eps':
+				if (!inverter) return;
 				fireEvent(this, 'hass-more-info', {
-					entityId: `sensor.${this._inverterName[0].prefix}_eps_power${this._inverterName[0].suffix}`,
+					entityId: `sensor.${inverter.prefix}_eps_power${inverter.suffix}`,
 				});
 				break;
 			case 'custom1':
@@ -768,8 +878,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				fireEvent(this, 'hass-more-info', { entityId: this._config?.custom2_sensor });
 				break;
 			case 'house':
+				if (!inverter) return;
 				fireEvent(this, 'hass-more-info', {
-					entityId: `sensor.${this._inverterName[0].prefix}_load_power${this._inverterName[0].suffix}`,
+					entityId: `sensor.${inverter.prefix}_load_power${inverter.suffix}`,
 				});
 				break;
 			default:
@@ -822,10 +933,17 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			--gtpc-solar-color: var(--warning-color);
 			--gtpc-house-color: var(--info-color);
 			--gtpc-battery-color: var(--success-color);
+			--gtpc-max-width: 440px;
 		}
 		.gtpc-content,
 		.gtpc-layout > svg {
 			display: block;
+		}
+		.gtpc-content {
+			width: min(100%, var(--gtpc-max-width));
+			margin: 0 auto;
+			padding-top: 12px;
+			box-sizing: border-box;
 		}
 		givtcp-power-flow-card-entity {
 			position: absolute;
@@ -853,7 +971,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			width: 100%;
 			height: 100%;
 			box-sizing: border-box;
-			margin: 30px 0;
+			margin: 20px 0;
 		}
 		.gtpc-detail,
 		.gtpc-list-row[data-from],
@@ -872,43 +990,36 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		givtcp-power-flow-card-entity[data-type] {
 			cursor: var(--gtpc-click-cursor);
 		}
-		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='custom1'],
 		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='custom1'],
 		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='custom1'] {
 			right: 0;
 			top: 0;
 		}
-		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='custom2'],
 		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='custom2'],
 		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='custom2'] {
 			right: 0;
 			bottom: 0;
 		}
-		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='eps'],
 		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='eps'],
 		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='eps'] {
 			left: 0;
 			bottom: 0;
 		}
-		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='grid'] {
 			left: 0;
 			top: calc(50% - var(--gtpc-size) / 2);
 		}
-		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='solar'],
 		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='solar'],
 		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='solar'] {
 			top: 0;
 			left: calc(50% - var(--gtpc-size) / 2);
 		}
-		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'],
 		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='house'],
 		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='house'] {
 			right: 0;
 			top: calc(50% - var(--gtpc-size) / 2);
 		}
-		.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='battery'],
 		.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='battery'],
 		.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='battery'] {
 			bottom: 0;
@@ -916,16 +1027,12 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 		.gtpc-no-solar.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-no-solar.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='house'],
-		.gtpc-no-solar.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
-		.gtpc-no-solar.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'],
 		.gtpc-no-solar.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-no-solar.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='house'] {
 			top: 0;
 		}
 		.gtpc-no-battery.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-no-battery.gtpc-layout-square > givtcp-power-flow-card-entity[data-type='house'],
-		.gtpc-no-battery.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='grid'],
-		.gtpc-no-battery.gtpc-layout-circle > givtcp-power-flow-card-entity[data-type='house'],
 		.gtpc-no-battery.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='grid'],
 		.gtpc-no-battery.gtpc-layout-cross > givtcp-power-flow-card-entity[data-type='house'] {
 			bottom: 0;
@@ -1004,6 +1111,25 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			font-size: calc(var(--gtpc-size) * 0.15);
 			--mdc-icon-size: calc(var(--gtpc-size) * 0.15);
 			line-height: 1;
+		}
+		.gtpc-entity.gtpc-entity-aggregate {
+			gap: calc(var(--gtpc-size) * 0.01);
+		}
+		.gtpc-entity.gtpc-entity-aggregate .gtpc-entity-extra,
+		.gtpc-entity.gtpc-entity-aggregate .gtpc-entity-in,
+		.gtpc-entity.gtpc-entity-aggregate .gtpc-entity-out,
+		.gtpc-entity.gtpc-entity-aggregate .gtpc-entity-name {
+			font-size: calc(var(--gtpc-size) * 0.115);
+			--mdc-icon-size: calc(var(--gtpc-size) * 0.115);
+		}
+		.gtpc-entity.gtpc-entity-aggregate .gtpc-entity-icon {
+			--mdc-icon-size: calc(var(--gtpc-size) * 0.21);
+		}
+		.gtpc-entity.gtpc-entity-aggregate .gtpc-entity-extra {
+			max-width: 78%;
+			text-align: center;
+			line-height: 1.05;
+			text-wrap: balance;
 		}
 		.gtpc-entity-in > svg,
 		.gtpc-entity-out > svg {

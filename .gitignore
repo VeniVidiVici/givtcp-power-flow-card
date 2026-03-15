@@ -13,6 +13,26 @@ dist
 dist-ssr
 *.local
 
+# Home Assistant dev instance data
+home-assistant/config/.storage
+home-assistant/config/.cache
+home-assistant/config/.HA_VERSION
+home-assistant/config/.ha_run.lock
+home-assistant/config/blueprints
+home-assistant/config/backups
+home-assistant/config/deps
+home-assistant/config/home-assistant.log
+home-assistant/config/home-assistant.log.1
+home-assistant/config/home-assistant.log.fault
+home-assistant/config/trace.saved_traces
+home-assistant/config/tts
+home-assistant/config/*.db
+home-assistant/config/*.db-*
+home-assistant/config/*.log
+home-assistant/config/.cloud
+home-assistant/config/.uuid
+home-assistant/config/google_calendars.yaml
+
 # Editor directories and files
 .idea
 .DS_Store

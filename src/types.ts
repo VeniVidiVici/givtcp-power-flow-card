@@ -3,6 +3,7 @@ export interface FlowData {
 	type: string;
 	icon: string;
 	extra?: string;
+	aggregate?: boolean;
 	in?: FlowTotal;
 	out?: FlowTotal;
 	linePos?: number;
