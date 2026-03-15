@@ -14,6 +14,12 @@ template:
       - name: Dev Battery Serial Number
         unique_id: dev_battery_serial_number
         state: BAT7654321
+      - name: Dev Invertor Serial Number 2
+        unique_id: dev_invertor_serial_number_2
+        state: DEV7654321
+      - name: Dev Battery Serial Number 2
+        unique_id: dev_battery_serial_number_2
+        state: BAT1234567
       - name: Dev Grid Power
         unique_id: dev_grid_power
         device_class: power
@@ -110,3 +116,99 @@ template:
         state_class: total_increasing
         unit_of_measurement: kWh
         state: 18.9
+      - name: Dev Grid Power 2
+        unique_id: dev_grid_power_2
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: -822
+      - name: Dev PV Power 2
+        unique_id: dev_pv_power_2
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 2840
+      - name: Dev Battery Power 2
+        unique_id: dev_battery_power_2
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 960
+      - name: Dev EPS Power 2
+        unique_id: dev_eps_power_2
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 0
+      - name: Dev Load Power 2
+        unique_id: dev_load_power_2
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 3890
+      - name: Dev SOC 2
+        unique_id: dev_soc_2
+        device_class: battery
+        state_class: measurement
+        unit_of_measurement: '%'
+        state: 41
+      - name: Dev Solar To Grid 2
+        unique_id: dev_solar_to_grid_2
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 120
+      - name: Dev Solar To Battery 2
+        unique_id: dev_solar_to_battery_2
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 960
+      - name: Dev Solar To House 2
+        unique_id: dev_solar_to_house_2
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 1760
+      - name: Dev Battery To House 2
+        unique_id: dev_battery_to_house_2
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 0
+      - name: Dev Battery To Grid 2
+        unique_id: dev_battery_to_grid_2
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 0
+      - name: Dev Grid To House 2
+        unique_id: dev_grid_to_house_2
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 1170
+      - name: Dev Grid To Battery 2
+        unique_id: dev_grid_to_battery_2
+        device_class: power
+        state_class: measurement
+        unit_of_measurement: W
+        state: 0
+      - name: Dev Inverter Temperature 2
+        unique_id: dev_inverter_temperature_2
+        device_class: temperature
+        state_class: measurement
+        unit_of_measurement: '°C'
+        state: 33
+      - name: Dev Battery Throughput Today 2
+        unique_id: dev_battery_throughput_today_2
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: kWh
+        state: 8.6
+      - name: Dev PV Generation Today 2
+        unique_id: dev_pv_generation_today_2
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: kWh
+        state: 11.2

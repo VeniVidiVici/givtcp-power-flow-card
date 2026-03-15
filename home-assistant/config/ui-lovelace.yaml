@@ -12,3 +12,20 @@ views:
           - sensor.dev_inverter_temperature
           - sensor.dev_battery_throughput_today
           - sensor.dev_pv_generation_today
+      - type: custom:givtcp-power-flow-card
+        name: GivTCP Multi Inverter Dev Card
+        single_invertor: false
+        invertors:
+          - sensor.dev_invertor_serial_number
+          - sensor.dev_invertor_serial_number_2
+        single_battery: false
+        batteries:
+          - sensor.dev_battery_serial_number
+          - sensor.dev_battery_serial_number_2
+        detail_entities:
+          - sensor.dev_inverter_temperature
+          - sensor.dev_inverter_temperature_2
+          - sensor.dev_battery_throughput_today
+          - sensor.dev_battery_throughput_today_2
+          - sensor.dev_pv_generation_today
+          - sensor.dev_pv_generation_today_2

@@ -233,6 +233,37 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		const sum = allSoc.reduce((a, b) => a + b, 0);
 		return Math.max(0, Math.min(Math.round(sum / allSoc.length), 100));
 	}
+	private scaleFlowTotal(flow: FlowTotal | undefined, nextTotal: number): FlowTotal | undefined {
+		if (!flow || flow.total <= 0 || nextTotal <= 0) {
+			return undefined;
+		}
+		const scale = nextTotal / flow.total;
+		return {
+			total: nextTotal,
+			parts: flow.parts.map((part) => ({
+				...part,
+				value: part.value * scale,
+			})),
+		};
+	}
+	private getDisplayTotals(type: string): { in?: FlowTotal; out?: FlowTotal } {
+		const incoming = this.getTotalFor(type, FlowDirection.In);
+		const outgoing = this.getTotalFor(type, FlowDirection.Out);
+
+		if (this._singleInverter || (type !== 'grid' && type !== 'battery') || !incoming || !outgoing) {
+			return { in: incoming, out: outgoing };
+		}
+
+		if (incoming.total === outgoing.total) {
+			return {};
+		}
+
+		if (incoming.total > outgoing.total) {
+			return { in: this.scaleFlowTotal(incoming, incoming.total - outgoing.total) };
+		}
+
+		return { out: this.scaleFlowTotal(outgoing, outgoing.total - incoming.total) };
+	}
 	private get _entityLayout(): EntityLayout {
 		return this._config?.entity_layout || ENTITY_LAYOUT_DEFAULT;
 	}
@@ -627,6 +658,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 	}
 	render(): TemplateResult {
+		const batteryTotals = this.getDisplayTotals('battery');
+		const gridTotals = this.getDisplayTotals('grid');
 		const flowData: FlowData[] = [
 			{
 				type: 'eps',
@@ -670,8 +703,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				linePos: 90,
 				icon: this.getIconFor('grid'),
 				name: 'Grid',
-				out: this.getTotalFor('grid', FlowDirection.In),
-				in: this.getTotalFor('grid', FlowDirection.Out),
+				out: gridTotals.in,
+				in: gridTotals.out,
 			},
 			{
 				type: 'battery',
@@ -679,8 +712,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				icon: this.getIconFor('battery', this._batterySoc),
 				name: 'Battery',
 				extra: this._batterySoc !== undefined ? `${this._batterySoc}${PERCENTAGE}` : undefined,
-				out: this.getTotalFor('battery', FlowDirection.In),
-				in: this.getTotalFor('battery', FlowDirection.Out),
+				out: batteryTotals.in,
+				in: batteryTotals.out,
 			},
 		].filter((v) => v.in !== undefined || v.out !== undefined);
 		const flowPowers: FlowPower[] = this._activeFlows
@@ -844,10 +877,17 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			--gtpc-solar-color: var(--warning-color);
 			--gtpc-house-color: var(--info-color);
 			--gtpc-battery-color: var(--success-color);
+			--gtpc-max-width: 440px;
 		}
 		.gtpc-content,
 		.gtpc-layout > svg {
 			display: block;
+		}
+		.gtpc-content {
+			width: min(100%, var(--gtpc-max-width));
+			margin: 0 auto;
+			padding-top: 12px;
+			box-sizing: border-box;
 		}
 		givtcp-power-flow-card-entity {
 			position: absolute;
@@ -875,7 +915,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			width: 100%;
 			height: 100%;
 			box-sizing: border-box;
-			margin: 30px 0;
+			margin: 20px 0;
 		}
 		.gtpc-detail,
 		.gtpc-list-row[data-from],
