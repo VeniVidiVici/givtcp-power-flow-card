@@ -99,7 +99,7 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		}
 		const slot = this.getCoreSlot(type);
 		const totalSlots = this.getVisibleOuterCoreTypes().length;
-		if (slot === undefined || totalSlots === 0) {
+		if (slot === undefined || totalSlots < 2) {
 			return undefined;
 		}
 		const angle = -90 + slot * (360 / totalSlots);

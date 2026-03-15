@@ -290,6 +290,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			})),
 		};
 	}
+	private getZeroFlowTotal(): FlowTotal {
+		return { total: 0, parts: [] };
+	}
 	private getDisplayTotals(type: string): { in?: FlowTotal; out?: FlowTotal } {
 		const incoming = this.getTotalFor(type, FlowDirection.In);
 		const outgoing = this.getTotalFor(type, FlowDirection.Out);
@@ -299,7 +302,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 
 		if (incoming.total === outgoing.total) {
-			return {};
+			return { in: this.getZeroFlowTotal() };
 		}
 
 		if (incoming.total > outgoing.total) {

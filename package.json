@@ -12,6 +12,10 @@
 		"dist",
 		"types"
 	],
+	"engines": {
+		"node": ">=24.0.0",
+		"npm": ">=11.0.0"
+	},
 	"scripts": {
 		"dev": "vite --host",
 		"dev:watch": "vite build --watch",
