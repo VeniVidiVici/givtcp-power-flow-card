@@ -116,7 +116,7 @@ export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: s
 					schema: [
 						{ name: 'single_invertor', label: 'Single Invertor', selector: { boolean: {} } },
 						{
-							label: singleInvertor ? 'Invertor/AIO' : 'Invertors',
+							label: singleInvertor ? 'GivTCP Invertor/AIO Serial' : 'GivTCP Invertor Serials',
 							name: singleInvertor ? 'invertor' : 'invertors',
 							selector: { entity: { multiple: !singleInvertor, include_entities: invertorList } },
 						},
@@ -128,7 +128,7 @@ export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: s
 					schema: [
 						{ name: 'single_battery', label: 'Single Battery', selector: { boolean: {} } },
 						{
-							label: singleBattery ? 'Battery' : 'Batteries',
+							label: singleBattery ? 'GivTCP Battery Serial' : 'GivTCP Battery Serials',
 							name: singleBattery ? 'battery' : 'batteries',
 							selector: { entity: { multiple: !singleBattery, include_entities: batteryList } },
 						},

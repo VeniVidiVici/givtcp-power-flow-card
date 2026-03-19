@@ -30,6 +30,17 @@ If you are using another inverter integration such as FoxESS, the card will not 
 
 If you want to represent extra loads or generation sources that are not part of GivTCP, use `Custom 1` and `Custom 2` in the `House` tab and point them at any power sensor.
 
+## Troubleshooting entity selection
+
+If the editor picker is empty or your inverter does not appear:
+
+1. Confirm you have GivTCP entities in Home Assistant, especially `sensor.*_invertor_serial_number` and `sensor.*_battery_serial_number`.
+2. In GivTCP, make sure Home Assistant auto discovery and MQTT output are enabled.
+3. Check Developer Tools -> States in Home Assistant and verify those serial-number sensors actually exist.
+4. Reopen the card editor after the entities appear.
+
+This card does not currently support arbitrary inverter integrations by manually mapping every flow sensor. Integrations such as FoxESS only work if they expose equivalent GivTCP-style serial-number entities.
+
 # Local development
 
 This repo now includes a reusable Home Assistant Docker setup so you can get back to card development quickly.
