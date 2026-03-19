@@ -614,7 +614,11 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		return typeof rows === 'number' && Number.isFinite(rows) ? rows : undefined;
 	}
 	private get _fillHeightLayout(): boolean {
-		return this._gridRows !== undefined;
+		if (this._gridRows !== undefined) {
+			return true;
+		}
+
+		return this.style.height !== '';
 	}
 	private getCompactLevel(width: number): number {
 		if (this._entityLayout === EntityLayout.Circle) {
