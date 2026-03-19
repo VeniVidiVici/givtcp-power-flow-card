@@ -3,7 +3,7 @@ default_config:
 lovelace:
   mode: yaml
   resources:
-    - url: /local/givtcp-power-flow-card/givtcp-power-flow-card.js?v=dev
+    - url: /local/givtcp-power-flow-card/givtcp-power-flow-card.js?v=dev-24
       type: module
 
 template:

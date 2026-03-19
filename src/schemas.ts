@@ -17,18 +17,20 @@ import {
 	NUM_DETAIL_COLUMNS_DEFAULT,
 } from './const';
 import { CentreEntity, DotEasing, EntityLayout, LineStyle } from './types';
-import { any, assign, boolean, integer, object, optional, refine, string, array, union, tuple } from 'superstruct';
+import { any, assign, boolean, integer, optional, refine, string, array, union, tuple, type } from 'superstruct';
 const isEntityId = (value: string): boolean => value.includes('.');
 const entityId = () => refine(string(), 'entity ID (domain.entity)', isEntityId);
 
-const baseLovelaceCardConfig = object({
+const baseLovelaceCardConfig = type({
 	type: string(),
-	view_layout: any(),
+	view_layout: optional(any()),
+	grid_options: optional(any()),
+	visibility: optional(any()),
 });
 
 export const cardConfigStruct = assign(
 	baseLovelaceCardConfig,
-	object({
+	type({
 		name: optional(string()),
 		demo_mode: optional(boolean()),
 		batteries: optional(array(entityId())),
