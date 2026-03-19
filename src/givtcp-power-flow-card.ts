@@ -613,18 +613,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		const rows = this._config?.grid_options?.rows;
 		return typeof rows === 'number' && Number.isFinite(rows) ? rows : undefined;
 	}
-	private get _hasCssGridSizing(): boolean {
-		const styles = getComputedStyle(this);
-		return (
-			styles.getPropertyValue('--row-size').trim() !== '' || styles.getPropertyValue('--column-size').trim() !== ''
-		);
-	}
-	private get _fillHeightLayout(): boolean {
-		if (this._gridRows !== undefined) {
-			return true;
-		}
-
-		return this.style.height !== '' || this._hasCssGridSizing;
+	private get _usesDefaultHeightFallback(): boolean {
+		return this._gridRows === undefined;
 	}
 	private getCompactLevel(width: number): number {
 		if (this._entityLayout === EntityLayout.Circle) {
@@ -950,9 +940,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		let layoutHostClasses = '';
 		let contentClasses = 'gtpc-content';
 		let cardClasses = '';
-		if (this._fillHeightLayout) {
-			contentClasses += ' gtpc-fill-height';
-			cardClasses = 'gtpc-fill-height';
+		if (this._usesDefaultHeightFallback) {
+			contentClasses += ' gtpc-default-height';
+			cardClasses = 'gtpc-default-height';
 		}
 		if (this._epsEnabled) {
 			layoutHostClasses += ' gtpc-eps';
@@ -1150,18 +1140,21 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			--gtpc-list-row-gap: 6px;
 			--gtpc-list-extra-display: block;
 			--gtpc-list-min-height: clamp(220px, 50vw, 360px);
+			--gtpc-contained-min-height: clamp(260px, 60vw, 420px);
+			height: 100%;
 		}
 		ha-card {
-			box-sizing: border-box;
-		}
-		ha-card.gtpc-fill-height {
 			height: 100%;
+		}
+		ha-card.gtpc-default-height {
+			height: auto;
 		}
 		.card-content {
+			height: 100%;
 			box-sizing: border-box;
 		}
-		.card-content.gtpc-fill-height {
-			height: 100%;
+		.card-content.gtpc-default-height {
+			height: auto;
 		}
 		.card-content.gtpc-content-list {
 			display: flex;
@@ -1181,38 +1174,39 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		.gtpc-content.gtpc-content-list {
 			width: 100%;
 			flex: 1 1 auto;
-			min-height: var(--gtpc-list-min-height);
-		}
-		.gtpc-content.gtpc-content-list.gtpc-fill-height {
 			min-height: 0;
 		}
+		.gtpc-content.gtpc-content-list.gtpc-default-height {
+			min-height: var(--gtpc-list-min-height);
+		}
 		.gtpc-content.gtpc-content-contained {
-			container-type: inline-size;
+			container-type: size;
 			display: grid;
 			place-items: center;
 			width: 100%;
+			height: 100%;
 			padding: 1.5rem;
 			margin: 0 auto;
 			min-height: 0;
 			box-sizing: border-box;
 		}
-		.gtpc-content.gtpc-content-contained.gtpc-fill-height {
-			container-type: size;
-			height: 100%;
-			min-height: 0;
+		.gtpc-content.gtpc-content-contained.gtpc-default-height {
+			container-type: inline-size;
+			height: auto;
+			min-height: var(--gtpc-contained-min-height);
 		}
 		.gtpc-content.gtpc-content-contained > .gtpc-fit-shell {
-			width: 100%;
-			height: auto;
+			width: min(100cqw, 100cqh);
+			height: min(100cqw, 100cqh);
 			aspect-ratio: 1 / 1;
 			max-width: 100%;
 			max-height: 100%;
 			min-width: 0;
 			min-height: 0;
 		}
-		.gtpc-content.gtpc-content-contained.gtpc-fill-height > .gtpc-fit-shell {
-			width: min(100cqw, 100cqh);
-			height: min(100cqw, 100cqh);
+		.gtpc-content.gtpc-content-contained.gtpc-default-height > .gtpc-fit-shell {
+			width: 100%;
+			height: auto;
 		}
 		.gtpc-content.gtpc-content-square > .gtpc-fit-shell,
 		.gtpc-content.gtpc-content-cross > .gtpc-fit-shell {
