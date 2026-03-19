@@ -35,7 +35,7 @@ If you want to represent extra loads or generation sources that are not part of 
 If the editor picker is empty or your inverter does not appear:
 
 1. Confirm you have GivTCP entities in Home Assistant, especially `sensor.*_invertor_serial_number` and `sensor.*_battery_serial_number`.
-2. In GivTCP, make sure Home Assistant auto discovery and MQTT output are enabled.
+2. In GivTCP, make sure `HA_AUTO_D` (Home Assistant auto discovery) and `MQTT_OUTPUT` are enabled.
 3. Check Developer Tools -> States in Home Assistant and verify those serial-number sensors actually exist.
 4. Reopen the card editor after the entities appear.
 
