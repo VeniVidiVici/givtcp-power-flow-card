@@ -1131,6 +1131,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			--gtpc-circle-label-display: block;
 			--gtpc-list-row-gap: 6px;
 			--gtpc-list-extra-display: block;
+			--gtpc-contained-min-height: clamp(260px, 60vw, 420px);
+			--gtpc-list-min-height: clamp(220px, 50vw, 360px);
 			height: 100%;
 		}
 		ha-card {
@@ -1158,7 +1160,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		.gtpc-content.gtpc-content-list {
 			width: 100%;
 			flex: 1 1 auto;
-			min-height: 0;
+			min-height: var(--gtpc-list-min-height);
 		}
 		.gtpc-content.gtpc-content-contained {
 			container-type: size;
@@ -1168,7 +1170,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			height: 100%;
 			padding: 1.5rem;
 			margin: 0 auto;
-			min-height: 0;
+			min-height: var(--gtpc-contained-min-height);
 			box-sizing: border-box;
 		}
 		.gtpc-content.gtpc-content-contained > .gtpc-fit-shell {
