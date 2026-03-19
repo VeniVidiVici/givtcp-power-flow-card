@@ -613,12 +613,18 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		const rows = this._config?.grid_options?.rows;
 		return typeof rows === 'number' && Number.isFinite(rows) ? rows : undefined;
 	}
+	private get _hasCssGridSizing(): boolean {
+		const styles = getComputedStyle(this);
+		return (
+			styles.getPropertyValue('--row-size').trim() !== '' || styles.getPropertyValue('--column-size').trim() !== ''
+		);
+	}
 	private get _fillHeightLayout(): boolean {
 		if (this._gridRows !== undefined) {
 			return true;
 		}
 
-		return this.style.height !== '';
+		return this.style.height !== '' || this._hasCssGridSizing;
 	}
 	private getCompactLevel(width: number): number {
 		if (this._entityLayout === EntityLayout.Circle) {
