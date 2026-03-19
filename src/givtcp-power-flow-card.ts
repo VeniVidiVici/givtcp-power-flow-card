@@ -613,6 +613,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		const rows = this._config?.grid_options?.rows;
 		return typeof rows === 'number' && Number.isFinite(rows) ? rows : undefined;
 	}
+	private get _fillHeightLayout(): boolean {
+		return this._gridRows !== undefined;
+	}
 	private getCompactLevel(width: number): number {
 		if (this._entityLayout === EntityLayout.Circle) {
 			if (width < 180) {
@@ -936,6 +939,11 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		let layout = html``;
 		let layoutHostClasses = '';
 		let contentClasses = 'gtpc-content';
+		let cardClasses = '';
+		if (this._fillHeightLayout) {
+			contentClasses += ' gtpc-fill-height';
+			cardClasses = 'gtpc-fill-height';
+		}
 		if (this._epsEnabled) {
 			layoutHostClasses += ' gtpc-eps';
 			contentClasses += ' gtpc-eps';
@@ -1004,7 +1012,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				return html``;
 		}
 		const details = html`<givtcp-power-flow-card-details .entities=${this._detailEntities} />`;
-		return html`<ha-card header="${this._config?.name}">
+		return html`<ha-card class="${cardClasses}" header="${this._config?.name}">
 			${this._width > 0
 				? this._entityLayout === EntityLayout.Circle ||
 					this._entityLayout === EntityLayout.Square ||
@@ -1131,16 +1139,19 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			--gtpc-circle-label-display: block;
 			--gtpc-list-row-gap: 6px;
 			--gtpc-list-extra-display: block;
-			--gtpc-contained-min-height: clamp(260px, 60vw, 420px);
 			--gtpc-list-min-height: clamp(220px, 50vw, 360px);
-			height: 100%;
 		}
 		ha-card {
+			box-sizing: border-box;
+		}
+		ha-card.gtpc-fill-height {
 			height: 100%;
 		}
 		.card-content {
-			height: 100%;
 			box-sizing: border-box;
+		}
+		.card-content.gtpc-fill-height {
+			height: 100%;
 		}
 		.card-content.gtpc-content-list {
 			display: flex;
@@ -1162,25 +1173,36 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			flex: 1 1 auto;
 			min-height: var(--gtpc-list-min-height);
 		}
+		.gtpc-content.gtpc-content-list.gtpc-fill-height {
+			min-height: 0;
+		}
 		.gtpc-content.gtpc-content-contained {
-			container-type: size;
+			container-type: inline-size;
 			display: grid;
 			place-items: center;
 			width: 100%;
-			height: 100%;
 			padding: 1.5rem;
 			margin: 0 auto;
-			min-height: var(--gtpc-contained-min-height);
+			min-height: 0;
 			box-sizing: border-box;
 		}
+		.gtpc-content.gtpc-content-contained.gtpc-fill-height {
+			container-type: size;
+			height: 100%;
+			min-height: 0;
+		}
 		.gtpc-content.gtpc-content-contained > .gtpc-fit-shell {
-			width: min(100cqw, 100cqh);
-			height: min(100cqw, 100cqh);
+			width: 100%;
+			height: auto;
 			aspect-ratio: 1 / 1;
 			max-width: 100%;
 			max-height: 100%;
 			min-width: 0;
 			min-height: 0;
+		}
+		.gtpc-content.gtpc-content-contained.gtpc-fill-height > .gtpc-fit-shell {
+			width: min(100cqw, 100cqh);
+			height: min(100cqw, 100cqh);
 		}
 		.gtpc-content.gtpc-content-square > .gtpc-fit-shell,
 		.gtpc-content.gtpc-content-cross > .gtpc-fit-shell {
