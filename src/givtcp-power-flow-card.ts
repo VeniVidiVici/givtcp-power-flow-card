@@ -647,8 +647,16 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 		return 0;
 	}
+	private getCircleResponsiveScale(): number {
+		if (this._entityLayout !== EntityLayout.Circle) {
+			return 1;
+		}
+
+		return 1;
+	}
 	private updateResponsiveVars(width: number): void {
 		const compactLevel = this.getCompactLevel(width);
+		const circleScale = this.getCircleResponsiveScale();
 		const compactContained =
 			(this._entityLayout === EntityLayout.Cross || this._entityLayout === EntityLayout.Square) && width < 140;
 		const baseEntitySize =
@@ -666,6 +674,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		this.style.setProperty('--gtpc-text-scale', `${textScale}`);
 		this.style.setProperty('--gtpc-aggregate-text-scale', `${aggregateTextScale}`);
 		this.style.setProperty('--gtpc-icon-scale', `${iconScale}`);
+		this.style.setProperty('--gtpc-circle-scale', `${circleScale}`);
 		this.style.setProperty('--gtpc-line-size', `${this._lineWidth * lineScale}px`);
 		this.style.setProperty('--gtpc-entity-line-size', `${this._entityLineWidth * lineScale}px`);
 		this.style.setProperty('--gtpc-extra-display', compactLevel >= 2 ? 'none' : 'block');
@@ -1177,25 +1186,15 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 		.gtpc-content.gtpc-content-circle .gtpc-entity-name {
 			display: var(--gtpc-circle-label-display);
-			bottom: calc(var(--gtpc-size) * -0.12);
+			bottom: calc(var(--gtpc-size) * -0.2);
 			white-space: nowrap;
 			left: 50%;
 			transform: translateX(-50%);
-			font-size: calc(var(--gtpc-size) * 0.13 * var(--gtpc-text-scale));
-		}
-		.gtpc-content.gtpc-content-circle .gtpc-entity-name[data-entity-type='eps'],
-		.gtpc-content.gtpc-content-circle .gtpc-entity-name[data-entity-type='custom2'] {
-			bottom: calc(var(--gtpc-size) * 0.08);
-			font-size: calc(var(--gtpc-size) * 0.12 * var(--gtpc-text-scale));
 		}
 		.gtpc-content.gtpc-content-circle .gtpc-entity-name[data-entity-type='custom1'],
 		.gtpc-content.gtpc-content-circle .gtpc-entity-name[data-entity-type='solar'] {
-			top: calc(var(--gtpc-size) * -0.12);
+			top: calc(var(--gtpc-size) * -0.2);
 			bottom: auto;
-			font-size: calc(var(--gtpc-size) * 0.12 * var(--gtpc-text-scale));
-		}
-		.gtpc-content.gtpc-content-circle .gtpc-entity-name[data-entity-type='custom1'] {
-			top: calc(var(--gtpc-size) * -0.08);
 		}
 		givtcp-power-flow-card-entity {
 			position: absolute;

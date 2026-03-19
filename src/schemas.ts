@@ -1,7 +1,6 @@
 import { LovelaceCardConfig } from 'custom-card-helpers';
 import {
 	CENTRE_ENTITY_DEFAULT,
-	CIRCLE_SIZE_DEFAULT,
 	ENTITY_LAYOUT_DEFAULT,
 	BATTERY_ICON_DEFAULT,
 	GRID_ICON_DEFAULT,
@@ -356,12 +355,6 @@ export const LAYOUT_TYPE_SCHEMA = (config: LovelaceCardConfig): object[] => {
 	}
 	if (config.entity_layout === 'circle') {
 		return [
-			{
-				name: 'circle_size',
-				default: CIRCLE_SIZE_DEFAULT,
-				label: 'Circle Size',
-				selector: { number: { mode: 'slider', min: 35, max: 45 } },
-			},
 			{
 				name: 'centre_entity',
 				default: CENTRE_ENTITY_DEFAULT,
