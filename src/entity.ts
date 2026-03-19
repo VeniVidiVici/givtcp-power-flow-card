@@ -1,7 +1,8 @@
 import { html, LitElement, svg, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SVGUtils } from './utils/svg-utils';
-import { FlowData, UnitOfPower } from './types';
+import { FlowData } from './types';
+import { formatPower } from './utils/power-utils';
 
 @customElement('givtcp-power-flow-card-entity')
 export class GivTCPPowerFlowCardEntity extends LitElement {
@@ -76,23 +77,18 @@ export class GivTCPPowerFlowCardEntity extends LitElement {
 				<span class="gtpc-entity-name" data-entity-type="${this.data.type}">${this.data.name}</span>
 				${this.data.in !== undefined
 					? html`<span data-power="${this.data.in.total}" class="gtpc-entity-in"
-							>${this.getArrow(this.data.linePos || 0)} ${this.formatPower(this.data.in.total)}</span
+							>${this.getArrow(this.data.linePos || 0)} ${formatPower(this.data.in.total)}</span
 						>`
 					: html``}
 				${this.data.out !== undefined
 					? html`<span data-power="${this.data.out.total}" class="gtpc-entity-out"
-							>${this.getArrow(((this.data.linePos || 0) + 180) % 360)} ${this.formatPower(this.data.out.total)}</span
+							>${this.getArrow(((this.data.linePos || 0) + 180) % 360)} ${formatPower(this.data.out.total)}</span
 						>`
 					: html``}
 				<ha-icon class="gtpc-entity-icon" .icon="${this.data.icon}"></ha-icon>
 				${this.data.extra !== undefined ? html`<span class="gtpc-entity-extra">${this.data.extra}</span>` : html``}
 			</div>
 		`;
-	}
-	private formatPower(power: number): string {
-		if (power < 1000) return `${power}${UnitOfPower.WATT}`;
-		if (power < 1000000) return `${(power / 1000).toFixed(1)}${UnitOfPower.KILO_WATT}`;
-		return `${(power / 1000000).toFixed(1)}${UnitOfPower.MEGA_WATT}`;
 	}
 }
 declare global {

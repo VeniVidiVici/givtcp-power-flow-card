@@ -22,6 +22,7 @@ import {
 	DotEasing,
 	entityName,
 } from './types';
+import { formatPower } from './utils/power-utils';
 import {
 	CENTRE_ENTITY_DEFAULT,
 	CIRCLE_SIZE_DEFAULT,
@@ -289,10 +290,10 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		const input2 = this.getSolarInputTotal(this._config?.solar_input_2_sensors);
 
 		if (input1 !== undefined) {
-			lines.push(`PV1 ${this.formatPower(input1)}`);
+			lines.push(`PV1 ${formatPower(input1)}`);
 		}
 		if (input2 !== undefined) {
-			lines.push(`PV2 ${this.formatPower(input2)}`);
+			lines.push(`PV2 ${formatPower(input2)}`);
 		}
 
 		return lines.length ? lines.join('\n') : undefined;
@@ -428,11 +429,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	private getFormatedState(entity: HassEntity): string {
 		return `${entity?.state}${entity?.attributes.unit_of_measurement || ''}`;
-	}
-	private formatPower(power: number): string {
-		if (power < 1000) return `${power}W`;
-		if (power < 1000000) return `${(power / 1000).toFixed(1)}kW`;
-		return `${(power / 1000000).toFixed(1)}MW`;
 	}
 	private parseNumericState(entity: HassEntity): number | undefined {
 		const value = parseFloat(entity.state);
@@ -647,13 +643,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 		return 0;
 	}
-	private getCircleResponsiveScale(): number {
-		if (this._entityLayout !== EntityLayout.Circle) {
-			return 1;
-		}
-
-		return 1;
-	}
 	private getListRowCount(): number {
 		const count = this._activeFlows
 			.map((flow) => this.getCleanPowerForFlow(flow.from, flow.to))
@@ -661,19 +650,19 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 
 		return Math.max(count, 1);
 	}
-	private updateResponsiveVars(width: number): void {
-		const compactLevel = this.getCompactLevel(width);
-		const circleScale = this.getCircleResponsiveScale();
+	private updateResponsiveVars(containerWidth: number, entitySizeWidth = containerWidth): void {
+		const compactLevel = this.getCompactLevel(containerWidth);
 		const compactContained =
-			(this._entityLayout === EntityLayout.Cross || this._entityLayout === EntityLayout.Square) && width < 140;
+			(this._entityLayout === EntityLayout.Cross || this._entityLayout === EntityLayout.Square) &&
+			entitySizeWidth < 140;
 		const baseEntitySize =
 			this._entityLayout === EntityLayout.List
-				? width
+				? entitySizeWidth
 				: this._entityLayout === EntityLayout.Circle
-					? width / (this._entitySize + 0.9)
+					? entitySizeWidth / (this._entitySize + 0.9)
 					: this._entityLayout === EntityLayout.Cross || this._entityLayout === EntityLayout.Square
-						? width / (this._entitySize + 0.36)
-						: width / this._entitySize;
+						? entitySizeWidth / (this._entitySize + 0.36)
+						: entitySizeWidth / this._entitySize;
 		const textScale = compactLevel === 3 ? 0.68 : compactLevel === 2 ? 0.8 : compactLevel === 1 ? 0.9 : 1;
 		const aggregateTextScale = compactLevel === 3 ? 0.62 : compactLevel === 2 ? 0.72 : compactLevel === 1 ? 0.84 : 1;
 		const iconScale = compactLevel === 3 ? 0.72 : compactLevel === 2 ? 0.82 : compactLevel === 1 ? 0.92 : 1;
@@ -683,7 +672,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		this.style.setProperty('--gtpc-text-scale', `${textScale}`);
 		this.style.setProperty('--gtpc-aggregate-text-scale', `${aggregateTextScale}`);
 		this.style.setProperty('--gtpc-icon-scale', `${iconScale}`);
-		this.style.setProperty('--gtpc-circle-scale', `${circleScale}`);
 		this.style.setProperty('--gtpc-line-size', `${this._lineWidth * lineScale}px`);
 		this.style.setProperty('--gtpc-entity-line-size', `${this._entityLineWidth * lineScale}px`);
 		this.style.setProperty('--gtpc-extra-display', compactLevel >= 2 ? 'none' : 'block');
@@ -706,7 +694,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			this._width = width;
 			const content = this.shadowRoot?.querySelector('.card-content') as HTMLElement | null;
 			const fitWidth = this.getResponsiveFitSize(content, width);
-			this.updateResponsiveVars(fitWidth || width);
+			this.updateResponsiveVars(width, fitWidth || width);
 			// this.style.setProperty('--gtpc-circle-offset', `${(width - (this._circleSize / 50) * width)}px`);
 			this.requestUpdate();
 		}, 0);
@@ -1112,7 +1100,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		if (responsiveWidth > 0) {
 			const content = this.shadowRoot?.querySelector('.card-content') as HTMLElement | null;
 			const fitWidth = this.getResponsiveFitSize(content, responsiveWidth);
-			this.updateResponsiveVars(fitWidth || responsiveWidth);
+			this.updateResponsiveVars(responsiveWidth, fitWidth || responsiveWidth);
 		}
 	}
 	getCardSize(): number {
@@ -1135,7 +1123,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			--gtpc-extra-display: block;
 			--gtpc-layout-margin: 20px 0;
 			--gtpc-top-padding: 12px;
-			--gtpc-circle-scale: 1;
 			--gtpc-circle-gutter: calc(var(--gtpc-size) * 0.45);
 			--gtpc-circle-offset-y: calc(var(--gtpc-size) * 0.08);
 			--gtpc-contained-gutter: calc(var(--gtpc-size) * 0.18);
@@ -1228,7 +1215,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 		.gtpc-content.gtpc-content-circle > .gtpc-fit-shell > givtcp-power-flow-card-layout-circle > .gtpc-layout-circle {
 			margin: 0;
-			transform: translateY(var(--gtpc-circle-offset-y)) scale(var(--gtpc-circle-scale));
+			transform: translateY(var(--gtpc-circle-offset-y));
 			transform-origin: center center;
 		}
 		.gtpc-content.gtpc-content-circle .gtpc-entity-name {
