@@ -41,3 +41,6 @@ home-assistant/config/google_calendars.yaml
 *.njsproj
 *.sln
 *.sw?
+
+# Browser automation artifacts
+.playwright-cli/
