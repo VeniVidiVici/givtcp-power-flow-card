@@ -24,9 +24,6 @@ export class GivTCPPowerFlowCardLayoutList extends GivTCPPowerFlowCardLayout {
 			}
 		});
 	}
-	private get halfEntity(): number {
-		return this.entityWidth / 2;
-	}
 	private iconFor(type: string): string {
 		return this.flowData.find((f) => f.type === type)?.icon ?? 'mdi:power-plug';
 	}
@@ -44,7 +41,7 @@ export class GivTCPPowerFlowCardLayoutList extends GivTCPPowerFlowCardLayout {
 					.map(
 						(flow) =>
 							html`<div class="gtpc-list-row" data-from="${flow.from}" data-to="${flow.to}" data-power="${flow.value}">
-								<svg viewBox="0 0 100 ${this.halfEntity}" xmlns="http://www.w3.org/2000/svg">
+								<svg viewBox="0 0 100 1" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
 									${this.getGroupForFlow(flow.from, flow.to)}
 								</svg>
 								<div class="gtpc-list-entity gtpc-from-entity" data-type="${flow.from}">
@@ -69,9 +66,9 @@ export class GivTCPPowerFlowCardLayoutList extends GivTCPPowerFlowCardLayout {
 	}
 	private getGroupForFlow(from: string, to: string): TemplateResult {
 		const direction = this.directionFor(from, to);
-		const startX = direction === FlowDirection.In ? this.halfEntity : this.width - this.halfEntity;
-		const endX = direction === FlowDirection.In ? this.width - this.halfEntity : this.halfEntity;
-		const y = this.halfEntity / 2;
+		const startX = direction === FlowDirection.In ? 0 : this.width;
+		const endX = direction === FlowDirection.In ? this.width : 0;
+		const y = 0.5;
 
 		return svg`<g data-pos="0" class="gtpc-flow gtpc-${from}-to-${to}-flow" style="stroke: var(--gtpc-${from}-color)">
 			<path d="${SVGUtils.getStraightPath(startX, y, endX, y)}" />

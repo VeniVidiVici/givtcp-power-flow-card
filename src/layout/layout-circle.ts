@@ -9,6 +9,14 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 	@property() circleSize!: number;
 	private readonly _coreTypes = ['solar', 'grid', 'house', 'battery'];
 	private readonly _coreSlotOrder = ['solar', 'house', 'battery', 'grid'];
+	private get hasAuxiliaryEntities(): boolean {
+		return this.hasEPS || this.hasCustom1 || this.hasCustom2;
+	}
+	private get orbitRadius(): number {
+		return this.hasAuxiliaryEntities
+			? Math.max(this.circleSize - this.entityWidth, this.entityWidth * 1.25)
+			: this.circleSize;
+	}
 
 	private get circleMidY(): number {
 		if ((this.hasCustom1 && this.hasCustom2) || (this.hasSolar && this.hasCustom2)) {
@@ -36,7 +44,8 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		);
 	}
 	private getCoreSlot(type: string): number | undefined {
-		const order = this.hasCentredCore ? this.getVisibleOuterCoreTypes() : this._coreSlotOrder;
+		const order =
+			this.hasCentredCore && !this.hasAuxiliaryEntities ? this.getVisibleOuterCoreTypes() : this._coreSlotOrder;
 		const index = order.indexOf(type);
 		return index === -1 ? undefined : index;
 	}
@@ -57,8 +66,8 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		}
 	}
 	private getArcPath(startSlot: number, endSlot: number, clockwise: boolean, totalSlots: number): string {
-		const circumference = 2 * Math.PI * this.circleSize;
-		const trimDegrees = ((this.entityWidth / circumference) * 360) / 2;
+		const entityRadius = this.entityWidth / 2;
+		const trimDegrees = (Math.asin(Math.min(entityRadius / this.orbitRadius, 1)) * 180) / Math.PI;
 		const angleStep = 360 / totalSlots;
 		const slotToAngle = (slot: number) => -90 + slot * angleStep;
 		const startAngle = slotToAngle(startSlot) + (clockwise ? trimDegrees : -trimDegrees);
@@ -69,13 +78,13 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		const toPoint = (angle: number) => {
 			const radians = (angle * Math.PI) / 180;
 			return {
-				x: this.midX + this.circleSize * Math.cos(radians),
-				y: this.circleMidY + this.circleSize * Math.sin(radians),
+				x: this.midX + this.orbitRadius * Math.cos(radians),
+				y: this.circleMidY + this.orbitRadius * Math.sin(radians),
 			};
 		};
 		const start = toPoint(startAngle);
 		const end = toPoint(endAngle);
-		return `M ${start.x} ${start.y} A ${this.circleSize} ${this.circleSize} 0 ${largeArcFlag} ${sweepFlag} ${end.x} ${end.y}`;
+		return `M ${start.x} ${start.y} A ${this.orbitRadius} ${this.orbitRadius} 0 ${largeArcFlag} ${sweepFlag} ${end.x} ${end.y}`;
 	}
 	private getTrimmedStraightPath(from: string, to: string): string {
 		const start = this.getEntityPoint(from);
@@ -94,19 +103,20 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		return SVGUtils.getStraightPath(startX, startY, endX, endY);
 	}
 	private getDynamicCorePoint(type: string): { x: number; y: number } | undefined {
-		if (!this.hasCentredCore || !this.isCoreType(type) || this.isCentred(type)) {
+		const shouldUseOrbit = this.hasAuxiliaryEntities || this.hasCentredCore;
+		if (!shouldUseOrbit || !this.isCoreType(type) || this.isCentred(type)) {
 			return undefined;
 		}
 		const slot = this.getCoreSlot(type);
-		const totalSlots = this.getVisibleOuterCoreTypes().length;
+		const totalSlots = this.hasAuxiliaryEntities ? this._coreSlotOrder.length : this.getVisibleOuterCoreTypes().length;
 		if (slot === undefined || totalSlots < 2) {
 			return undefined;
 		}
 		const angle = -90 + slot * (360 / totalSlots);
 		const radians = (angle * Math.PI) / 180;
 		return {
-			x: this.midX + this.circleSize * Math.cos(radians),
-			y: this.circleMidY + this.circleSize * Math.sin(radians),
+			x: this.midX + this.orbitRadius * Math.cos(radians),
+			y: this.circleMidY + this.orbitRadius * Math.sin(radians),
 		};
 	}
 	private getEntityPoint(type: string): { x: number; y: number } {
@@ -138,12 +148,6 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 				return { x: this.midX, y: this.circleMidY };
 		}
 	}
-	private getEntityStyle(type: string): string {
-		const point = this.getEntityPoint(type);
-		const left = (point.x / this.width) * 100;
-		const top = (point.y / this.height) * 100;
-		return `left: ${left}%; top: ${top}%; transform: translate(-50%, -50%);`;
-	}
 	render(): TemplateResult {
 		let showClass = 'full';
 		if (!this.hasSolar && !this.hasCustom1) {
@@ -153,15 +157,16 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		}
 		return html`
 			<div class="gtpc-layout gtpc-${showClass} gtpc-layout-circle gtpc-centre-${this.centreEntity}">
-				${this.flowData.map(
-					(flow) =>
-						html`<givtcp-power-flow-card-entity
-							data-type="${flow.type}"
-							style="${this.getEntityStyle(flow.type)}"
-							.entityLineWidth=${this.entityLineWidth}
-							.data=${flow}
-						></givtcp-power-flow-card-entity>`,
-				)}
+				${this.flowData.map((flow) => {
+					const point = this.getEntityPoint(flow.type);
+					return html`<givtcp-power-flow-card-entity
+						data-type="${flow.type}"
+						style="left: ${(point.x / this.width) * 100}%; top: ${(point.y / this.height) *
+						100}%; transform: translate(-50%, -50%);"
+						.entityLineWidth=${this.entityLineWidth}
+						.data=${flow}
+					></givtcp-power-flow-card-entity>`;
+				})}
 				<svg viewBox="0 0 ${this.width} ${this.height}" xmlns="http://www.w3.org/2000/svg">
 					${this.flows.map((flow) => this.getGroupForFlow(flow.from, flow.to))}
 				</svg>
@@ -178,7 +183,7 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 	private getCentredCoreRingPath(from: string, to: string): string | undefined {
 		const startSlot = this.getCoreSlot(from);
 		const endSlot = this.getCoreSlot(to);
-		const totalSlots = this.getVisibleOuterCoreTypes().length;
+		const totalSlots = this.hasAuxiliaryEntities ? this._coreSlotOrder.length : this.getVisibleOuterCoreTypes().length;
 		if (startSlot === undefined || endSlot === undefined || totalSlots < 2) {
 			return undefined;
 		}
@@ -216,20 +221,20 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		}
 
 		const halfEntity = this.entityWidth / 2;
-		const circumference = Math.ceil(2 * Math.PI * this.circleSize);
+		const circumference = Math.ceil(2 * Math.PI * this.orbitRadius);
 		const offset = Math.ceil(((this.entityWidth - 0) / circumference) * 100);
 		const segment = 25 - offset;
 		switch (flow) {
 			case 'solar-to-house':
-				return SVGUtils.getCirclePath(segment, offset / 2, this.circleSize, { x: this.midX, y: this.circleMidY });
+				return SVGUtils.getCirclePath(segment, offset / 2, this.orbitRadius, { x: this.midX, y: this.circleMidY });
 			case 'battery-to-house':
-				return SVGUtils.getCirclePath(segment, 25 + offset / 2, this.circleSize, { x: this.midX, y: this.circleMidY });
+				return SVGUtils.getCirclePath(segment, 25 + offset / 2, this.orbitRadius, { x: this.midX, y: this.circleMidY });
 			case 'battery-to-grid':
-				return SVGUtils.getCirclePath(segment, 50 + offset / 2, this.circleSize, { x: this.midX, y: this.circleMidY });
+				return SVGUtils.getCirclePath(segment, 50 + offset / 2, this.orbitRadius, { x: this.midX, y: this.circleMidY });
 			case 'grid-to-battery':
-				return SVGUtils.getCirclePath(segment, 50 + offset / 2, this.circleSize, { x: this.midX, y: this.circleMidY });
+				return SVGUtils.getCirclePath(segment, 50 + offset / 2, this.orbitRadius, { x: this.midX, y: this.circleMidY });
 			case 'solar-to-grid':
-				return SVGUtils.getCirclePath(segment, 75 + offset / 2, this.circleSize, { x: this.midX, y: this.circleMidY });
+				return SVGUtils.getCirclePath(segment, 75 + offset / 2, this.orbitRadius, { x: this.midX, y: this.circleMidY });
 			case 'solar-to-battery':
 				return SVGUtils.getCurvePath(this.midX, this.entityWidth, this.midX, this.height - this.entityWidth, 0);
 			case 'grid-to-house':

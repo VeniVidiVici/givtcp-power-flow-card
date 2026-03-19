@@ -22,6 +22,7 @@ import {
 	DotEasing,
 	entityName,
 } from './types';
+import { formatPower } from './utils/power-utils';
 import {
 	CENTRE_ENTITY_DEFAULT,
 	CIRCLE_SIZE_DEFAULT,
@@ -266,6 +267,36 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			default:
 				return undefined;
 		}
+	}
+	private getSolarInputTotal(sensorIds: string[] | undefined): number | undefined {
+		if (!sensorIds?.length) {
+			return undefined;
+		}
+		const values = sensorIds
+			.map((entityId) => this.hass.states[entityId])
+			.filter((entity): entity is HassEntity => entity !== undefined)
+			.map((entity) => this.getStateAsWatts(entity))
+			.filter((value) => value > 0);
+
+		if (!values.length) {
+			return undefined;
+		}
+
+		return values.reduce((total, value) => total + value, 0);
+	}
+	private get _solarExtra(): string | undefined {
+		const lines = [this.getEntityCountExtra('solar')].filter((value): value is string => !!value);
+		const input1 = this.getSolarInputTotal(this._config?.solar_input_1_sensors);
+		const input2 = this.getSolarInputTotal(this._config?.solar_input_2_sensors);
+
+		if (input1 !== undefined) {
+			lines.push(`PV1 ${formatPower(input1)}`);
+		}
+		if (input2 !== undefined) {
+			lines.push(`PV2 ${formatPower(input2)}`);
+		}
+
+		return lines.length ? lines.join('\n') : undefined;
 	}
 	private isAggregateEntity(type: string): boolean {
 		switch (type) {
@@ -578,13 +609,135 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	constructor() {
 		super();
 	}
+	private get _gridRows(): number | undefined {
+		const rows = this._config?.grid_options?.rows;
+		return typeof rows === 'number' && Number.isFinite(rows) ? rows : undefined;
+	}
+	private getCompactLevel(width: number): number {
+		if (this._entityLayout === EntityLayout.Circle) {
+			if (width < 180) {
+				return 2;
+			}
+			if (width < 240) {
+				return 1;
+			}
+			return 0;
+		}
+		const rows = this._gridRows;
+		if (rows !== undefined) {
+			if (rows <= 2) {
+				return 3;
+			}
+			if (rows <= 3) {
+				return 2;
+			}
+			if (rows <= 4) {
+				return 1;
+			}
+		}
+		if (width < 260) {
+			return 2;
+		}
+		if (width < 340) {
+			return 1;
+		}
+		return 0;
+	}
+	private getListRowCount(): number {
+		const count = this._activeFlows
+			.map((flow) => this.getCleanPowerForFlow(flow.from, flow.to))
+			.filter((value) => value !== undefined).length;
+
+		return Math.max(count, 1);
+	}
+	private updateResponsiveVars(containerWidth: number, entitySizeWidth = containerWidth): void {
+		const compactLevel = this.getCompactLevel(containerWidth);
+		const compactContained =
+			(this._entityLayout === EntityLayout.Cross || this._entityLayout === EntityLayout.Square) &&
+			entitySizeWidth < 140;
+		const baseEntitySize =
+			this._entityLayout === EntityLayout.List
+				? entitySizeWidth
+				: this._entityLayout === EntityLayout.Circle
+					? entitySizeWidth / (this._entitySize + 0.9)
+					: this._entityLayout === EntityLayout.Cross || this._entityLayout === EntityLayout.Square
+						? entitySizeWidth / (this._entitySize + 0.36)
+						: entitySizeWidth / this._entitySize;
+		const textScale = compactLevel === 3 ? 0.68 : compactLevel === 2 ? 0.8 : compactLevel === 1 ? 0.9 : 1;
+		const aggregateTextScale = compactLevel === 3 ? 0.62 : compactLevel === 2 ? 0.72 : compactLevel === 1 ? 0.84 : 1;
+		const iconScale = compactLevel === 3 ? 0.72 : compactLevel === 2 ? 0.82 : compactLevel === 1 ? 0.92 : 1;
+		const lineScale = compactLevel === 3 ? 0.62 : compactLevel === 2 ? 0.75 : compactLevel === 1 ? 0.88 : 1;
+
+		this.style.setProperty('--gtpc-size', `${baseEntitySize}px`);
+		this.style.setProperty('--gtpc-text-scale', `${textScale}`);
+		this.style.setProperty('--gtpc-aggregate-text-scale', `${aggregateTextScale}`);
+		this.style.setProperty('--gtpc-icon-scale', `${iconScale}`);
+		this.style.setProperty('--gtpc-line-size', `${this._lineWidth * lineScale}px`);
+		this.style.setProperty('--gtpc-entity-line-size', `${this._entityLineWidth * lineScale}px`);
+		this.style.setProperty('--gtpc-extra-display', compactLevel >= 2 ? 'none' : 'block');
+		this.style.setProperty('--gtpc-contained-label-display', compactContained ? 'none' : 'block');
+		this.style.setProperty('--gtpc-contained-extra-display', compactContained ? 'none' : 'block');
+		this.style.setProperty('--gtpc-circle-label-display', compactLevel >= 2 ? 'none' : 'block');
+		this.style.setProperty('--gtpc-list-row-gap', compactLevel >= 2 ? '2px' : compactLevel === 1 ? '4px' : '6px');
+		this.style.setProperty('--gtpc-list-extra-display', compactLevel >= 1 ? 'none' : 'block');
+		this.style.setProperty(
+			'--gtpc-layout-margin',
+			compactLevel === 3 ? '8px 0' : compactLevel === 2 ? '12px 0' : compactLevel === 1 ? '16px 0' : '20px 0',
+		);
+		this.style.setProperty(
+			'--gtpc-top-padding',
+			compactLevel === 3 ? '4px' : compactLevel === 2 ? '6px' : compactLevel === 1 ? '8px' : '12px',
+		);
+	}
 	private setEntitySize(width: number): void {
 		setTimeout(() => {
 			this._width = width;
-			this.style.setProperty('--gtpc-size', this._width / this._entitySize + 'px');
+			const content = this.shadowRoot?.querySelector('.card-content') as HTMLElement | null;
+			const fitWidth = this.getResponsiveFitSize(content, width);
+			this.updateResponsiveVars(width, fitWidth || width);
 			// this.style.setProperty('--gtpc-circle-offset', `${(width - (this._circleSize / 50) * width)}px`);
 			this.requestUpdate();
 		}, 0);
+	}
+	private getResponsiveFitSize(content: HTMLElement | null, fallbackWidth: number): number {
+		if (this._entityLayout === EntityLayout.List) {
+			return this.getResponsiveListSize(content, fallbackWidth);
+		}
+
+		const isContainedLayout =
+			this._entityLayout === EntityLayout.Circle ||
+			this._entityLayout === EntityLayout.Square ||
+			this._entityLayout === EntityLayout.Cross;
+		if (!isContainedLayout || !content) {
+			return fallbackWidth;
+		}
+
+		const styles = getComputedStyle(content);
+		const horizontalPadding = (parseFloat(styles.paddingLeft) || 0) + (parseFloat(styles.paddingRight) || 0);
+		const verticalPadding = (parseFloat(styles.paddingTop) || 0) + (parseFloat(styles.paddingBottom) || 0);
+		const innerWidth = Math.max((content.clientWidth || fallbackWidth) - horizontalPadding, 0);
+		const innerHeight = Math.max((content.clientHeight || fallbackWidth) - verticalPadding, 0);
+
+		return Math.min(innerWidth || fallbackWidth, innerHeight || fallbackWidth);
+	}
+	private getResponsiveListSize(content: HTMLElement | null, fallbackWidth: number): number {
+		if (!content) {
+			return fallbackWidth;
+		}
+
+		const styles = getComputedStyle(content);
+		const horizontalPadding = (parseFloat(styles.paddingLeft) || 0) + (parseFloat(styles.paddingRight) || 0);
+		const verticalPadding = (parseFloat(styles.paddingTop) || 0) + (parseFloat(styles.paddingBottom) || 0);
+		const innerWidth = Math.max((content.clientWidth || fallbackWidth) - horizontalPadding, 0);
+		const innerHeight = Math.max((content.clientHeight || fallbackWidth) - verticalPadding, 0);
+		const rowCount = this.getListRowCount();
+		const rowGap = innerWidth < 260 ? 2 : innerWidth < 340 ? 4 : 6;
+		const totalGap = Math.max(rowCount - 1, 0) * rowGap;
+		const rowHeight = Math.max((innerHeight - totalGap) / rowCount, 0);
+		const widthLimitedSize = innerWidth / this._entitySize;
+		const heightLimitedSize = Math.max(rowHeight - 4, 0) * 2;
+
+		return Math.min(widthLimitedSize || fallbackWidth, heightLimitedSize || fallbackWidth);
 	}
 	connectedCallback(): void {
 		super.connectedCallback();
@@ -742,7 +895,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				linePos: 180,
 				icon: this.getIconFor('solar'),
 				name: this.getEntityLabel('solar'),
-				extra: this.getEntityCountExtra('solar'),
+				extra: this._solarExtra,
 				aggregate: this.isAggregateEntity('solar'),
 				out: this.getTotalFor('solar', FlowDirection.Out),
 			},
@@ -781,14 +934,25 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			.filter((v) => v.value !== undefined) as FlowPower[];
 
 		let layout = html``;
-		let classes = 'gtpc-content';
-		if (this._epsEnabled) classes += ' gtpc-eps';
-		if (this._custom1Enabled) classes += ' gtpc-custom1';
-		if (this._custom2Enabled) classes += ' gtpc-custom2';
+		let layoutHostClasses = '';
+		let contentClasses = 'gtpc-content';
+		if (this._epsEnabled) {
+			layoutHostClasses += ' gtpc-eps';
+			contentClasses += ' gtpc-eps';
+		}
+		if (this._custom1Enabled) {
+			layoutHostClasses += ' gtpc-custom1';
+			contentClasses += ' gtpc-custom1';
+		}
+		if (this._custom2Enabled) {
+			layoutHostClasses += ' gtpc-custom2';
+			contentClasses += ' gtpc-custom2';
+		}
 		switch (this._entityLayout) {
 			case EntityLayout.Cross:
+				contentClasses += ' gtpc-content-contained gtpc-content-cross';
 				layout = html`<givtcp-power-flow-card-layout-cross
-					class="${classes}"
+					class="${layoutHostClasses.trim()}"
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
 					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
@@ -799,8 +963,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				/>`;
 				break;
 			case EntityLayout.Square:
+				contentClasses += ' gtpc-content-contained gtpc-content-square';
 				layout = html`<givtcp-power-flow-card-layout-square
-					class="${classes}"
+					class="${layoutHostClasses.trim()}"
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
 					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
@@ -811,8 +976,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				/>`;
 				break;
 			case EntityLayout.Circle:
+				contentClasses += ' gtpc-content-contained gtpc-content-circle';
 				layout = html`<givtcp-power-flow-card-layout-circle
-					class="${classes}"
+					class="${layoutHostClasses.trim()}"
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
 					@entity-details=${(e: CustomEvent) => this.entityDetails(e)}
@@ -823,8 +989,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 				/>`;
 				break;
 			case EntityLayout.List:
+				contentClasses += ' gtpc-content-list';
 				layout = html`<givtcp-power-flow-card-layout-list
-					class="${classes}"
+					class="gtpc-content gtpc-content-list${layoutHostClasses}"
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
 					.flowPowers=${flowPowers}
@@ -839,8 +1006,15 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		const details = html`<givtcp-power-flow-card-details .entities=${this._detailEntities} />`;
 		return html`<ha-card header="${this._config?.name}">
 			${this._width > 0
-				? html`<div class="card-content">${layout}${details}</div>`
-				: html`<div class="card-content"><div class="${classes}" /></div>`}
+				? this._entityLayout === EntityLayout.Circle ||
+					this._entityLayout === EntityLayout.Square ||
+					this._entityLayout === EntityLayout.Cross
+					? html`<div class="card-content ${contentClasses}">
+							<div class="gtpc-fit-shell">${layout}</div>
+							${details}
+						</div>`
+					: html`<div class="card-content ${contentClasses}">${layout}${details}</div>`
+				: html`<div class="card-content"><div class="${contentClasses}" /></div>`}
 		</ha-card>`;
 	}
 	private entityDetails(evt: CustomEvent): void {
@@ -888,7 +1062,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 	}
 	setConfig(config: LovelaceCardConfig): void {
 		if (!config.invertor && !config.invertors) {
-			throw new Error('You need to define at least one invertor entity');
+			throw new Error(
+				'You need to define at least one GivTCP invertor serial number entity (for example sensor.*_invertor_serial_number).',
+			);
 		}
 		// if (!config.battery && !config.batteries) {
 		// 	throw new Error('You need to define at least one battery entity');
@@ -902,8 +1078,6 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 
 		this.style.setProperty('--gtpc-column-width', `${100 / this._numColumn}%`);
-		this.style.setProperty('--gtpc-line-size', `${this._lineWidth}px`);
-		this.style.setProperty('--gtpc-entity-line-size', `${this._entityLineWidth}px`);
 		this.style.setProperty('--gtpc-inactive-flow-display', this._hideInactiveFlows ? 'none' : 'block');
 		if (this._colourIconsAndText) {
 			this.style.removeProperty('--gtpc-icons-and-text-colour');
@@ -922,8 +1096,17 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			}
 			this.style.setProperty(`--gtpc-${entity}-color`, colour);
 		});
+		const responsiveWidth = elem ? elem.clientWidth : this._width || this.clientWidth || 0;
+		if (responsiveWidth > 0) {
+			const content = this.shadowRoot?.querySelector('.card-content') as HTMLElement | null;
+			const fitWidth = this.getResponsiveFitSize(content, responsiveWidth);
+			this.updateResponsiveVars(responsiveWidth, fitWidth || responsiveWidth);
+		}
 	}
 	getCardSize(): number {
+		if (this._gridRows !== undefined) {
+			return this._gridRows;
+		}
 		return this.clientHeight > 0 ? Math.ceil(this.clientHeight / 50) : 3;
 	}
 	static styles = css`
@@ -933,7 +1116,34 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			--gtpc-solar-color: var(--warning-color);
 			--gtpc-house-color: var(--info-color);
 			--gtpc-battery-color: var(--success-color);
-			--gtpc-max-width: 440px;
+			--gtpc-max-width: 100%;
+			--gtpc-text-scale: 1;
+			--gtpc-aggregate-text-scale: 1;
+			--gtpc-icon-scale: 1;
+			--gtpc-extra-display: block;
+			--gtpc-layout-margin: 20px 0;
+			--gtpc-top-padding: 12px;
+			--gtpc-circle-gutter: calc(var(--gtpc-size) * 0.45);
+			--gtpc-circle-offset-y: calc(var(--gtpc-size) * 0.08);
+			--gtpc-contained-gutter: calc(var(--gtpc-size) * 0.18);
+			--gtpc-contained-label-display: block;
+			--gtpc-contained-extra-display: block;
+			--gtpc-circle-label-display: block;
+			--gtpc-list-row-gap: 6px;
+			--gtpc-list-extra-display: block;
+			height: 100%;
+		}
+		ha-card {
+			height: 100%;
+		}
+		.card-content {
+			height: 100%;
+			box-sizing: border-box;
+		}
+		.card-content.gtpc-content-list {
+			display: flex;
+			flex-direction: column;
+			min-height: 0;
 		}
 		.gtpc-content,
 		.gtpc-layout > svg {
@@ -942,8 +1152,83 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		.gtpc-content {
 			width: min(100%, var(--gtpc-max-width));
 			margin: 0 auto;
-			padding-top: 12px;
+			padding-top: var(--gtpc-top-padding);
 			box-sizing: border-box;
+		}
+		.gtpc-content.gtpc-content-list {
+			width: 100%;
+			flex: 1 1 auto;
+			min-height: 0;
+		}
+		.gtpc-content.gtpc-content-contained {
+			container-type: size;
+			display: grid;
+			place-items: center;
+			width: 100%;
+			height: 100%;
+			padding: 1.5rem;
+			margin: 0 auto;
+			min-height: 0;
+			box-sizing: border-box;
+		}
+		.gtpc-content.gtpc-content-contained > .gtpc-fit-shell {
+			width: min(100cqw, 100cqh);
+			height: min(100cqw, 100cqh);
+			aspect-ratio: 1 / 1;
+			max-width: 100%;
+			max-height: 100%;
+			min-width: 0;
+			min-height: 0;
+		}
+		.gtpc-content.gtpc-content-square > .gtpc-fit-shell,
+		.gtpc-content.gtpc-content-cross > .gtpc-fit-shell {
+			padding: var(--gtpc-contained-gutter);
+			box-sizing: border-box;
+		}
+		.gtpc-content.gtpc-content-circle > .gtpc-fit-shell {
+			padding: var(--gtpc-circle-gutter);
+			box-sizing: border-box;
+		}
+		.gtpc-content.gtpc-content-contained > .gtpc-fit-shell > .gtpc-layout {
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			overflow: hidden;
+		}
+		.gtpc-content.gtpc-content-square > .gtpc-fit-shell > .gtpc-layout-square,
+		.gtpc-content.gtpc-content-cross > .gtpc-fit-shell > .gtpc-layout-cross {
+			padding: 0;
+		}
+		.gtpc-content.gtpc-content-square .gtpc-entity-name,
+		.gtpc-content.gtpc-content-cross .gtpc-entity-name {
+			display: var(--gtpc-contained-label-display);
+		}
+		.gtpc-content.gtpc-content-square .gtpc-entity-extra,
+		.gtpc-content.gtpc-content-cross .gtpc-entity-extra {
+			display: var(--gtpc-contained-extra-display);
+		}
+		.gtpc-content.gtpc-content-square > .gtpc-fit-shell > givtcp-power-flow-card-layout-square > .gtpc-layout-square,
+		.gtpc-content.gtpc-content-cross > .gtpc-fit-shell > givtcp-power-flow-card-layout-cross > .gtpc-layout-cross {
+			margin: 0;
+		}
+		.gtpc-content.gtpc-content-circle > .gtpc-fit-shell > givtcp-power-flow-card-layout-circle > .gtpc-layout-circle {
+			margin: 0;
+			transform: translateY(var(--gtpc-circle-offset-y));
+			transform-origin: center center;
+		}
+		.gtpc-content.gtpc-content-circle .gtpc-entity-name {
+			display: var(--gtpc-circle-label-display);
+			bottom: calc(var(--gtpc-size) * -0.2);
+			white-space: nowrap;
+			left: 50%;
+			transform: translateX(-50%);
+		}
+		.gtpc-content.gtpc-content-circle .gtpc-entity-name[data-entity-type='custom1'],
+		.gtpc-content.gtpc-content-circle .gtpc-entity-name[data-entity-type='solar'] {
+			top: calc(var(--gtpc-size) * -0.2);
+			bottom: auto;
 		}
 		givtcp-power-flow-card-entity {
 			position: absolute;
@@ -971,7 +1256,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			width: 100%;
 			height: 100%;
 			box-sizing: border-box;
-			margin: 20px 0;
+			margin: var(--gtpc-layout-margin);
 		}
 		.gtpc-detail,
 		.gtpc-list-row[data-from],
@@ -1108,9 +1393,14 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		.gtpc-entity-name {
 			color: var(--gtpc-icons-and-text-colour, var(--gtpc-color));
 			box-sizing: border-box;
-			font-size: calc(var(--gtpc-size) * 0.15);
-			--mdc-icon-size: calc(var(--gtpc-size) * 0.15);
+			font-size: calc(var(--gtpc-size) * 0.15 * var(--gtpc-text-scale));
+			--mdc-icon-size: calc(var(--gtpc-size) * 0.15 * var(--gtpc-text-scale));
 			line-height: 1;
+		}
+		.gtpc-entity-extra {
+			white-space: pre-line;
+			text-align: center;
+			display: var(--gtpc-extra-display);
 		}
 		.gtpc-entity.gtpc-entity-aggregate {
 			gap: calc(var(--gtpc-size) * 0.01);
@@ -1119,11 +1409,11 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		.gtpc-entity.gtpc-entity-aggregate .gtpc-entity-in,
 		.gtpc-entity.gtpc-entity-aggregate .gtpc-entity-out,
 		.gtpc-entity.gtpc-entity-aggregate .gtpc-entity-name {
-			font-size: calc(var(--gtpc-size) * 0.115);
-			--mdc-icon-size: calc(var(--gtpc-size) * 0.115);
+			font-size: calc(var(--gtpc-size) * 0.115 * var(--gtpc-aggregate-text-scale));
+			--mdc-icon-size: calc(var(--gtpc-size) * 0.115 * var(--gtpc-aggregate-text-scale));
 		}
 		.gtpc-entity.gtpc-entity-aggregate .gtpc-entity-icon {
-			--mdc-icon-size: calc(var(--gtpc-size) * 0.21);
+			--mdc-icon-size: calc(var(--gtpc-size) * 0.21 * var(--gtpc-icon-scale));
 		}
 		.gtpc-entity.gtpc-entity-aggregate .gtpc-entity-extra {
 			max-width: 78%;
@@ -1138,7 +1428,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			stroke-width: calc(var(--gtpc-size) * 0.02);
 		}
 		.gtpc-entity-icon {
-			--mdc-icon-size: calc(var(--gtpc-size) * 0.3);
+			--mdc-icon-size: calc(var(--gtpc-size) * 0.3 * var(--gtpc-icon-scale));
 			color: var(--gtpc-icons-and-text-colour, var(--gtpc-color));
 		}
 		.gtpc-entity-name {
@@ -1162,17 +1452,34 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			vector-effect: non-scaling-stroke;
 		}
 		.gtpc-list-row {
-			margin-bottom: 3px;
+			flex: 1 1 0;
+			min-height: 0;
+			margin-bottom: 0;
+		}
+		.gtpc-layout.gtpc-layout-list {
+			display: flex;
+			flex-direction: column;
+			gap: var(--gtpc-list-row-gap);
+			width: 100%;
+			height: 100%;
+			margin: 0;
 		}
 		.gtpc-layout.gtpc-layout-list .gtpc-list-entity {
-			--mdc-icon-size: calc(var(--gtpc-size) * 0.2);
-			font-size: calc(var(--gtpc-size) * 0.15);
+			--mdc-icon-size: calc(var(--gtpc-size) * 0.2 * var(--gtpc-icon-scale));
+			font-size: calc(var(--gtpc-size) * 0.15 * var(--gtpc-text-scale));
+		}
+		.gtpc-layout.gtpc-layout-list .gtpc-entity-extra {
+			display: var(--gtpc-list-extra-display);
 		}
 		.gtpc-list-flow-value {
 			position: absolute;
-			top: 75%;
+			top: calc(50% + var(--gtpc-size) * 0.22);
 			left: 50%;
 			transform: translate(-50%, -50%);
+			line-height: 1;
+			white-space: nowrap;
+			background: var(--ha-card-background, var(--card-background-color, white));
+			padding: 0 0.2em;
 		}
 		.gtpc-layout.gtpc-layout-list .gtpc-list-entity {
 			border-radius: 50%;
@@ -1181,7 +1488,8 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			height: calc(var(--gtpc-size) / 2);
 			width: calc(var(--gtpc-size) / 2);
 			position: absolute;
-			top: 0;
+			top: 50%;
+			transform: translateY(-50%);
 			background-color: var(--ha-card-background, var(--card-background-color, white));
 		}
 		.gtpc-layout.gtpc-layout-list .gtpc-list-entity ha-icon {
@@ -1196,8 +1504,16 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 		.gtpc-layout-list > div {
 			position: relative;
+			min-height: 0;
 		}
 		.gtpc-layout-list > div > svg {
+			position: absolute;
+			left: calc(var(--gtpc-size) / 2);
+			top: 50%;
+			height: var(--gtpc-line-size);
+			width: calc(100% - var(--gtpc-size));
+			transform: translateY(-50%);
+			display: block;
 		}
 		.gtpc-layout.gtpc-layout-list .gtpc-list-entity[data-type='grid'] {
 			color: var(--gtpc-grid-color);

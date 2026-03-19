@@ -1,7 +1,6 @@
 import { LovelaceCardConfig } from 'custom-card-helpers';
 import {
 	CENTRE_ENTITY_DEFAULT,
-	CIRCLE_SIZE_DEFAULT,
 	ENTITY_LAYOUT_DEFAULT,
 	BATTERY_ICON_DEFAULT,
 	GRID_ICON_DEFAULT,
@@ -17,18 +16,20 @@ import {
 	NUM_DETAIL_COLUMNS_DEFAULT,
 } from './const';
 import { CentreEntity, DotEasing, EntityLayout, LineStyle } from './types';
-import { any, assign, boolean, integer, object, optional, refine, string, array, union, tuple } from 'superstruct';
+import { any, assign, boolean, integer, optional, refine, string, array, union, tuple, type } from 'superstruct';
 const isEntityId = (value: string): boolean => value.includes('.');
 const entityId = () => refine(string(), 'entity ID (domain.entity)', isEntityId);
 
-const baseLovelaceCardConfig = object({
+const baseLovelaceCardConfig = type({
 	type: string(),
-	view_layout: any(),
+	view_layout: optional(any()),
+	grid_options: optional(any()),
+	visibility: optional(any()),
 });
 
 export const cardConfigStruct = assign(
 	baseLovelaceCardConfig,
-	object({
+	type({
 		name: optional(string()),
 		demo_mode: optional(boolean()),
 		batteries: optional(array(entityId())),
@@ -86,6 +87,8 @@ export const cardConfigStruct = assign(
 		line_width: optional(integer()),
 		num_detail_columns: optional(integer()),
 		power_margin: optional(integer()),
+		solar_input_1_sensors: optional(array(entityId())),
+		solar_input_2_sensors: optional(array(entityId())),
 		single_battery: optional(boolean()),
 		single_invertor: optional(boolean()),
 		solar_colour_type: optional(string()),
@@ -224,7 +227,26 @@ export const BATTERY_SCHEMA = (config: LovelaceCardConfig) => {
 export const SOLAR_SCHEMA = (config: LovelaceCardConfig) => {
 	let settings: object[] = [{ name: 'solar_enabled', label: 'Solar enabled', selector: { boolean: {} } }];
 	if (config.solar_enabled) {
-		settings = [...settings, ...ENTITY_SCHEMA(config, 'solar', 'Solar', SOLAR_ICON_DEFAULT)];
+		settings = [
+			...settings,
+			...ENTITY_SCHEMA(config, 'solar', 'Solar', SOLAR_ICON_DEFAULT),
+			{
+				type: 'grid',
+				name: '',
+				schema: [
+					{
+						name: 'solar_input_1_sensors',
+						label: 'Solar Input 1 Sensors',
+						selector: { entity: { multiple: true, filter: { device_class: 'power' } } },
+					},
+					{
+						name: 'solar_input_2_sensors',
+						label: 'Solar Input 2 Sensors',
+						selector: { entity: { multiple: true, filter: { device_class: 'power' } } },
+					},
+				],
+			},
+		];
 	}
 	return settings;
 };
@@ -333,12 +355,6 @@ export const LAYOUT_TYPE_SCHEMA = (config: LovelaceCardConfig): object[] => {
 	}
 	if (config.entity_layout === 'circle') {
 		return [
-			{
-				name: 'circle_size',
-				default: CIRCLE_SIZE_DEFAULT,
-				label: 'Circle Size',
-				selector: { number: { mode: 'slider', min: 35, max: 45 } },
-			},
 			{
 				name: 'centre_entity',
 				default: CENTRE_ENTITY_DEFAULT,

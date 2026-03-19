@@ -71,6 +71,16 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 			font-size: 1rem;
 			font-weight: 500;
 		}
+
+		.support-note {
+			margin: 0 0 16px;
+			padding: 12px 14px;
+			border-radius: 12px;
+			background: var(--secondary-background-color);
+			color: var(--secondary-text-color);
+			font-size: 0.95rem;
+			line-height: 1.4;
+		}
 	`;
 
 	@property() hass!: HomeAssistant;
@@ -160,6 +170,9 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 	}
 	private get _defaults(): LovelaceCardConfig {
 		return ConfigUtils.getDefaults(this._config);
+	}
+	private get _showSourceWarning(): boolean {
+		return this._curView === 0 && this._invertors.length === 0;
 	}
 	// private get _invertorsAndBatteries(): string[] {
 	// 	return this.hass ? Object.keys(this.hass.states).filter((eid) =>
@@ -280,6 +293,13 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				)}
 			</div>
 			<h3 class="panel-title">${this._tabs[this._curView]}</h3>
+			${this._showSourceWarning
+				? html`<div class="support-note">
+						This card expects GivTCP-discovered serial number sensors such as
+						<code>sensor.*_invertor_serial_number</code> and <code>sensor.*_battery_serial_number</code>. Integrations
+						like FoxESS will not appear in the picker unless they expose equivalent GivTCP-style sensors.
+					</div>`
+				: html``}
 			<ha-form
 				.hass=${this.hass}
 				.data=${data}
