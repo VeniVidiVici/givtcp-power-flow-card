@@ -81,6 +81,14 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 			font-size: 0.95rem;
 			line-height: 1.4;
 		}
+
+		.support-note code {
+			font-size: 0.92em;
+		}
+
+		.support-note strong {
+			color: var(--primary-text-color);
+		}
 	`;
 
 	@property() hass!: HomeAssistant;
@@ -163,16 +171,33 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 		}
 	}
 	private get _batteries(): string[] {
-		return this.hass ? Object.keys(this.hass.states).filter((eid) => eid.includes('battery_serial_number')) : [];
+		return this._sourceEntities.batteries;
 	}
 	private get _invertors(): string[] {
-		return this.hass ? Object.keys(this.hass.states).filter((eid) => eid.includes('invertor_serial_number')) : [];
+		return this._sourceEntities.invertors;
+	}
+	private get _sourceEntities(): { invertors: string[]; batteries: string[] } {
+		if (!this.hass) {
+			return { invertors: [], batteries: [] };
+		}
+
+		const entityIds = Object.keys(this.hass.states);
+		return {
+			invertors: entityIds.filter((eid) => eid.includes('invertor_serial_number')),
+			batteries: entityIds.filter((eid) => eid.includes('battery_serial_number')),
+		};
 	}
 	private get _defaults(): LovelaceCardConfig {
 		return ConfigUtils.getDefaults(this._config);
 	}
 	private get _showSourceWarning(): boolean {
 		return this._curView === 0 && this._invertors.length === 0;
+	}
+	private get _showGeneralHelp(): boolean {
+		return this._curView === 0;
+	}
+	private get _sourceSummary(): string {
+		return `Detected ${this._invertors.length} invertor serial sensor${this._invertors.length === 1 ? '' : 's'} and ${this._batteries.length} battery serial sensor${this._batteries.length === 1 ? '' : 's'}.`;
 	}
 	// private get _invertorsAndBatteries(): string[] {
 	// 	return this.hass ? Object.keys(this.hass.states).filter((eid) =>
@@ -293,11 +318,22 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 				)}
 			</div>
 			<h3 class="panel-title">${this._tabs[this._curView]}</h3>
+			${this._showGeneralHelp
+				? html`<div class="support-note">
+						<strong>How selection works:</strong> pick your GivTCP-discovered
+						<code>sensor.*_invertor_serial_number</code> and <code>sensor.*_battery_serial_number</code> entities in
+						this tab. The card then derives the rest of its flow sensors from those serial numbers rather than asking
+						you to enter every entity manually. <br /><br />
+						${this._sourceSummary}
+					</div>`
+				: html``}
 			${this._showSourceWarning
 				? html`<div class="support-note">
 						This card expects GivTCP-discovered serial number sensors such as
 						<code>sensor.*_invertor_serial_number</code> and <code>sensor.*_battery_serial_number</code>. Integrations
-						like FoxESS will not appear in the picker unless they expose equivalent GivTCP-style sensors.
+						like FoxESS will not appear in the picker unless they expose equivalent GivTCP-style sensors. <br /><br />
+						If the picker is empty, check that GivTCP has Home Assistant auto discovery enabled and that the
+						serial-number sensors exist in Home Assistant first.
 					</div>`
 				: html``}
 			<ha-form
