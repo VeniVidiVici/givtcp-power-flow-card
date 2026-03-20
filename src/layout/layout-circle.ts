@@ -233,7 +233,6 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 			return this.getTrimmedStraightPath(from, to);
 		}
 
-		const halfEntity = this.entityWidth / 2;
 		const circumference = Math.ceil(2 * Math.PI * this.orbitRadius);
 		const offset = Math.ceil(((this.entityWidth - 0) / circumference) * 100);
 		const segment = 25 - offset;
@@ -253,19 +252,9 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 			case 'grid-to-house':
 				return SVGUtils.getCurvePath(this.entityWidth, this.midY, this.width - this.entityWidth, this.midY, 0);
 			case 'house-to-custom1':
-				return SVGUtils.getStraightPath(
-					this.width - halfEntity,
-					this.entityWidth,
-					this.width - halfEntity,
-					this.midY - halfEntity,
-				);
+				return this.getTrimmedStraightPathReversed(from, to);
 			case 'house-to-custom2':
-				return SVGUtils.getStraightPath(
-					this.width - halfEntity,
-					this.height - this.entityWidth,
-					this.width - halfEntity,
-					this.midY + halfEntity,
-				);
+				return this.getTrimmedStraightPathReversed(from, to);
 			default:
 				return '';
 		}
