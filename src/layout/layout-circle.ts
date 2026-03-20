@@ -223,7 +223,10 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 			}
 		}
 		if (this.isCentred(from) || this.isCentred(to)) {
-			if (this.centreEntity === 'house' && flow === 'battery-to-house') {
+			if (
+				this.centreEntity === 'house' &&
+				(flow === 'battery-to-house' || flow === 'house-to-custom1' || flow === 'house-to-custom2')
+			) {
 				return this.getTrimmedStraightPathReversed(from, to);
 			}
 			return this.getTrimmedStraightPath(from, to);
@@ -251,16 +254,16 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 			case 'house-to-custom1':
 				return SVGUtils.getStraightPath(
 					this.width - halfEntity,
-					this.entityWidth,
-					this.width - halfEntity,
 					this.midY - halfEntity,
+					this.width - halfEntity,
+					this.entityWidth,
 				);
 			case 'house-to-custom2':
 				return SVGUtils.getStraightPath(
 					this.width - halfEntity,
-					this.height - this.entityWidth,
-					this.width - halfEntity,
 					this.midY + halfEntity,
+					this.width - halfEntity,
+					this.height - this.entityWidth,
 				);
 			default:
 				return '';
