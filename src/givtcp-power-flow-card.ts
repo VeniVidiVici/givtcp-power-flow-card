@@ -724,15 +724,18 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		return Math.min(innerWidth || fallbackWidth, innerHeight || fallbackWidth);
 	}
 	private getResponsiveListSize(content: HTMLElement | null, fallbackWidth: number): number {
-		if (!content) {
+		const target = this._usesDefaultHeightFallback
+			? (this.shadowRoot?.querySelector('givtcp-power-flow-card-layout-list') as HTMLElement | null) || content
+			: content;
+		if (!target) {
 			return fallbackWidth;
 		}
 
-		const styles = getComputedStyle(content);
+		const styles = getComputedStyle(target);
 		const horizontalPadding = (parseFloat(styles.paddingLeft) || 0) + (parseFloat(styles.paddingRight) || 0);
 		const verticalPadding = (parseFloat(styles.paddingTop) || 0) + (parseFloat(styles.paddingBottom) || 0);
-		const innerWidth = Math.max((content.clientWidth || fallbackWidth) - horizontalPadding, 0);
-		const innerHeight = Math.max((content.clientHeight || fallbackWidth) - verticalPadding, 0);
+		const innerWidth = Math.max((target.clientWidth || fallbackWidth) - horizontalPadding, 0);
+		const innerHeight = Math.max((target.clientHeight || fallbackWidth) - verticalPadding, 0);
 		const rowCount = this.getListRowCount();
 		const rowGap = innerWidth < 260 ? 2 : innerWidth < 340 ? 4 : 6;
 		const totalGap = Math.max(rowCount - 1, 0) * rowGap;
@@ -999,7 +1002,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			case EntityLayout.List:
 				contentClasses += ' gtpc-content-list';
 				layout = html`<givtcp-power-flow-card-layout-list
-					class="${contentClasses}${layoutHostClasses}"
+					class="${contentClasses.trim()}"
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
 					.flowPowers=${flowPowers}
