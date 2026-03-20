@@ -662,7 +662,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			this._entityLayout === EntityLayout.List
 				? entitySizeWidth
 				: this._entityLayout === EntityLayout.Circle
-					? entitySizeWidth / (this._entitySize + 0.9)
+					? entitySizeWidth / (this._entitySize + 0.56)
 					: this._entityLayout === EntityLayout.Cross || this._entityLayout === EntityLayout.Square
 						? entitySizeWidth / (this._entitySize + 0.36)
 						: entitySizeWidth / this._entitySize;
