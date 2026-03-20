@@ -46,6 +46,21 @@ Guidance for coding agents working in `givtcp-power-flow-card`.
 - `npm run lint` for static analysis and autofixes.
 - `npm run dev:watch` together with the local Home Assistant setup for manual UI validation.
 
+## Browser Validation With Playwright CLI
+
+- For UI/layout work, prefer validating against the local Home Assistant dev instance at `http://localhost:8123`.
+- The repository includes a practical manual test environment via `npm run ha:start` and `npm run dev:watch`.
+- If `playwright-cli` is available, use it to log into Home Assistant and inspect the demo dashboard rather than relying only on static code review.
+- Current local credentials used in development have been `chris` / `forever3d`; treat them as local-only dev credentials and do not copy them into docs or commits.
+- Typical browser validation flow:
+- `playwright-cli open http://localhost:8123/`
+- fill username/password, log in, then open the `Dev board` dashboard
+- use `playwright-cli eval` or `playwright-cli run-code` to inspect rendered card size, CSS variables, entity positions, and SVG/path alignment
+- when testing responsive behavior, explicitly exercise both cases:
+- constrained card contexts with `grid_options.rows` or Home Assistant sizing vars such as `--column-size`
+- unconstrained/older card contexts without `grid_options`
+- If a layout change is sensitive to size, verify at more than one width/height and do not assume one dashboard context represents all Home Assistant card containers.
+
 ## CI And Validation
 
 - GitHub Actions runs `npm install` and `npm run build` in `.github/workflows/build.yml`.
@@ -53,7 +68,7 @@ Guidance for coding agents working in `givtcp-power-flow-card`.
 - There is no dedicated CI lint job and no dedicated CI test job.
 - Before finishing substantial changes, prefer running at least `npm run build`.
 - Run `npm run lint` when you touched TypeScript logic or imports.
-- For UI-facing changes, use the Home Assistant dev environment when practical.
+- For UI-facing changes, use the Home Assistant dev environment when practical, and prefer a Playwright CLI verification pass when available.
 
 ## Working Style For Agents
 
@@ -141,7 +156,7 @@ Guidance for coding agents working in `givtcp-power-flow-card`.
 ## Verification Checklist For Typical Changes
 
 - Logic-only change: run `npm run lint` and `npm run build`.
-- Rendering or layout change: run `npm run build`, then validate in local Home Assistant if possible.
+- Rendering or layout change: run `npm run build`, then validate in local Home Assistant; use `playwright-cli` when available for repeatable browser checks.
 - Config/editor change: verify schema, defaults, migration, and rendered editor controls stay in sync.
 - Dependency or build-tool change: verify both `npm run build` and the Home Assistant workflow still work.
 
