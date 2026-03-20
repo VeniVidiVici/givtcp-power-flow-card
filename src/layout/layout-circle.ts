@@ -224,8 +224,9 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		}
 		if (this.isCentred(from) || this.isCentred(to)) {
 			if (
-				this.centreEntity === 'house' &&
-				(flow === 'battery-to-house' || flow === 'house-to-custom1' || flow === 'house-to-custom2')
+				(this.centreEntity === 'house' && flow === 'battery-to-house') ||
+				flow === 'house-to-custom1' ||
+				flow === 'house-to-custom2'
 			) {
 				return this.getTrimmedStraightPathReversed(from, to);
 			}
