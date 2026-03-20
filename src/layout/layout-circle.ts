@@ -102,6 +102,9 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		const endY = end.y - (dy / distance) * trim;
 		return SVGUtils.getStraightPath(startX, startY, endX, endY);
 	}
+	private getTrimmedStraightPathReversed(from: string, to: string): string {
+		return this.getTrimmedStraightPath(to, from);
+	}
 	private getDynamicCorePoint(type: string): { x: number; y: number } | undefined {
 		const shouldUseOrbit = this.hasAuxiliaryEntities || this.hasCentredCore;
 		if (!shouldUseOrbit || !this.isCoreType(type) || this.isCentred(type)) {
@@ -208,6 +211,9 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 			this.isCoreType(to) &&
 			(this.isCentred(from) || this.isCentred(to))
 		) {
+			if (this.centreEntity === 'house' && flow === 'battery-to-house') {
+				return this.getTrimmedStraightPathReversed(from, to);
+			}
 			return this.getTrimmedStraightPath(from, to);
 		}
 		if (this.hasCentredCore && this.isCoreType(from) && this.isCoreType(to)) {
@@ -217,6 +223,9 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 			}
 		}
 		if (this.isCentred(from) || this.isCentred(to)) {
+			if (this.centreEntity === 'house' && flow === 'battery-to-house') {
+				return this.getTrimmedStraightPathReversed(from, to);
+			}
 			return this.getTrimmedStraightPath(from, to);
 		}
 

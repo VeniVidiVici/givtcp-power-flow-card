@@ -1131,7 +1131,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			--gtpc-extra-display: block;
 			--gtpc-layout-margin: 20px 0;
 			--gtpc-top-padding: 12px;
-			--gtpc-circle-gutter: calc(var(--gtpc-size) * 0.45);
+			--gtpc-circle-gutter: calc(var(--gtpc-size) * 0.28);
 			--gtpc-circle-offset-y: calc(var(--gtpc-size) * 0.08);
 			--gtpc-contained-gutter: calc(var(--gtpc-size) * 0.18);
 			--gtpc-contained-label-display: block;
