@@ -255,16 +255,16 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 			case 'house-to-custom1':
 				return SVGUtils.getStraightPath(
 					this.width - halfEntity,
-					this.midY - halfEntity,
-					this.width - halfEntity,
 					this.entityWidth,
+					this.width - halfEntity,
+					this.midY - halfEntity,
 				);
 			case 'house-to-custom2':
 				return SVGUtils.getStraightPath(
 					this.width - halfEntity,
-					this.midY + halfEntity,
-					this.width - halfEntity,
 					this.height - this.entityWidth,
+					this.width - halfEntity,
+					this.midY + halfEntity,
 				);
 			default:
 				return '';
