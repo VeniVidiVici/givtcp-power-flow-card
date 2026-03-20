@@ -2,6 +2,7 @@ import { TemplateResult, html, svg } from 'lit';
 import { GivTCPPowerFlowCardLayout } from './layout';
 import { customElement, property } from 'lit/decorators.js';
 import { SVGUtils } from '../utils/svg-utils';
+import { CIRCLE_SIZE_DEFAULT } from '../const';
 
 @customElement('givtcp-power-flow-card-layout-circle')
 export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
@@ -12,10 +13,26 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 	private get hasAuxiliaryEntities(): boolean {
 		return this.hasEPS || this.hasCustom1 || this.hasCustom2;
 	}
+	private get maxOrbitRadius(): number {
+		const entityRadius = this.entityWidth / 2;
+		return Math.max(
+			Math.min(
+				this.midX - entityRadius,
+				this.width - this.midX - entityRadius,
+				this.circleMidY - entityRadius,
+				this.height - this.circleMidY - entityRadius,
+			),
+			0,
+		);
+	}
 	private get orbitRadius(): number {
-		return this.hasAuxiliaryEntities
-			? Math.max(this.circleSize - this.entityWidth, this.entityWidth * 1.25)
-			: this.circleSize;
+		const baseOrbitRadius = this.hasAuxiliaryEntities
+			? Math.max(CIRCLE_SIZE_DEFAULT - this.entityWidth, this.entityWidth * 1.25)
+			: CIRCLE_SIZE_DEFAULT;
+		const scale = this.circleSize / CIRCLE_SIZE_DEFAULT;
+		const minOrbitRadius = this.hasAuxiliaryEntities ? this.entityWidth * 0.95 : this.entityWidth * 0.75;
+
+		return Math.min(Math.max(baseOrbitRadius * scale, minOrbitRadius), this.maxOrbitRadius);
 	}
 
 	private get circleMidY(): number {
