@@ -1,0 +1,16 @@
+title: GivTCP Dev
+views:
+  - title: Power Flow
+    path: default_view
+    icon: mdi:flash
+    cards:
+      - type: custom:givtcp-power-flow-card
+        name: GivTCP Square Layout Test
+        entity_layout: square
+        invertor: sensor.dev_invertor_serial_number
+        battery: sensor.dev_battery_serial_number
+        custom1_enabled: true
+        custom1_sensor: sensor.dev_battery_power
+        custom2_enabled: true
+        custom2_sensor: sensor.dev_battery_power
+        eps_enabled: true
