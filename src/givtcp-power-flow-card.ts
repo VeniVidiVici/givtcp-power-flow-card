@@ -999,7 +999,7 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 			case EntityLayout.List:
 				contentClasses += ' gtpc-content-list';
 				layout = html`<givtcp-power-flow-card-layout-list
-					class="gtpc-content gtpc-content-list${layoutHostClasses}"
+					class="${contentClasses}${layoutHostClasses}"
 					.flowData=${flowData}
 					.flows=${this._activeFlows}
 					.flowPowers=${flowPowers}
@@ -1178,6 +1178,9 @@ export class GivTCPPowerFlowCard extends LitElement implements LovelaceCard {
 		}
 		.gtpc-content.gtpc-content-list.gtpc-default-height {
 			min-height: var(--gtpc-list-min-height);
+		}
+		givtcp-power-flow-card-layout-list.gtpc-default-height {
+			height: var(--gtpc-list-min-height);
 		}
 		.gtpc-content.gtpc-content-contained {
 			container-type: size;
