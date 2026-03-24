@@ -1,5 +1,5 @@
 import { fireEvent, HomeAssistant, LovelaceCardConfig, LovelaceCardEditor, LovelaceConfig } from 'custom-card-helpers';
-import { html, LitElement, TemplateResult } from 'lit';
+import { css, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import {
 	BATTERY_SCHEMA,
@@ -29,10 +29,74 @@ import { ConfigUtils } from './utils/config-utils';
 
 @customElement('givtcp-power-flow-card-editor')
 export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCardEditor {
+	static styles = css`
+		:host {
+			display: block;
+		}
+
+		.tab-bar {
+			display: flex;
+			gap: 8px;
+			overflow-x: auto;
+			padding-bottom: 12px;
+			margin-bottom: 12px;
+			border-bottom: 1px solid var(--divider-color);
+			scrollbar-width: thin;
+		}
+
+		.tab {
+			appearance: none;
+			border: 0;
+			border-radius: 999px;
+			padding: 8px 14px;
+			background: var(--secondary-background-color);
+			color: var(--secondary-text-color);
+			cursor: pointer;
+			font: inherit;
+			font-weight: 500;
+			white-space: nowrap;
+			transition:
+				background-color 0.2s ease,
+				color 0.2s ease;
+		}
+
+		.tab[selected] {
+			background: var(--primary-color);
+			color: var(--text-primary-color, var(--primary-background-color));
+		}
+
+		.panel-title {
+			margin: 0 0 16px;
+			color: var(--primary-text-color);
+			font-size: 1rem;
+			font-weight: 500;
+		}
+
+		.support-note {
+			margin: 0 0 16px;
+			padding: 12px 14px;
+			border-radius: 12px;
+			background: var(--secondary-background-color);
+			color: var(--secondary-text-color);
+			font-size: 0.95rem;
+			line-height: 1.4;
+		}
+
+		.support-note code {
+			font-size: 0.92em;
+		}
+
+		.support-note strong {
+			color: var(--primary-text-color);
+		}
+	`;
+
 	@property() hass!: HomeAssistant;
 	lovelace?: LovelaceConfig | undefined;
 	@state() private _config!: LovelaceCardConfig;
-	@state() private _curView?: number;
+	@state() private _curView = 0;
+
+	private readonly _tabs = ['General', 'Layout', 'Grid', 'Solar', 'Battery', 'House', 'Details'];
 
 	private get _extraEntities(): string[] {
 		const invertors = this._invertorSerial;
@@ -55,16 +119,16 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 			: [];
 	}
 	private get _singleInverter(): boolean {
-		return this._config?.single_invertor == undefined ? SINGLE_INVERTOR_DEFAULT : this._config?.single_invertor;
+		return this._config?.single_invertor === undefined ? SINGLE_INVERTOR_DEFAULT : this._config?.single_invertor;
 	}
 	private get _singleBattery(): boolean {
-		return this._config?.single_battery == undefined ? SINGLE_BATTERY_DEFAULT : this._config?.single_battery;
+		return this._config?.single_battery === undefined ? SINGLE_BATTERY_DEFAULT : this._config?.single_battery;
 	}
 	private get _batterySerial(): string[] {
 		if (this._singleBattery) {
 			try {
 				return this._config?.battery && this.hass.states[this._config?.battery]
-					? [this.hass.states[this._config?.battery].state.toLowerCase()] || []
+					? [this.hass.states[this._config?.battery].state.toLowerCase()]
 					: [];
 			} catch (e) {
 				console.error(e);
@@ -87,7 +151,7 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 		if (this._singleInverter) {
 			try {
 				return this._config?.invertor && this.hass.states[this._config?.invertor]
-					? [this.hass.states[this._config?.invertor].state.toLowerCase()] || []
+					? [this.hass.states[this._config?.invertor].state.toLowerCase()]
 					: [];
 			} catch (e) {
 				console.error(e);
@@ -107,13 +171,33 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 		}
 	}
 	private get _batteries(): string[] {
-		return this.hass ? Object.keys(this.hass.states).filter((eid) => eid.includes('battery_serial_number')) : [];
+		return this._sourceEntities.batteries;
 	}
 	private get _invertors(): string[] {
-		return this.hass ? Object.keys(this.hass.states).filter((eid) => eid.includes('invertor_serial_number')) : [];
+		return this._sourceEntities.invertors;
+	}
+	private get _sourceEntities(): { invertors: string[]; batteries: string[] } {
+		if (!this.hass) {
+			return { invertors: [], batteries: [] };
+		}
+
+		const entityIds = Object.keys(this.hass.states);
+		return {
+			invertors: entityIds.filter((eid) => eid.includes('invertor_serial_number')),
+			batteries: entityIds.filter((eid) => eid.includes('battery_serial_number')),
+		};
 	}
 	private get _defaults(): LovelaceCardConfig {
 		return ConfigUtils.getDefaults(this._config);
+	}
+	private get _showSourceWarning(): boolean {
+		return this._curView === 0 && this._invertors.length === 0;
+	}
+	private get _showGeneralHelp(): boolean {
+		return this._curView === 0;
+	}
+	private get _sourceSummary(): string {
+		return `Detected ${this._invertors.length} invertor serial sensor${this._invertors.length === 1 ? '' : 's'} and ${this._batteries.length} battery serial sensor${this._batteries.length === 1 ? '' : 's'}.`;
 	}
 	// private get _invertorsAndBatteries(): string[] {
 	// 	return this.hass ? Object.keys(this.hass.states).filter((eid) =>
@@ -123,11 +207,17 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 	//state_class: total_increasing, total, measurement
 	//device_class: battery, energy, monetary, power, current, voltage, timestamp
 	private get _schema(): object[] {
+		const config = {
+			...this._defaults,
+			...this._config,
+		};
+
 		switch (this._curView) {
 			case 0:
 				return [
 					{ name: 'name', label: 'Name', selector: { text: {} } },
-					...INVERTER_BATTERY_SCHEMA(this._config, this._invertors, this._batteries),
+					{ name: 'demo_mode', label: 'Demo Mode', selector: { boolean: {} } },
+					...INVERTER_BATTERY_SCHEMA(config, this._invertors, this._batteries),
 					{
 						type: 'grid',
 						name: '',
@@ -174,24 +264,20 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 					},
 				];
 			case 1:
-				return [...LAYOUT_SCHEMA, ...LAYOUT_TYPE_SCHEMA(this._config)];
+				return [...LAYOUT_SCHEMA, ...LAYOUT_TYPE_SCHEMA(config)];
 			case 2:
-				return [...GRID_SCHEMA(this._config)];
+				return [...GRID_SCHEMA(config)];
 			case 3:
-				return [...SOLAR_SCHEMA(this._config)];
+				return [...SOLAR_SCHEMA(config)];
 			case 4:
-				return [...BATTERY_SCHEMA(this._config)];
+				return [...BATTERY_SCHEMA(config)];
 			case 5:
-				return [...HOUSE_SCHEMA(this._config), ...EXTRAS_SCHEMA(this._config)];
+				return [...HOUSE_SCHEMA(config), ...EXTRAS_SCHEMA(config)];
 			case 6:
-				return [...DETAILS_SCHEMA(this._config, this._extraEntities)];
+				return [...DETAILS_SCHEMA(config, this._extraEntities)];
 			default:
 				return [];
 		}
-	}
-	constructor() {
-		super();
-		this._curView = 0;
 	}
 	public setConfig(config: LovelaceCardConfig): void {
 		config = ConfigUtils.migrateConfig(config, false);
@@ -215,15 +301,41 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 			}
 		});
 		return html`
-			<ha-tabs scrollable .selected=${this._curView} @iron-activate=${this._handleTabChanged}>
-				<paper-tab>General</paper-tab>
-				<paper-tab>Layout</paper-tab>
-				<paper-tab>Grid</paper-tab>
-				<paper-tab>Solar</paper-tab>
-				<paper-tab>Battery</paper-tab>
-				<paper-tab>House</paper-tab>
-				<paper-tab>Details</paper-tab>
-			</ha-tabs>
+			<div class="tab-bar" role="tablist" aria-label="Card editor sections">
+				${this._tabs.map(
+					(label, index) => html`
+						<button
+							type="button"
+							class="tab"
+							role="tab"
+							?selected=${this._curView === index}
+							aria-selected=${this._curView === index ? 'true' : 'false'}
+							@click=${() => this._selectTab(index)}
+						>
+							${label}
+						</button>
+					`,
+				)}
+			</div>
+			<h3 class="panel-title">${this._tabs[this._curView]}</h3>
+			${this._showGeneralHelp
+				? html`<div class="support-note">
+						<strong>How selection works:</strong> pick your GivTCP-discovered
+						<code>sensor.*_invertor_serial_number</code> and <code>sensor.*_battery_serial_number</code> entities in
+						this tab. The card then derives the rest of its flow sensors from those serial numbers rather than asking
+						you to enter every entity manually. <br /><br />
+						${this._sourceSummary}
+					</div>`
+				: html``}
+			${this._showSourceWarning
+				? html`<div class="support-note">
+						This card expects GivTCP-discovered serial number sensors such as
+						<code>sensor.*_invertor_serial_number</code> and <code>sensor.*_battery_serial_number</code>. Integrations
+						like FoxESS will not appear in the picker unless they expose equivalent GivTCP-style sensors. <br /><br />
+						If the picker is empty, check that GivTCP has Home Assistant auto discovery enabled and that the
+						serial-number sensors exist in Home Assistant first.
+					</div>`
+				: html``}
 			<ha-form
 				.hass=${this.hass}
 				.data=${data}
@@ -233,9 +345,7 @@ export class GivTCPPowerFlowCardEditor extends LitElement implements LovelaceCar
 			></ha-form>
 		`;
 	}
-	private _handleTabChanged(ev: CustomEvent): void {
-		ev.preventDefault();
-		const tab = ev.detail.selected as number;
+	private _selectTab(tab: number): void {
 		this._curView = tab;
 	}
 	private _computeLabelCallback = (schema: { name: string; label?: string }) => {

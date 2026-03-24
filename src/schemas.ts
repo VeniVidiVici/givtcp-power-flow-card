@@ -17,18 +17,20 @@ import {
 	NUM_DETAIL_COLUMNS_DEFAULT,
 } from './const';
 import { CentreEntity, DotEasing, EntityLayout, LineStyle } from './types';
-import { any, assign, boolean, integer, object, optional, refine, string, array, union, tuple } from 'superstruct';
+import { any, assign, boolean, integer, optional, refine, string, array, union, tuple, type } from 'superstruct';
 const isEntityId = (value: string): boolean => value.includes('.');
 const entityId = () => refine(string(), 'entity ID (domain.entity)', isEntityId);
 
-const baseLovelaceCardConfig = object({
+const baseLovelaceCardConfig = type({
 	type: string(),
-	view_layout: any(),
+	view_layout: optional(any()),
+	grid_options: optional(any()),
+	visibility: optional(any()),
 });
 
 export const cardConfigStruct = assign(
 	baseLovelaceCardConfig,
-	object({
+	type({
 		name: optional(string()),
 		demo_mode: optional(boolean()),
 		batteries: optional(array(entityId())),
@@ -86,6 +88,8 @@ export const cardConfigStruct = assign(
 		line_width: optional(integer()),
 		num_detail_columns: optional(integer()),
 		power_margin: optional(integer()),
+		solar_input_1_sensors: optional(array(entityId())),
+		solar_input_2_sensors: optional(array(entityId())),
 		single_battery: optional(boolean()),
 		single_invertor: optional(boolean()),
 		solar_colour_type: optional(string()),
@@ -100,12 +104,8 @@ export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: s
 	const singleInvertor = config.single_invertor !== undefined ? config.single_invertor : SINGLE_INVERTOR_DEFAULT;
 	const singleBattery = config.single_battery !== undefined ? config.single_battery : SINGLE_BATTERY_DEFAULT;
 
-	const invertorList = singleInvertor
-		? invertors
-		: invertors.filter((x) => (config.invertors?.length > 0 ? config.invertors?.indexOf(x) === -1 : true));
-	const batteryList = singleBattery
-		? batteries
-		: batteries.filter((x) => (config.batteries?.length > 0 ? config.batteries?.indexOf(x) === -1 : true));
+	const invertorList = invertors;
+	const batteryList = batteries;
 	return [
 		{
 			type: 'grid',
@@ -117,7 +117,7 @@ export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: s
 					schema: [
 						{ name: 'single_invertor', label: 'Single Invertor', selector: { boolean: {} } },
 						{
-							label: singleInvertor ? 'Invertor/AIO' : 'Invertors',
+							label: singleInvertor ? 'GivTCP Invertor/AIO Serial' : 'GivTCP Invertor Serials',
 							name: singleInvertor ? 'invertor' : 'invertors',
 							selector: { entity: { multiple: !singleInvertor, include_entities: invertorList } },
 						},
@@ -129,7 +129,7 @@ export const INVERTER_BATTERY_SCHEMA = (config: LovelaceCardConfig, invertors: s
 					schema: [
 						{ name: 'single_battery', label: 'Single Battery', selector: { boolean: {} } },
 						{
-							label: singleBattery ? 'Battery' : 'Batteries',
+							label: singleBattery ? 'GivTCP Battery Serial' : 'GivTCP Battery Serials',
 							name: singleBattery ? 'battery' : 'batteries',
 							selector: { entity: { multiple: !singleBattery, include_entities: batteryList } },
 						},
@@ -180,7 +180,7 @@ const ENTITY_COLOUR_SCHEMA = (type: string, name: string, label: string) => [
 	{
 		name,
 		label,
-		selector: type == 'ui' ? { 'ui-color': {} } : { color_rgb: {} },
+		selector: type === 'ui' ? { 'ui-color': {} } : { color_rgb: {} },
 	},
 ];
 
@@ -228,7 +228,26 @@ export const BATTERY_SCHEMA = (config: LovelaceCardConfig) => {
 export const SOLAR_SCHEMA = (config: LovelaceCardConfig) => {
 	let settings: object[] = [{ name: 'solar_enabled', label: 'Solar enabled', selector: { boolean: {} } }];
 	if (config.solar_enabled) {
-		settings = [...settings, ...ENTITY_SCHEMA(config, 'solar', 'Solar', SOLAR_ICON_DEFAULT)];
+		settings = [
+			...settings,
+			...ENTITY_SCHEMA(config, 'solar', 'Solar', SOLAR_ICON_DEFAULT),
+			{
+				type: 'grid',
+				name: '',
+				schema: [
+					{
+						name: 'solar_input_1_sensors',
+						label: 'Solar Input 1 Sensors',
+						selector: { entity: { multiple: true, filter: { device_class: 'power' } } },
+					},
+					{
+						name: 'solar_input_2_sensors',
+						label: 'Solar Input 2 Sensors',
+						selector: { entity: { multiple: true, filter: { device_class: 'power' } } },
+					},
+				],
+			},
+		];
 	}
 	return settings;
 };
@@ -340,8 +359,8 @@ export const LAYOUT_TYPE_SCHEMA = (config: LovelaceCardConfig): object[] => {
 			{
 				name: 'circle_size',
 				default: CIRCLE_SIZE_DEFAULT,
-				label: 'Circle Size',
-				selector: { number: { mode: 'slider', min: 35, max: 45 } },
+				label: 'Circle Radius',
+				selector: { number: { mode: 'slider', min: 30, max: 50 } },
 			},
 			{
 				name: 'centre_entity',
@@ -353,7 +372,6 @@ export const LAYOUT_TYPE_SCHEMA = (config: LovelaceCardConfig): object[] => {
 						options: [
 							{ value: CentreEntity.None, label: 'None' },
 							{ value: CentreEntity.House, label: 'House' },
-							{ value: CentreEntity.Inverter, label: 'Inverter' },
 							{ value: CentreEntity.Solar, label: 'Solar' },
 							{ value: CentreEntity.Battery, label: 'Battery' },
 						],
