@@ -228,13 +228,20 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 			this.isCoreType(to) &&
 			(this.isCentred(from) || this.isCentred(to))
 		) {
-			if (this.centreEntity === 'house' && flow === 'battery-to-house') {
+			if (
+				(this.centreEntity === 'house' && flow === 'battery-to-house') ||
+				flow === 'solar-to-grid' ||
+				flow === 'grid-to-battery'
+			) {
 				return this.getTrimmedStraightPathReversed(from, to);
 			}
 			return this.getTrimmedStraightPath(from, to);
 		}
 		if (this.hasCentredCore && this.isCoreType(from) && this.isCoreType(to)) {
-			const centredPath = this.getCentredCoreRingPath(from, to);
+			const centredPath =
+				flow === 'solar-to-grid' || flow === 'grid-to-battery'
+					? this.getCentredCoreRingPath(to, from)
+					: this.getCentredCoreRingPath(from, to);
 			if (centredPath) {
 				return centredPath;
 			}
