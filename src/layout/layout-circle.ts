@@ -3,6 +3,7 @@ import { GivTCPPowerFlowCardLayout } from './layout';
 import { customElement, property } from 'lit/decorators.js';
 import { SVGUtils } from '../utils/svg-utils';
 import { CIRCLE_SIZE_DEFAULT } from '../const';
+import { FlowDirection } from '../types';
 
 @customElement('givtcp-power-flow-card-layout-circle')
 export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
@@ -220,6 +221,10 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 		return this.getArcPath(startSlot, endSlot, clockwisePreferred, totalSlots);
 	}
 
+	private isOutFlow(from: string, to: string): boolean {
+		return this.flows.some((f) => f.from === from && f.to === to && f.direction === FlowDirection.Out);
+	}
+
 	private getPathForFlow(flow: string): string {
 		const [from, to] = flow.split('-to-');
 		if (
@@ -228,30 +233,21 @@ export class GivTCPPowerFlowCardLayoutCircle extends GivTCPPowerFlowCardLayout {
 			this.isCoreType(to) &&
 			(this.isCentred(from) || this.isCentred(to))
 		) {
-			if (
-				(this.centreEntity === 'house' && flow === 'battery-to-house') ||
-				flow === 'solar-to-grid' ||
-				flow === 'grid-to-battery'
-			) {
+			if (this.isOutFlow(from, to)) {
 				return this.getTrimmedStraightPathReversed(from, to);
 			}
 			return this.getTrimmedStraightPath(from, to);
 		}
 		if (this.hasCentredCore && this.isCoreType(from) && this.isCoreType(to)) {
-			const centredPath =
-				flow === 'solar-to-grid' || flow === 'grid-to-battery'
-					? this.getCentredCoreRingPath(to, from)
-					: this.getCentredCoreRingPath(from, to);
+			const centredPath = this.isOutFlow(from, to)
+				? this.getCentredCoreRingPath(to, from)
+				: this.getCentredCoreRingPath(from, to);
 			if (centredPath) {
 				return centredPath;
 			}
 		}
 		if (this.isCentred(from) || this.isCentred(to)) {
-			if (
-				(this.centreEntity === 'house' && flow === 'battery-to-house') ||
-				flow === 'house-to-custom1' ||
-				flow === 'house-to-custom2'
-			) {
+			if (this.isOutFlow(from, to)) {
 				return this.getTrimmedStraightPathReversed(from, to);
 			}
 			return this.getTrimmedStraightPath(from, to);
