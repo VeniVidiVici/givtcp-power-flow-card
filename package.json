@@ -28,7 +28,7 @@
 	},
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^8.57.1",
-		"@typescript-eslint/parser": "^8.57.2",
+		"@typescript-eslint/parser": "^8.58.1",
 		"custom-card-helpers": "^2.0.0",
 		"eslint": "^10.2.0",
 		"eslint-config-prettier": "^10.1.8",
