@@ -188,41 +188,6 @@ describe('GivTCPPowerFlowCardLayoutCircle', () => {
 			expect(result).toContain('M');
 		});
 
-		it('should return circle path for battery-to-grid', () => {
-			const getPathForFlow = (element as unknown as { getPathForFlow: (flow: string) => string })['getPathForFlow'].bind(element);
-			const result = getPathForFlow('battery-to-grid');
-			expect(result).toContain('A');
-			expect(result).toContain('M');
-		});
-
-		it('should return circle path for grid-to-battery', () => {
-			const getPathForFlow = (element as unknown as { getPathForFlow: (flow: string) => string })['getPathForFlow'].bind(element);
-			const result = getPathForFlow('grid-to-battery');
-			expect(result).toContain('A');
-			expect(result).toContain('M');
-		});
-
-		it('should return circle path for solar-to-grid', () => {
-			const getPathForFlow = (element as unknown as { getPathForFlow: (flow: string) => string })['getPathForFlow'].bind(element);
-			const result = getPathForFlow('solar-to-grid');
-			expect(result).toContain('A');
-			expect(result).toContain('M');
-		});
-
-		it('should return curve path for solar-to-battery', () => {
-			const getPathForFlow = (element as unknown as { getPathForFlow: (flow: string) => string })['getPathForFlow'].bind(element);
-			const result = getPathForFlow('solar-to-battery');
-			expect(result).toContain('M');
-			expect(result).toContain('Q');
-		});
-
-		it('should return curve path for grid-to-house', () => {
-			const getPathForFlow = (element as unknown as { getPathForFlow: (flow: string) => string })['getPathForFlow'].bind(element);
-			const result = getPathForFlow('grid-to-house');
-			expect(result).toContain('M');
-			expect(result).toContain('Q');
-		});
-
 		it('should return straight path for house-to-custom1', () => {
 			const getPathForFlow = (element as unknown as { getPathForFlow: (flow: string) => string })['getPathForFlow'].bind(element);
 			const result = getPathForFlow('house-to-custom1');

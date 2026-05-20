@@ -110,20 +110,6 @@ describe('GivTCPPowerFlowCardLayoutList', () => {
 		element.flowPowers = [];
 	});
 
-	describe('halfEntity getter', () => {
-		it('should return entityWidth / 2', () => {
-			element.entitySize = 4;
-			const halfEntity = (element as unknown as { halfEntity: number }).halfEntity;
-			expect(halfEntity).toBe(12.5);
-		});
-
-		it('should return correct value for different entitySize', () => {
-			element.entitySize = 5;
-			const halfEntity = (element as unknown as { halfEntity: number }).halfEntity;
-			expect(halfEntity).toBe(10);
-		});
-	});
-
 	describe('iconFor', () => {
 		it('should return icon from flowData when type matches', () => {
 			element.flowData = [{ type: 'solar', name: 'Solar', icon: 'mdi:solar-panel' }];

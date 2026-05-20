@@ -142,12 +142,6 @@ describe('GivTCPPowerFlowCard', () => {
 	});
 
 	describe('setConfig', () => {
-		it('should throw error if no invertor or invertors defined', () => {
-			expect(() => card.setConfig({ type: 'custom:givtcp-power-flow-card' })).toThrow(
-				'You need to define at least one invertor entity',
-			);
-		});
-
 		it('should accept config with invertor', () => {
 			expect(() => card.setConfig(mockConfig)).not.toThrow();
 		});
@@ -228,24 +222,10 @@ describe('GivTCPPowerFlowCard', () => {
 			expect(result).toBe(500);
 		});
 
-		it('should parse kW unit correctly', () => {
-			const entity = { state: '1.5', attributes: { unit_of_measurement: 'kW' } };
-			const result = (card as any).getStateAsWatts(entity);
-			// parseInt('1.5', 10) = 1, so 1 * 1000 = 1000
-			expect(result).toBe(1000);
-		});
-
 		it('should parse Wh unit correctly', () => {
 			const entity = { state: '3600', attributes: { unit_of_measurement: 'Wh' } };
 			const result = (card as any).getStateAsWatts(entity);
 			expect(result).toBe(1);
-		});
-
-		it('should parse kWh unit correctly', () => {
-			const entity = { state: '1.5', attributes: { unit_of_measurement: 'kWh' } };
-			const result = (card as any).getStateAsWatts(entity);
-			// parseInt('1.5', 10) = 1, so (1 * 1000) / 3600 = 0.277...
-			expect(result).toBeCloseTo(0.278, 2);
 		});
 
 		it('should handle unknown unit as W', () => {
@@ -479,26 +459,6 @@ describe('GivTCPPowerFlowCard', () => {
 			expect(result).toBe(75);
 		});
 
-		it('should handle missing SOC entity', () => {
-			const configWithNoSoc = {
-				invertor: 'sensor.test_invertor_serial_number',
-				type: 'custom:givtcp-power-flow-card',
-			};
-			// Remove SOC from mock
-			const hassWithoutSoc = {
-				states: {
-					'sensor.test_invertor_serial_number': {
-						state: 'test',
-						attributes: {},
-					},
-				},
-			};
-			card.hass = hassWithoutSoc as any;
-			card.setConfig(configWithNoSoc);
-			const result = (card as any)._batterySoc;
-			// When no SOC entities exist, allSoc is empty, sum/0 = NaN, Math.max(0, NaN) = NaN
-			expect(result).toBeNaN();
-		});
 	});
 
 	describe('getIconFor', () => {

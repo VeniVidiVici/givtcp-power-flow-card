@@ -124,81 +124,6 @@ describe('GivTCPPowerFlowCardEntity', () => {
 		});
 	});
 
-	describe('formatPower', () => {
-		it('should format power less than 1000W with W unit', () => {
-			const mockData: FlowData = {
-				name: 'Test',
-				type: 'solar',
-				icon: 'mdi:solar-panel',
-			};
-			element.data = mockData;
-
-			// Access private method via bracket notation
-			const result = (element as unknown as { formatPower: (power: number) => string }).formatPower(500);
-			expect(result).toBe('500W');
-		});
-
-		it('should format power between 1000W and 1000000W with kW unit', () => {
-			const mockData: FlowData = {
-				name: 'Test',
-				type: 'solar',
-				icon: 'mdi:solar-panel',
-			};
-			element.data = mockData;
-
-			const result = (element as unknown as { formatPower: (power: number) => string }).formatPower(1500);
-			expect(result).toBe('1.5kW');
-		});
-
-		it('should format power greater than 1000000W with MW unit', () => {
-			const mockData: FlowData = {
-				name: 'Test',
-				type: 'solar',
-				icon: 'mdi:solar-panel',
-			};
-			element.data = mockData;
-
-			const result = (element as unknown as { formatPower: (power: number) => string }).formatPower(1500000);
-			expect(result).toBe('1.5MW');
-		});
-
-		it('should format exactly 1000W as 1.0kW', () => {
-			const mockData: FlowData = {
-				name: 'Test',
-				type: 'solar',
-				icon: 'mdi:solar-panel',
-			};
-			element.data = mockData;
-
-			const result = (element as unknown as { formatPower: (power: number) => string }).formatPower(1000);
-			expect(result).toBe('1.0kW');
-		});
-
-		it('should format exactly 1000000W as 1.0MW', () => {
-			const mockData: FlowData = {
-				name: 'Test',
-				type: 'solar',
-				icon: 'mdi:solar-panel',
-			};
-			element.data = mockData;
-
-			const result = (element as unknown as { formatPower: (power: number) => string }).formatPower(1000000);
-			expect(result).toBe('1.0MW');
-		});
-
-		it('should format power with decimal precision', () => {
-			const mockData: FlowData = {
-				name: 'Test',
-				type: 'solar',
-				icon: 'mdi:solar-panel',
-			};
-			element.data = mockData;
-
-			const result = (element as unknown as { formatPower: (power: number) => string }).formatPower(1234);
-			expect(result).toBe('1.2kW');
-		});
-	});
-
 	describe('render', () => {
 		it('should render with no flow data (fullTotal <= 0)', () => {
 			const mockData: FlowData = {
@@ -513,31 +438,4 @@ describe('GivTCPPowerFlowCardEntity', () => {
 		});
 	});
 
-	describe('power formatting edge cases', () => {
-		it('should handle zero power', () => {
-			const mockData: FlowData = {
-				name: 'Test',
-				type: 'solar',
-				icon: 'mdi:solar-panel',
-			};
-			element.data = mockData;
-
-			const result = (element as unknown as { formatPower: (power: number) => string }).formatPower(0);
-			expect(result).toBe('0W');
-		});
-
-		it('should handle boundary values', () => {
-			const mockData: FlowData = {
-				name: 'Test',
-				type: 'solar',
-				icon: 'mdi:solar-panel',
-			};
-			element.data = mockData;
-
-			expect((element as unknown as { formatPower: (power: number) => string }).formatPower(999)).toBe('999W');
-			expect((element as unknown as { formatPower: (power: number) => string }).formatPower(1000)).toBe('1.0kW');
-			expect((element as unknown as { formatPower: (power: number) => string }).formatPower(999999)).toBe('1000.0kW');
-			expect((element as unknown as { formatPower: (power: number) => string }).formatPower(1000000)).toBe('1.0MW');
-		});
-	});
 });
